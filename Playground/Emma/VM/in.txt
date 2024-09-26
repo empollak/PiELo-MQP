@@ -1,0 +1,4 @@
+pushi 2
+pushi 3
+addi
+printi

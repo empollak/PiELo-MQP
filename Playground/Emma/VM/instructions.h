@@ -16,6 +16,7 @@ void call(std::string funcName);
 template <class T>
 void push(T e) {
     std::vector<uint8_t> stackElement;
+    std::cout << "pushing " << e << " to stack\n";
     stackElement.resize(sizeof(T));
     *((T*) stackElement.data()) = e;
     // printf("Pushed: ");
@@ -102,3 +103,31 @@ void print_with_type() {
     T e = *((T*) stack.top().data());
     std::cout << e << std::endl;
 }
+
+// Compares the top two elements of the stack.
+// Returns 0 if they are equal, 1 if the top is greater than the next, -1 otherwise
+// Pushes result to stack. Does not pop the compared values
+// Types are top of stack, next on stack
+template<class T0, class T1>
+void cmp() {
+    if (stack.size() < 2) {
+        printf("Attempted to compare with only %ld elements in stack\n", stack.size());
+        exit(-1);
+    }
+    // Interpret the vector as however many bytes are in T0
+    T0* op0ptr = (T0*) stack.top().data();
+    T0 op0 = *op0ptr;
+    stack.pop();
+
+    T1* op1ptr = (T1*) stack.top().data();
+    T1 op1 = *op1ptr;
+    std::cout << "cmp: op0: " << op0 << " op1 " << op1 << std::endl;
+
+    // Put the stuff back on the stack, in order.
+    push(op0);
+    push((int) (op0 - op1));
+}
+
+void jump_if_greater(std::string label);
+void jump_if_less(std::string label);
+void jump(std::string label);

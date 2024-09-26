@@ -1,0 +1,11 @@
+pushi 5
+pushi 0
+label loop
+pushi 1
+addi
+printi
+cmpii
+jmpl loop
+
+label exit
+exit

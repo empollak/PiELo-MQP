@@ -4,6 +4,7 @@ addi
 printi
 call test
 push value
+addi
 printi
 exit
 

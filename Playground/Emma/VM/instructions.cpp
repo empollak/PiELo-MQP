@@ -43,3 +43,33 @@ void ret() {
     stack.pop();
     code.seekg(newLoc);
 }
+
+// Intended to be called after cmp
+// Jump if top value of stack is > 0 (before cmp, top was greater than next)
+// Pops top of stack
+void jump_if_greater(std::string label) {
+    int cmpResult = *((int*) stack.top().data());
+    stack.pop();
+    if (cmpResult > 0) {
+        printf("Jumped to %s, cmpResult was %d\n", label.c_str(), cmpResult);
+        jump(label);
+    }
+}
+
+// Intended to be called after cmp
+// Jump if top value of stack is < 0 (before cmp, top was greater than next)
+// Pops top of stack
+void jump_if_less(std::string label) {
+    int cmpResult = *((int*) stack.top().data());
+    stack.pop();
+    if (cmpResult < 0) {
+        printf("Jumped to %s, cmpResult was %d\n", label.c_str(), cmpResult);
+        jump(label);
+    }
+}
+
+void jump(std::string label) {
+    std::streampos newLoc = *((std::streampos*) heap[label].data());
+
+    code.seekg(newLoc);
+}

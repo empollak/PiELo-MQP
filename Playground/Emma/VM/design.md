@@ -34,6 +34,12 @@ Problems
     - What type are values in the dict?
         - Just a collection of bits. 
             - Requires using the correct instructions for storing or reading!
+            - This adds a whole lot of assembly instructions for all combos of types
+        - Everything which is not immediately used for calculation goes in the dict
+        - Garbage collection? Scoping?
+            - Handled in the compiler or in the VM?
+                - Could make the compiler compile local scope variables with a different name?
+                - Anything that's local to a function can go on the stack
 
     - Can an object be a pointer? 
         - A pointer is just the name of another object
@@ -44,6 +50,13 @@ Problems
         - Return will pop the top of the stack and treat that as where in the file to go
         - When calling a function, need to push next line address onto stack
         - This means that all functions must leave the stack how they found it
+    
+    What about conditionals and such?
+        - Support jumping rather than calling
+        - Allow you to compare to values on the stack and jump or not jump based on the result
+        
 
 What can I push onto the stack?
     - More variable size byte arrays?
+
+Also supports comments starting with #

@@ -3,14 +3,19 @@ pushi ## - Pushes the input int to the stack
 pushd ## - Pushes the input double to the stack
 pushf ## - Pushes the input float to the stack 
 
+push <src string> - Push the element keyed by the string to the stack
+pop <dest string> - Pop the top of the stack into memory keyed by the input string
+
 addi - Adds the two elements at the top of the stack, treating them as ints
 addf - Same as above, for two floats
 addd - Same as above, for two doubles
 
 Same add but for sub
 
-pop <dest string> - Pop the top of the stack into memory keyed by the input string
-pushh <src string> - Push from the given key on the heap to the stack
+
+ret - Pops the top of the stack and goes there in the file to start running code
+call <string> - Push the location of next line to stack. Then get the location in file from <string> in memory and jump there to start running code. 
+func <string> - Defines a function start. Before code is run, all funcs are stored in the heap as (string, location).
 
 print - print the top of the stack
 
@@ -27,13 +32,18 @@ Problems
             - This has absolutely no safety.
 
     - What type are values in the dict?
-        - Just a collection of bits. Interpreted when read.
+        - Just a collection of bits. 
+            - Requires using the correct instructions for storing or reading!
 
     - Can an object be a pointer? 
         - A pointer is just the name of another object
 
     - How are functions defined?
         - When a function is defined, it is stored in dict as (name, offset into file of start)
+        - Don't need to store the end of a file as it's expected that there will be a return
+        - Return will pop the top of the stack and treat that as where in the file to go
+        - When calling a function, need to push next line address onto stack
+        - This means that all functions must leave the stack how they found it
 
 What can I push onto the stack?
     - More variable size byte arrays?

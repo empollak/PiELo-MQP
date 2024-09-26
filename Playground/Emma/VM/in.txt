@@ -2,3 +2,13 @@ pushi 2
 pushi 3
 addi
 printi
+call test
+push value
+printi
+exit
+
+func test
+pushi 2
+printi
+pop value
+ret

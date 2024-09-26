@@ -10,17 +10,34 @@ enum Instructions {
     SUB
 };
 
+void ret();
+void call(std::string funcName);
+
 template <class T>
 void push(T e) {
     std::vector<uint8_t> stackElement;
     stackElement.resize(sizeof(T));
     *((T*) stackElement.data()) = e;
-    printf("Pushed: ");
-    for (auto it = stackElement.begin(); it != stackElement.end(); it++) {
-        printf("%x ", *it);
-    }
-    printf("\n");
+    // printf("Pushed: ");
+    // for (auto it = stackElement.begin(); it != stackElement.end(); it++) {
+    //     printf("%x ", *it);
+    // }
+    // printf("\n");
     stack.push(stackElement);
+}
+
+// Push an element to the heap
+template <class T>
+void push_to_heap(T e, std::string dest) {
+    std::vector<uint8_t> heapElement;
+    heapElement.resize(sizeof(T));
+    *((T*) heapElement.data()) = e;
+    // printf("Pushed to heap: ");
+    // for (auto it = heapElement.begin(); it != heapElement.end(); it++) {
+    //     printf("%x ", *it);
+    // }
+    // printf("\n");
+    heap[dest] = heapElement;
 }
 
 // Pop the top element from the stack and store it in dest in the heap
@@ -49,7 +66,7 @@ void add() {
     T1* op1ptr = (T1*) stack.top().data();
     T1 op1 = *op1ptr;
     stack.pop();
-    std::cout << "op0 " << op0 << " op1 " << op1 << std::endl;
+    // std::cout << "op0 " << op0 << " op1 " << op1 << std::endl;
 
     push(op0 + op1);
 }
@@ -73,7 +90,7 @@ void sub() {
     T1* op1ptr = (T1*) stack.top().data();
     T1 op1 = *op1ptr;
     stack.pop();
-    std::cout << "op0 " << op0 << " op1 " << op1 << std::endl;
+    // std::cout << "op0 " << op0 << " op1 " << op1 << std::endl;
 
     push(op1 - op0);
 }

@@ -27,3 +27,19 @@ void print_top() {
     printf("\n");
 }
 
+void call(std::string funcName) {
+    // Store the location of the next instruction on the stack
+    push(code.tellg());
+
+    // Coerce the data from heap to be a location
+    std::streampos newLoc = *((std::streampos*) heap[funcName].data());
+
+    code.seekg(newLoc);
+}
+
+// Pop the top of the stack, treat it as a streampos, and go there
+void ret() {
+    std::streampos newLoc = *((std::streampos*) stack.top().data());
+    stack.pop();
+    code.seekg(newLoc);
+}

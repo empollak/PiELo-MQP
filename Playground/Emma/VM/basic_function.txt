@@ -1,15 +1,15 @@
 pushi 2
 pushi 3
-addi
-printi
+add
+print
 call test
-push value
-addi
-printi
+pushh value
+add
+print
 exit
 
 func test
 pushi 2
-printi
-pop value
+print
+pops value
 ret

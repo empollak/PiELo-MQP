@@ -1,10 +1,13 @@
-vm: instructions.o vm.o
-	g++ -o vm vm.o instructions.o
+vm: instructions.o vm.o parser.o
+	g++ -o vm vm.o instructions.o parser.o
 
 instructions.o: instructions.cpp instructions.h
 	g++ -o instructions.o -c instructions.cpp
 
-vm.o: vm.cpp vm.h instructions.h
+parser.o: parser.cpp parser.h
+	g++ -o parser.o -c parser.cpp
+
+vm.o: vm.cpp
 	g++ -o vm.o -c vm.cpp
 
 clean: 

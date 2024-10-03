@@ -19,6 +19,8 @@ func <string> - Defines a function start. Before code is run, all funcs are stor
 
 print - print the top of the stack
 
+Typing: 
+- Add is very big because all types need to be included
 
 Problems
 - How does the VM get the code?
@@ -35,6 +37,9 @@ Problems
         - Just a collection of bits. 
             - Requires using the correct instructions for storing or reading!
             - This adds a whole lot of assembly instructions for all combos of types
+                - Could store type with the value, but this would require big switch statements in every function
+                - Functions have to be defined at compile time, so one way or another it requires lots of similar lines
+                
         - Everything which is not immediately used for calculation goes in the dict
         - Garbage collection? Scoping?
             - Handled in the compiler or in the VM?
@@ -46,10 +51,14 @@ Problems
 
     - How are functions defined?
         - When a function is defined, it is stored in dict as (name, offset into file of start)
-        - Don't need to store the end of a file as it's expected that there will be a return
+        - Don't need to store the end of a function as it's expected that there will be a return
         - Return will pop the top of the stack and treat that as where in the file to go
         - When calling a function, need to push next line address onto stack
         - This means that all functions must leave the stack how they found it
+        - Have a parse pass of the code where all functions are saved to memory
+        - Start execution at the top of the file
+            - This is a bit inefficient as it has to read through the whole main function first
+            - Could put function definitions above main and then start running code when it hits the main function
     
     What about conditionals and such?
         - Support jumping rather than calling

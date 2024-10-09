@@ -12,6 +12,7 @@ namespace PiELo_VM
 	enum Opcode
 	{
 		PUSH,
+		PUSH_NIL,
 		POP,
 		ADD,
 		SUB,
@@ -20,7 +21,15 @@ namespace PiELo_VM
 		PRINT,
 		HALT,
 		JMP,
-		JMP_IF_ZERO,
+		JMP_IF_ZERO
+	};
+
+	enum class VMStatus
+	{
+		OK,
+		DONE,
+		ERROR,
+		EXPLODED
 	};
 
 	// alias for opcode handler function
@@ -33,19 +42,37 @@ namespace PiELo_VM
 		void run(const std::vector<int> &code);
 		friend std::ostream &operator<<(std::ostream &os, const VM &vm); // good for debugging
 
+		VMStatus step();
+		VMStatus get_status() const { return status; }
+
+		friend std::ostream &operator<<(std::ostream &os, const VM &vm);
+
 	private:
 		std::vector<Value> stack;
 		std::unordered_map<Opcode, opcode_handler> opcode_handlers; // opcode handler map
 		std::vector<int> code;										// program code
 		size_t ip;													// instruction pointer
+		VMStatus status;
 
 		void init_handlers();
 
 		template <typename T>
-		void push(T value);
+		void push(T value)
+		{
+			stack.push_back(Value(value));
+		}
 
 		template <typename T>
-		T pop();
+		T pop()
+		{
+			if (stack.empty())
+			{
+				throw std::runtime_error("Stack underflow");
+			}
+			T value = stack.back();
+			stack.pop_back();
+			return value;
+		}
 	};
 
 } // end namespace

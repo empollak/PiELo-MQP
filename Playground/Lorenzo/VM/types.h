@@ -8,6 +8,7 @@ namespace PiELo_VM
 
 	enum Type
 	{
+		NIL,
 		INT,
 		BOOL,
 		FLOAT
@@ -22,6 +23,8 @@ namespace PiELo_VM
 			bool bool_value;
 			float float_value;
 		} value_union;
+
+		Value() : type(NIL) {}
 
 		Value(int value) : type(INT), value_union{.int_value = value} {}
 		Value(bool value) : type(BOOL), value_union{.bool_value = value} {}
@@ -46,6 +49,11 @@ namespace PiELo_VM
 			if (type != FLOAT)
 				throw std::runtime_error("Type mismatch: FLOAT  expected");
 			return value_union.float_value;
+		}
+
+		bool is_nil() const
+		{
+			return type == NIL;
 		}
 	};
 

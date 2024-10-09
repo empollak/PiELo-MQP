@@ -5,9 +5,41 @@
 namespace PiELo_VM
 {
 
-	VM::VM() : ip(0)
+	VM::VM() : ip(0), status(VMStatus::OK) // init with OK status
 	{
 		init_handlers();
+	}
+
+	VMStatus VM::step()
+	{
+		if (ip >= code.size())
+		{
+			status = VMStatus::DONE;
+			return status;
+		}
+
+		Opcode opcode = static_cast<Opcode>(code[ip++]);
+
+		if (opcode_handlers.count(opcode))
+		{
+			try
+			{
+				opcode_handlers[opcode]();
+			}
+			catch (const std::exception &e)
+			{
+				status = VMStatus::ERROR;
+				std::cerr << "VM Error: " << e.what() << std::endl;
+				return status;
+			}
+		}
+		else
+		{
+			status = VMStatus::EXPLODED;
+			throw std::runtime_error("Unknown opcode");
+		}
+
+		return VMStatus::OK;
 	}
 
 	void VM::init_handlers()
@@ -15,19 +47,24 @@ namespace PiELo_VM
 
 		opcode_handlers[PUSH] = [this]()
 		{
-			int value = code[ip++];
-			push(Value(value));
+			int raw_value = code[ip++];
+			push(Value(raw_value));
 		};
 
-		opcode_handlers[POP] = [this]()
+		opcode_handlers[PUSH_NIL] = [this]()
 		{
-			pop<Value>();
+			push(Value());
 		};
 
 		opcode_handlers[ADD] = [this]()
 		{
 			Value b = pop<Value>();
 			Value a = pop<Value>();
+
+			if (a.is_nil() || b.is_nil())
+			{
+				throw std::runtime_error("Type mismatch: cannot add NIL values");
+			}
 
 			if (a.type == INT && b.type == INT)
 			{
@@ -56,6 +93,11 @@ namespace PiELo_VM
 			Value b = pop<Value>();
 			Value a = pop<Value>();
 
+			if (a.is_nil() || b.is_nil())
+			{
+				throw std::runtime_error("Type mismatch: cannot subtract NIL values");
+			}
+
 			if (a.type == INT && b.type == INT)
 			{
 				push(Value(a.get_int() - b.get_int()));
@@ -83,6 +125,11 @@ namespace PiELo_VM
 			Value b = pop<Value>();
 			Value a = pop<Value>();
 
+			if (a.is_nil() || b.is_nil())
+			{
+				throw std::runtime_error("Type mismatch: cannot multiply NIL values");
+			}
+
 			if (a.type == INT && b.type == INT)
 			{
 				push(Value(a.get_int() * b.get_int()));
@@ -109,6 +156,11 @@ namespace PiELo_VM
 		{
 			Value b = pop<Value>();
 			Value a = pop<Value>();
+
+			if (a.is_nil() || b.is_nil())
+			{
+				throw std::runtime_error("Type mismatch: cannot divide NIL values");
+			}
 
 			if (b.type == INT && b.get_int() == 0)
 			{
@@ -157,6 +209,9 @@ namespace PiELo_VM
 			case FLOAT:
 				std::cout << value.get_float() << std::endl;
 				break;
+			case NIL:
+				std::cout << "NIL" << std::endl;
+				break;
 			default:
 				std::cout << "Unknown type" << std::endl;
 			}
@@ -202,91 +257,24 @@ namespace PiELo_VM
 		code = prog_code;
 		ip = 0;
 
-		while (ip < code.size())
-		{
-			Opcode opcode = static_cast<Opcode>(code[ip++]);
-			if (opcode_handlers.count(opcode))
-			{
-				opcode_handlers[opcode]();
-			}
-			else
-			{
-				throw std::runtime_error("Unknown opcode");
-			}
-		}
-	}
-
-	template <typename T>
-	void VM::push(T value)
-	{
-		if constexpr (std::is_same_v<T, int>)
-		{
-			stack.push_back(Value(value));
-		}
-		else if constexpr (std::is_same_v<T, float>)
-		{
-			stack.push_back(Value(value));
-		}
-		else if constexpr (std::is_same_v<T, bool>)
-		{
-			stack.push_back(Value(value));
-		}
-		else
-		{
-			throw std::runtime_error("Unsupported PUSH type");
-		}
-	}
-
-	template <typename T>
-	T VM::pop()
-	{
-		if (stack.empty())
-		{
-			throw std::runtime_error("Stack underflow");
-		}
-
-		Value value = stack.back();
-		stack.pop_back();
-
-		if constexpr (std::is_same_v<T, int>)
-		{
-			return value.get_int();
-		}
-		else if constexpr (std::is_same_v<T, float>)
-		{
-			return value.get_float();
-		}
-		else if constexpr (std::is_same_v<T, bool>)
-		{
-			return value.get_bool();
-		}
-		else if constexpr (std::is_same_v<T, Value>)
-		{
-			return value;
-		}
-		else
-		{
-			throw std::runtime_error("Unsupported POP type");
-		}
-
-		return T();
+		status = VMStatus::OK;
 	}
 
 	// friend function for printing vm state
-	std::ostream &operator<<(std::ostream &os, const VM &vm)
+	std::ostream &operator<<(std::ostream &os, const PiELo_VM::VM &vm)
 	{
 		os << "VM stack: [";
 		for (const auto &value : vm.stack)
 		{
-			if (value.type == INT)
+			if (value.type == PiELo_VM::INT)
 			{
 				os << value.get_int() << " ";
 			}
-			else if (value.type == BOOL)
+			else if (value.type == PiELo_VM::BOOL)
 			{
 				os << (value.get_bool() ? "true" : "false") << " ";
 			}
-			else if (value.type == FLOAT)
+			else if (value.type == PiELo_VM::FLOAT)
 			{
 				os << value.get_float() << " ";
 			}
@@ -294,8 +282,10 @@ namespace PiELo_VM
 			{
 				os << "Unknown type ";
 			}
-			os << "]";
-			return os;
 		}
+		os << "]";
+		return os;
 	}
+
+	// Ensure the namespace is closed here
 } // end namespace

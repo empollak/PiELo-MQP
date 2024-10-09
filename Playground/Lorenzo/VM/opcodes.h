@@ -2,8 +2,10 @@
 #define OPCODES_H
 
 #include <vector>
+#include "types.h"
 
-enum Opcode {
+enum Opcode
+{
 	PUSH,
 	POP,
 	ADD,
@@ -11,18 +13,21 @@ enum Opcode {
 	MUL,
 	DIV,
 	PRINT,
-	HALT
+	HALT,
+	JMP,
+	JMP_IF_ZERO,
 };
 
-class VM {
+class VM
+{
 public:
 	VM();
-	void run(const std::vector<int>& code);
+	void run(const std::vector<int> &code);
 
 private:
-	std::vector<int> stack;
-	void push(int value);
-	int pop();
+	std::vector<Value> stack;
+	void push(Value value);
+	Value pop();
 };
 
-#endif //OPCODES_H
+#endif // OPCODES_H

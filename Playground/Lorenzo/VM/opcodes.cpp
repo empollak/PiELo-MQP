@@ -4,19 +4,19 @@
 
 VM::VM() {}
 
-void VM::push(int value)
+void VM::push(Value value)
 {
 	stack.push_back(value);
 }
 
-int VM::pop()
+Value VM::pop()
 {
 	if (stack.empty())
 	{
 		throw std::runtime_error("Stack underflow");
 	}
 
-	int value = stack.back();
+	Value value = stack.back();
 	stack.pop_back();
 	return value;
 }
@@ -33,7 +33,7 @@ void VM::run(const std::vector<int> &code)
 		case PUSH:
 		{
 			int value = code[++ip];
-			push(value);
+			push(Value(value));
 			break;
 		}
 		case POP:
@@ -43,52 +43,202 @@ void VM::run(const std::vector<int> &code)
 		}
 		case ADD:
 		{
-			int b = pop();
-			int a = pop();
-			push(a + b);
+			Value b = pop();
+			Value a = pop();
+			if (a.type == INT && b.type == INT)
+			{
+				push(Value(a.get_int() + b.get_int()));
+			}
+			else if (a.type == FLOAT && b.type == FLOAT)
+			{
+				push(Value(a.get_float() + b.get_float()));
+			}
+			else if (a.type == FLOAT && b.type == INT)
+			{
+				push(Value(a.get_float() + b.get_float()));
+			}
+			else if (a.type == INT && b.type == FLOAT)
+			{
+				push(Value(a.get_float() + b.get_float()));
+			}
+			else
+			{
+				throw std::runtime_error("Type error in ADD");
+			}
 			break;
 		}
 
 		case SUB:
 		{
-			int b = pop();
-			int a = pop();
-			push(a - b);
+			Value b = pop();
+			Value a = pop();
+			if (a.type == INT && b.type == INT)
+			{
+				push(Value(b.get_int() - a.get_int()));
+			}
+			else if (a.type == FLOAT && b.type == FLOAT)
+			{
+				push(Value(b.get_float() - a.get_float()));
+			}
+			else if (a.type == FLOAT && b.type == INT)
+			{
+				push(Value(b.get_float() - a.get_float()));
+			}
+			else if (a.type == INT && b.type == FLOAT)
+			{
+				push(Value(b.get_float() - a.get_float()));
+			}
+			else
+			{
+				throw std::runtime_error("Type error in SUB");
+			}
 			break;
 		}
 		case MUL:
 		{
-			int b = pop();
-			int a = pop();
-			push(a * b);
+			Value b = pop();
+			Value a = pop();
+			if (a.type == INT && b.type == INT)
+			{
+				push(Value(b.get_int() * a.get_int()));
+			}
+			else if (a.type == FLOAT && b.type == FLOAT)
+			{
+				push(Value(b.get_float() * a.get_float()));
+			}
+			else if (a.type == FLOAT && b.type == INT)
+			{
+				push(Value(b.get_float() * a.get_float()));
+			}
+			else if (a.type == INT && b.type == FLOAT)
+			{
+				push(Value(b.get_float() * a.get_float()));
+			}
+			else
+			{
+				throw std::runtime_error("Type error in MUL");
+			}
 			break;
 		}
 		case DIV:
 		{
-			int b = pop();
-			int a = pop();
-			if (b == 0)
+			Value b = pop();
+			Value a = pop();
+
+			if (a.type == INT && b.type == INT)
 			{
-				throw std::runtime_error("Div by 0");
+				if (b.get_int() == 0)
+				{
+					throw std::runtime_error("Div by 0");
+				}
+				else
+				{
+					push(Value(a.get_int() / b.get_int()));
+				}
 			}
-			push(a / b);
+			else if (a.type == INT && b.type == FLOAT)
+			{
+				if (b.get_float() == 0.0f)
+				{
+					throw std::runtime_error("Div by 0");
+				}
+				else
+				{
+					push(Value(static_cast<float>(a.get_int()) / b.get_float()));
+				}
+			}
+			else if (a.type == FLOAT && b.type == INT)
+			{
+				if (b.get_int() == 0)
+				{
+					throw std::runtime_error("Div by 0");
+				}
+				else
+				{
+					push(Value(a.get_float() / b.get_float()));
+				}
+			}
+			else if (a.type == FLOAT && b.type == FLOAT)
+			{
+				if (b.get_float() == 0.0f)
+				{
+					throw std::runtime_error("Div by 0");
+				}
+				else
+				{
+					push(Value(static_cast<float>(a.get_int()) / b.get_float()));
+				}
+			}
 			break;
 		}
 		case PRINT:
 		{
-			int value = pop();
-			std::cout << value << std::endl;
-			break;
+			Value value = pop();
+			if (value.type == INT)
+			{
+				std::cout << value.get_int() << std::endl;
+			}
+			else if (value.type == FLOAT)
+			{
+				std::cout << value.get_float() << std::endl;
+			}
+			else if (value.type == BOOL)
+			{
+				std::cout << value.get_bool() << std::endl;
+			}
+			else
+			{
+				throw std::runtime_error("PRINT: unsupported type");
+			}
 		}
 		case HALT:
 		{
 			return;
 		}
+		case JMP:
+		{
+			int target = code[ip++];
+			ip = target;
+			break;
+		}
+		case JMP_IF_ZERO:
+		{
+			Value zero_condition = pop();
+
+			if (zero_condition.type == INT)
+			{
+				if (zero_condition.get_int() == 0)
+				{
+					int target = code[ip++];
+					ip = target;
+				}
+				else
+				{
+					++ip;
+				}
+			}
+			else if (zero_condition.type == BOOL)
+			{
+				if (!zero_condition.get_bool())
+				{
+					int target = code[ip++];
+					ip = target;
+				}
+				else
+				{
+					++ip;
+				}
+			}
+			else
+			{
+				throw std::runtime_error("Type error in JMP_IF_ZERO: Expected INT or BOOL");
+			}
+			break;
+		}
 		default:
 			throw std::runtime_error("Unknown opcode");
 		}
 
-	++ip; // moves to next instruction
-	
+		++ip; // moves to next instruction
 	}
 }

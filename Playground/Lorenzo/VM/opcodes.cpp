@@ -286,6 +286,4 @@ namespace PiELo_VM
 		os << "]";
 		return os;
 	}
-
-	// Ensure the namespace is closed here
 } // end namespace

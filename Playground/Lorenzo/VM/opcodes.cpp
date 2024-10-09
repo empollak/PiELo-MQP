@@ -260,10 +260,16 @@ namespace PiELo_VM
 		{
 			return value.get_bool();
 		}
+		else if constexpr (std::is_same_v<T, Value>)
+		{
+			return value;
+		}
 		else
 		{
 			throw std::runtime_error("Unsupported POP type");
 		}
+
+		return T();
 	}
 
 	// friend function for printing vm state

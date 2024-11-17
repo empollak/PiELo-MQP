@@ -59,8 +59,8 @@ void Parser::handlePush() {
         bytecode.emplace_back(parseNextInt());
     }
     else if (type == "f") {
-        bytecode.emplace_back(PUSHF)
-        bytecode.emplace_black(parseNextFloat());
+        bytecode.emplace_back(PUSHF);
+        bytecode.emplace_back(parseNextFloat());
     }
     else if (type == "s") {
         bytecode.emplace_back(PUSHS)

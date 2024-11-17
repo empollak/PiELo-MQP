@@ -1,6 +1,5 @@
 #pragma once
 #include "vm.h"
-#include "parser.h"
 #include <string>
 #include <vector>
 #include <fstream>

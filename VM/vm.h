@@ -3,14 +3,39 @@
 #include <vector>
 #include <string>
 #include <stack>
-#include "instructions.h"
 #include "exceptions.h"
+#include "instructionHandler.h"
 
 namespace PiELo {
     enum VMState {
         READY,
         DONE,
         ERROR
+    };
+
+    enum Type {
+        NIL,
+        PIELO_CLOSURE,
+        C_CLOSURE,
+        FLOAT,
+        INT,
+        NAME
+    };
+
+    // Temporary typedef for however we store code
+    typedef size_t codePtr;
+
+    struct Variable;
+
+    typedef std::map<std::string, Variable> symbolTable;
+
+    struct ClosureData {
+        // Pointer to code, however we decide to store that
+        codePtr codePointer;
+        symbolTable localSymbolTable; // Should this be a pointer? Probably
+        std::vector<std::string> argNames;
+        std::vector<Type> argTypes;
+        std::vector<Variable> dependencies;
     };
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
@@ -20,7 +45,9 @@ namespace PiELo {
             INT,
             STRING,
             NIL,
-            PIELO_CLOSURE
+            PIELO_CLOSURE,
+            C_CLOSURE,
+            NAME
         } type;
         union {
             Instruction asInstruction;
@@ -56,7 +83,7 @@ namespace PiELo {
             }
         }
         
-        std::string getTypeAsString() {
+        std::string getTypeAsString() const {
             switch (type) {
                 case NIL: return "NIL";
                 case PIELO_CLOSURE: return "PIELO_CLOSURE";
@@ -73,7 +100,7 @@ namespace PiELo {
             return asFloat;
         }
 
-        int getIntFromMemory() {
+        int getIntFromMemory() const{
             if (type != INT) throw InvalidTypeAccessException("INT", getTypeAsString());
             return asInt;
         }
@@ -83,34 +110,13 @@ namespace PiELo {
         //     return asClosure;
         // }
         
-        // std::string* getNameValueFromMemory() {
-        //     if (type != NAME) throw InvalidTypeAccessException("NAME", getTypeAsString());
-        //     return asName;
-        // }
+        std::string* getNameValueFromMemory() const{
+            if (type != NAME) throw InvalidTypeAccessException("NAME", getTypeAsString());
+            return asString;
+        }
     };
 
-    enum Type {
-        NIL,
-        PIELO_CLOSURE,
-        C_CLOSURE,
-        FLOAT,
-        INT,
-        NAME
-    };
-
-    // Temporary typedef for however we store code
-    typedef size_t codePtr;
-
-    typedef std::map<std::string, Variable> symbolTable;
-
-    struct ClosureData {
-        // Pointer to code, however we decide to store that
-        codePtr codePointer;
-        symbolTable localSymbolTable; // Should this be a pointer? Probably
-        std::vector<std::string> argNames;
-        std::vector<Type> argTypes;
-        std::vector<Variable> dependencies;
-    };
+    
 
     struct Tag {
         std::string tagName;
@@ -143,7 +149,7 @@ namespace PiELo {
             Variable();
         }
 
-        Variable(int i): type(INT), asInt(i) {Variable;}
+        Variable(int i): type(INT), asInt(i) {Variable();}
 
         Variable(float f) : type(FLOAT), asFloat(f) {Variable();}
 
@@ -198,7 +204,7 @@ namespace PiELo {
     std::stack<Variable> stack;
 
     struct scopeData{
-        symbolTable* symbolTable;
+        symbolTable* scopeSymbolTable;
         codePtr codePointer;
     };
     std::stack<scopeData> returnAddrStack;

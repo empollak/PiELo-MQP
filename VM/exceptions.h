@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "vm.h"
+// #include "vm.h"
 
 // Base exception class (inheriting from std::exception)
 class CustomException : public std::exception {

@@ -1,4 +1,5 @@
 #include "closureInstructions.h"
+#include "../vm.h"
 
 namespace PiELo{
     // Defines a closure
@@ -19,7 +20,7 @@ namespace PiELo{
     // top
     void callClosure() {
         // Save the current scope
-        returnAddrStack.push((scopeData){.symbolTable = currentSymbolTable, .codePointer = programCounter});
+        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
         // Copy closure template from the variable on the stack

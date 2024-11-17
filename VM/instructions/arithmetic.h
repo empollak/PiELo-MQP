@@ -1,6 +1,5 @@
 #pragma once
 #include "../instructionHandler.h"
-#include "../vm.h"
 
 void add();
 void sub();

@@ -31,12 +31,20 @@ namespace PiELo {
         JMP_IF_ZERO,
         JMP_IF_NOT_ZERO,
 
-        DEFINE_CLOSURE
+        STORE_LOCAL,
+        STORE_TAGGED,
+        TAG_VARIABLE,
+        TAG_ROBOT,
+        LOAD_TO_STACK,  
+
+        DEFINE_CLOSURE,
+        CALL_CLOSURE,
+        RET_FROM_CLOSURE,
+
+        PRINT
     };
 
     void handleInstruction(Instruction instruction); 
-
-    void pop();
     
 }
 

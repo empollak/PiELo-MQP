@@ -26,7 +26,7 @@ namespace PiELo{
         // Copy closure template from the variable on the stack
         ClosureData closureData = *stack.top().getClosureDataValue();
         
-        pop();
+        stack.pop();
         int numArgs = stack.top().getIntValue();
         if (stack.size() < numArgs) throw ShortOnElementsOnStackException("call_closure arguments");
 
@@ -39,7 +39,7 @@ namespace PiELo{
             Type argType = closureData.argTypes[i];
             if (stack.top().type != argType) throw std::runtime_error("Mismatched argument types for call_closure");
             closureData.localSymbolTable[argName] = stack.top();
-            pop();
+            stack.pop();
         }
 
         // Update current local symbol table

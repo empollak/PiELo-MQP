@@ -64,7 +64,7 @@ public:
 
 class AddressNotDecleredException  : public CustomException {
 public:
-    AddressNotDecleredException() : CustomException("Error 9: AddressNotDecleredException -- Label was not decleared before this JMP operation.") {}
+    AddressNotDecleredException() : CustomException("Error 9: AddressNotDecleredException -- Cannot Jump to this address in the code.") {}
 };
 
 class TopStackNotZeroException  : public CustomException {
@@ -72,9 +72,15 @@ public:
     TopStackNotZeroException() : CustomException("Error 10: TopStackNotZeroException --  Cannot perform JZ (JUMP_IF-ZERO) because Top of the Stack is not Zero.") {}
 };
 
+class TopStackZeroException  : public CustomException {
+public:
+    TopStackZeroException() : CustomException("Error 11: TopStackZeroException --  Cannot perform JUMP_IF_NOT_ZERO because Top of the Stack is  Zero.") {}
+};
+
+
 class InvalidTypeAccessException : public CustomException {
 public:
-    InvalidTypeAccessException(std::string accessType, std::string variableType) : CustomException("Error 11: InvalidTypeAccessException -- Attempted to access variable as type " + accessType + ", but variable has type " + variableType + ".") {}
+    InvalidTypeAccessException(std::string accessType, std::string variableType) : CustomException("Error 12: InvalidTypeAccessException -- Attempted to access variable as type " + accessType + ", but variable has type " + variableType + ".") {}
 };
 
 #endif

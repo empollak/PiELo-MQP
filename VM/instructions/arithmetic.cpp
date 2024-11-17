@@ -9,7 +9,7 @@ void add(){
         Variable b = stack.top(); stack.pop();
 
         if(a.type == NAME || b.type == NAME){
-            throw InvalidTypeForOperationException("ADD", "STRING");
+            throw InvalidTypeForOperationException("ADD", "NAME");
             state = ERROR;
         } else if(a.type == NIL || b.type == NIL) {
             throw InvalidTypeForOperationException("ADD", "NIL");
@@ -39,7 +39,7 @@ void sub(){ // subtracts from the second element in the stack(b) the top of the 
         Variable b = stack.top(); stack.pop();
 
         if(a.type == NAME || b.type == NAME){
-            throw InvalidTypeForOperationException("SUB", "STRING");
+            throw InvalidTypeForOperationException("SUB", "NAME");
             state = ERROR;
         } else if(a.type == NIL || b.type == NIL) {
             throw InvalidTypeForOperationException("SUB", "NIL");

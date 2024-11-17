@@ -6,4 +6,6 @@ namespace PiELo {
     struct ClosureData;
 
     void defineClosure(std::string closureName, ClosureData closureData); 
+    void callClosure();
+    void retFromClosure();
 }

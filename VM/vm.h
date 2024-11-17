@@ -5,6 +5,7 @@
 #include <stack>
 #include "exceptions.h"
 #include "instructionHandler.h"
+#include <algorithm>
 
 namespace PiELo {
     enum VMState {
@@ -22,6 +23,8 @@ namespace PiELo {
         NAME
     };
 
+    Type stringToType(std::string s);
+
     // Temporary typedef for however we store code
     typedef size_t codePtr;
 
@@ -35,7 +38,7 @@ namespace PiELo {
         symbolTable localSymbolTable; // Should this be a pointer? Probably
         std::vector<std::string> argNames;
         std::vector<Type> argTypes;
-        std::vector<Variable> dependencies;
+        std::vector<std::string> dependencies;
     };
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
@@ -54,8 +57,8 @@ namespace PiELo {
             float asFloat;
             int asInt;
             std::string* asString;
-            ClosureData asClosure;
-        };    
+            ClosureData* asClosure;
+        };
     
         opCodeInstructionOrArgument(int value_i) : type(INT) {asInt = value_i;}
 
@@ -65,9 +68,16 @@ namespace PiELo {
 
         opCodeInstructionOrArgument(codePtr codePointer, std::vector<std::string> dependencies, std::vector<std::string> args, std::vector<PiELo::Type> argTypes) {
             type = PIELO_CLOSURE;
-            asClosure.codePointer = codePointer;
-            asClosure.argNames = args;
-            asClosure.argTypes = argTypes;
+            asClosure = (ClosureData*) malloc(sizeof(ClosureData));
+            asClosure->codePointer = codePointer;
+            asClosure->argNames = args;
+            asClosure->argTypes = argTypes;
+        }
+
+        opCodeInstructionOrArgument(ClosureData closureData) {
+            type = PIELO_CLOSURE;
+            asClosure = (ClosureData*) malloc(sizeof(ClosureData));
+            *asClosure = closureData;
         }
 
         //opCodeInstructionOrArgument(const std::string& value_s) : type(STRING) {value.asString = new std::string(value);}
@@ -80,6 +90,8 @@ namespace PiELo {
         ~opCodeInstructionOrArgument() {
             if (type == STRING) {
                 free(asString);
+            } else if (type == PIELO_CLOSURE) {
+                free(asClosure);
             }
         }
         
@@ -194,26 +206,29 @@ namespace PiELo {
         }
     };
 
-    std::vector<opCodeInstructionOrArgument> bytecode;
-    codePtr programCounter = 0;
-
-    symbolTable taggedTable;
-    // Variables which are at the top level but not tagged
-    symbolTable globalSymbolTable;
-    std::vector<ClosureData> closureList;
-    std::stack<Variable> stack;
-
     struct scopeData{
         symbolTable* scopeSymbolTable;
         codePtr codePointer;
     };
-    std::stack<scopeData> returnAddrStack;
+
     
-    std::map<std::string, Variable>* currentSymbolTable = &globalSymbolTable; 
+    extern std::vector<opCodeInstructionOrArgument> bytecode;
+    extern codePtr programCounter;
 
-    std::vector<Tag> robotTagList;
+    extern symbolTable taggedTable;
+    // Variables which are at the top level but not tagged
+    extern symbolTable globalSymbolTable;
+    extern std::vector<ClosureData> closureList;
+    extern std::stack<Variable> stack;
 
-    VMState state;
+
+    extern std::stack<scopeData> returnAddrStack;
+    
+    extern std::map<std::string, Variable>* currentSymbolTable; 
+
+    extern std::vector<Tag> robotTagList;
+
+    extern VMState state;
 
     // Run one line of assembly code
     VMState step();

@@ -225,16 +225,45 @@ void lte(){
 
 void jump(){
     programCounter++;
-    if(bytecode.at(programCounter).getTypeAsString() == "NAME"){
-        std::string key = bytecode.at(programCounter).getNameValueFromMemory();
-
-        if()
+    if(bytecode.at(programCounter).getTypeAsString() == "INT"){
+        int target_address = bytecode.at(programCounter).getIntFromMemory();
+        programCounter = target_address;
+    } else {
+        throw AddressNotDecleredException();
+        state = ERROR;
     }
 }
 
 void jump_if_zero(){
-
+    programCounter++;
+    Variable top = stack.top();
+    if((top.type == FLOAT && top.getFloatValue() == 0.0f) || (top.type == INT && top.getIntValue() == 0)){
+        if(bytecode.at(programCounter).getTypeAsString() == "INT"){
+            int target_address = bytecode.at(programCounter).getIntFromMemory();
+            programCounter = target_address;
+        } else {
+            throw AddressNotDecleredException();
+            state = ERROR;
+        }
+    } else {
+        throw TopStackNotZeroException();
+        state = ERROR;
+    }
 }
-void jump_if_not_zero(){
 
+void jump_if_not_zero(){
+    programCounter++;
+    Variable top = stack.top();
+    if((top.type == FLOAT && top.getFloatValue() != 0.0f) || (top.type == INT && top.getIntValue() != 0)){
+        if(bytecode.at(programCounter).getTypeAsString() == "INT"){
+            int target_address = bytecode.at(programCounter).getIntFromMemory();
+            programCounter = target_address;
+        } else {
+            throw AddressNotDecleredException();
+            state = ERROR;
+        }
+    } else {
+        throw TopStackNotZeroException();
+        state = ERROR;
+    }
 }

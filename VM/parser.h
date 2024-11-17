@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <unordered_map>
+#include <functional>
 
 namespace PiELo {
     
@@ -12,12 +13,13 @@ namespace PiELo {
             explicit Parser(const std:: string& filename);
 
             // load the program into memory and return the code vector
-            std::vector<opCodeInstructionOrArgument> load();
+            void load();
 
         private:
             std::ifstream file;
             std::vector<opCodeInstructionOrArgument> code;
-            std::unordered_map<std::string, void (Parser::*)()> instructionHandlers;
+            std::unordered_map<std::string, std::function<void()>> instructionHandlers;
+            std::unordered_map<std::string, codePtr> labelledLocations;
 
             // init handlers;
             void initHandlers();
@@ -26,12 +28,12 @@ namespace PiELo {
             void handleStore();
             void handleTag();
             void handleLoad();
-            void handleJump();
             void handlePop();
             void handleArithmetic(const Instruction opcode);
             void handleSimple(const Instruction opcode);
-            void handleFunctionOrLabel(Instruction opcode);
+            void handleFunctionOrLabel(const std::string &type);
             void handleJump(const Instruction opcode);
+            void handleDefineClosure();
 
             void pushIntToCode();
             void pushFloatToCode();

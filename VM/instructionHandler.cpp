@@ -1,57 +1,13 @@
 #include "instructionHandler.h"
-#include "arithmetic.h"
+// #include "arithmetic.h"
+#include "instructions/arithmetic.h"
+#include "instructions/closureInstructions.h"
+#include "instructions/comparisonJumps.h"
+#include "instructions/simpleInstructions.h"
 #include "vm.h"
 
 namespace PiELo{
 
-    void pushNil(){
-        Variable null_val;
-        null_val.type = NIL;
-
-        stack.push(null_val);
-    }
-
-    void pushInt(){
-        programCounter++;
-        Variable i_val = bytecode[programCounter].getIntFromMemory();
-
-        stack.push(i_val);
-    }
-
-    void pushFloat(){
-        programCounter++;
-        Variable f_val = bytecode[programCounter].getFloatFromMemory();
-
-        stack.push(f_val);
-    }
-
-    
-    void dup(){
-        if(!stack.empty()){
-            Variable a = stack.top();
-            stack.push(a);
-        } else{
-            throw ShortOnElementsOnStackException("DUP");
-            state = ERROR;
-        }
-    }
-
-    void swap(){
-        if(stack.size() >= 2){
-            Variable a = stack.top(); stack.pop();
-            Variable b = stack.top(); stack.pop();
-            stack.push(a);
-            stack.push(b);
-        } else {
-            throw ShortOnElementsOnStackException("SWAP");
-            state = ERROR;
-        }
-    }
-
-    
-    void pop() {
-        stack.pop();
-    }
 
     void storeLocal(){
         if (stack.empty()){
@@ -141,13 +97,124 @@ namespace PiELo{
     }
 
     void handleInstruction(Instruction instruction) {
-        switch (instruction) {
+        switch(instruction) {
             case DEFINE_CLOSURE:
-                programCounter++;
-                std::string closureName = *bytecode[programCounter].asString;
-                programCounter++;
-                ClosureData closureData = bytecode[programCounter].asClosure;
-                defineClosure(closureName, closureData);
+                // Get closure name, closure data from bytecode
+                defineClosure(*bytecode[programCounter++].asString, *bytecode[programCounter++].asClosure);
+                break;
+            case CALL_CLOSURE:
+                callClosure();
+                break;
+            
+            case RET_FROM_CLOSURE:
+                retFromClosure();
+                break;
+            
+            case STORE_LOCAL:
+                storeLocal();
+                break;
+            case STORE_TAGGED:
+                storeTagged(*bytecode[programCounter++].asString);
+                break;
+            case TAG_VARIABLE:
+                tagVariable(*bytecode[programCounter++].asString, *bytecode[programCounter++].asString);
+                break;
+
+            case TAG_ROBOT:
+                tagRobot(*bytecode[programCounter++].asString);
+                break;
+
+            case LOAD_TO_STACK:
+                loadToStack(*bytecode[programCounter++].asString);
+                break;
+
+            case PRINT:
+                std::cout << "Stack top: ";
+                if(stack.top().type == NIL){
+                    std::cout << "nil";
+                } else if(stack.top().type == INT){
+                    std::cout << stack.top().getIntValue();
+                } else if(stack.top().type == FLOAT){
+                    std::cout << stack.top().getFloatValue();
+                } else if(stack.top().type == NAME){
+                    std::cout << stack.top().getNameValue();
+                } else {
+                    std::cout << stack.top().getClosureDataValue()->codePointer;
+                }
+                
+                break;
+
+            case NOP:
+                // do nothing
+                break;
+            
+            case END:
+			    state = DONE;
+                break;
+
+            case PUSH_NIL:
+                pushNil();
+                break;
+            case PUSHI:
+                pushInt();
+                break;
+            case PUSHF:
+                pushFloat();
+                break;
+            case PUSHS:
+                
+
+                break;
+            case POP:
+                pop();
+                break;
+            case ADD:
+                add();
+                break;
+            case SUB:
+                sub();
+                break;
+            case MUL:
+                mul();
+                break;
+            case DIV:
+                div();
+                break;
+            case MOD:
+                mod();
+                break;
+            case DUP:
+                dup();
+                break;
+            case SWAP:
+                swap();
+                break;
+            case EQL:
+                eql();
+                break;
+            case NEQL:
+                neql();
+                break;
+            case GT:
+                gt();
+                break;
+            case GTE:
+                gte();
+                break;
+            case LT:
+                lt();
+                break;
+            case LTE:
+                lte();
+                break;
+            case JMP:
+                jump();
+                break;
+            case JMP_IF_ZERO:
+                jump_if_zero();
+                break;
+            case JMP_IF_NOT_ZERO:
+                jump_if_not_zero();
                 break;
         }
     }

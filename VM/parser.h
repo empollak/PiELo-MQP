@@ -10,10 +10,9 @@ namespace PiELo {
     
     class Parser {
         public: 
-            explicit Parser(const std:: string& filename);
 
             // load the program into memory and return the code vector
-            void load();
+            void load(std::string filename);
 
         private:
             std::ifstream file;

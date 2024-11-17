@@ -7,7 +7,6 @@ INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInst
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
 
 all: dir $(EXECUTABLE)
-	echo "$(OBJECTS)"
 
 dir:
 	mkdir -p $(BUILDDIR)
@@ -18,7 +17,7 @@ $(EXECUTABLE): $(OBJECTS) $(BUILDDIR)/main.o
 	g++ $^ -o $@
 
 # see https://www.gnu.org/software/make/manual/html_node/Static-Usage.html for details
-$(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h
+$(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
 	g++ -c $< -o $@
 
 $(BUILDDIR)/main.o: main.cpp

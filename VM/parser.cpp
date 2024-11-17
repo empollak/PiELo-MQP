@@ -6,14 +6,6 @@
 
 using namespace PiELo;
 
-Parser::Parser(const std::string& filename) {
-    file.open(filename);
-    if (!file.is_open()){
-        throw std::runtime_error("Error opening file: "+ filename);
-    }
-    initHandlers();
-}
-
 void Parser::initHandlers() {
      instructionHandlers = {
         {"store", [&]() {Parser::handleStore();}},
@@ -43,7 +35,12 @@ void Parser::initHandlers() {
     };
 }
 
-void Parser::load(){
+void Parser::load(std::string filename){
+    file.open(filename);
+    if (!file.is_open()){
+        throw std::runtime_error("Error opening file: "+ filename);
+    }
+    initHandlers();
     std::string instruction;
 
     while (file >> instruction) {
@@ -65,15 +62,16 @@ void Parser::handlePush() {
     file >> type;
 
     if (type == "i") {
-        bytecode.push_back((int) PUSHI);
+        bytecode.push_back(PUSHI);
         bytecode.push_back(parseNextInt());
+        std::cout << "pushed int " << bytecode.at(bytecode.size() - 1).asInt << std::endl;
     }
     else if (type == "f") {
-        bytecode.push_back((int) PUSHF);
+        bytecode.push_back(PUSHF);
         bytecode.push_back(parseNextFloat());
     }
     else if (type == "s") {
-        bytecode.push_back((int) PUSHS);
+        bytecode.push_back(PUSHS);
         bytecode.push_back(parseNextString());
     }
     else {
@@ -165,8 +163,8 @@ void Parser::handleDefineClosure() {
     bytecode.push_back(closure);
 }
 
-int32_t Parser::parseNextInt() {
-    int32_t value;
+int Parser::parseNextInt() {
+    int value;
     file >> value;
     return value;
 }

@@ -43,8 +43,9 @@ namespace PiELo {
 
         PRINT
     };
+    struct opCodeInstructionOrArgument;
 
-    void handleInstruction(Instruction instruction); 
+    void handleInstruction(opCodeInstructionOrArgument op); 
     
 }
 

@@ -96,7 +96,11 @@ namespace PiELo{
         taggedTable[tagName] = var;
     }
 
-    void handleInstruction(Instruction instruction) {
+    void handleInstruction(opCodeInstructionOrArgument op) {
+        if (op.type != op.INSTRUCTION) {
+            throw std::runtime_error("Attempted to run non-instruction as instruction");
+        }
+        Instruction instruction = op.asInstruction;
         switch(instruction) {
             case DEFINE_CLOSURE:
                 // Get closure name, closure data from bytecode
@@ -141,7 +145,7 @@ namespace PiELo{
                 } else {
                     std::cout << stack.top().getClosureDataValue()->codePointer;
                 }
-                
+                std::cout << std::endl;
                 break;
 
             case NOP:

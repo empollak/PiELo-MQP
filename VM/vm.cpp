@@ -1,4 +1,5 @@
 #include "vm.h"
+#include "parser.h"
 
 namespace PiELo {
     Type stringToType(std::string s) {
@@ -30,4 +31,20 @@ namespace PiELo {
     std::vector<Tag> robotTagList;
 
     VMState state;
+
+    Parser parser;   
+
+    VMState load(std::string filename) {
+        parser.load(filename);
+        return VMState::READY;
+    }
+
+    VMState step() {
+        std::cout << "now running instruction " << bytecode[programCounter].asInstruction << std::endl;
+        // std::cout << "hello" << std::endl;
+        handleInstruction(bytecode[programCounter]);
+        programCounter++;
+        if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
+        return VMState::READY;
+    }
 }

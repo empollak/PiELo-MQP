@@ -84,13 +84,15 @@ namespace PiELo {
         
         opCodeInstructionOrArgument(const std::string s) : type(STRING) {
             asString = (std::string*) malloc(sizeof(std::string));
-            *asString = s;
+            *asString = s; 
         }
 
         ~opCodeInstructionOrArgument() {
             if (type == STRING) {
+                printf("Freeing string \n");
                 free(asString);
             } else if (type == PIELO_CLOSURE) {
+                printf("Freeing closure \n");
                 free(asClosure);
             }
         }
@@ -103,6 +105,8 @@ namespace PiELo {
                 case FLOAT: return "FLOAT";
                 case INT: return "INT";
                 case NAME: return "NAME";
+                case INSTRUCTION: return "INSTRUCTION";
+                case STRING: return "STRING";
                 default: return "invalid type";
             }
         }

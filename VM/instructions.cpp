@@ -168,6 +168,60 @@ namespace PiELo{
         }
     }
 
+    void dup(){
+        if(!stack.empty()){
+            Variable a = stack.top();
+            stack.push(a);
+        } else{
+            throw ShortOnElementsOnStackException("DUP");
+            state = ERROR;
+        }
+    }
+
+    void swap(){
+        if(stack.size() >= 2){
+            Variable a = stack.top(); stack.pop();
+            Variable b = stack.top(); stack.pop();
+            stack.push(a);
+            stack.push(b);
+        } else {
+            throw ShortOnElementsOnStackException("SWAP");
+            state = ERROR;
+        }
+    }
+
+    void eql(){
+        if(stack.size() >= 2){
+            Variable a = stack.top(); stack.pop();
+            Variable b = stack.top(); stack.pop();
+
+            if((a.type == NAME && b.type != NAME) || (a.type != NAME && b.type == NAME)){
+                stack.push(0);
+            } else if(a.type == NAME && b.type == NAME){
+                stack.push(a.getNameValue() == b.getNameValue() ? 1:0);
+            } else if((a.type == NIL && b.type != NIL) || (a.type != NIL && b.type == NIL)){
+                stack.push(0);
+            } else if(a.type == NIL && b.type == NIL){
+                stack.push(1);
+            } 
+            // check for closure, comparing closures should be illegal
+            else if(a.type == FLOAT && b.type != FLOAT){
+                float conversion_value = static_cast<float>(b.getIntValue());
+                stack.push(a.getFloatValue() == conversion_value ? 1 : 0);
+            } else if(a.type != FLOAT && b.type == FLOAT){
+                float conversion_value = static_cast<float>(a.getIntValue());
+                stack.push(conversion_value == b.getFloatValue() ? 1 : 0);
+            } else if(a.type == FLOAT && b.type == FLOAT){
+                stack.push(a.getFloatValue() == b.getFloatValue() ? 1 : 0);
+            } else {
+                stack.push(a.getIntValue() == b.getIntValue() ? 1 : 0);
+            }
+        } else {
+            throw ShortOnElementsOnStackException("EQL");
+            state = ERROR;
+        }
+    }
+
     void pop() {
         stack.pop();
     }

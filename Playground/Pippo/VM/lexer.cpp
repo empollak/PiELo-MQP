@@ -15,6 +15,7 @@ strings Lexer::lex(std::string s) {
 	bool pushNullMode = false;
 	bool creating_function = false;
 	bool calling_function = false;
+	bool takes_params = false;
 
 	while(i < len) {
 		switch (state) {
@@ -69,11 +70,16 @@ strings Lexer::lex(std::string s) {
 					j++;
 					i++;
 					// Check if the lexeme is a label
-					if (j > 0 && lexeme[j - 1] == '@'){
-						std::cout << "creating_function set to true" << std::endl;
-						creating_function = true;
-						calling_function = false;
-					}
+					if ((j >= 2 && strncmp(lexeme + j - 2, "INT", 2) == 0) || (j >= 4 && strncmp(lexeme + j - 4, "FLOAT", 4) == 0) || (j >= 5 && strncmp(lexeme + j - 5, "DOUBLE", 5) == 0) 
+						|| (j >= 5 && strncmp(lexeme + j - 5, "STRING", 5) == 0)  || (j >= 2 && strncmp(lexeme + j - 2, "NIL", 2) == 0)){
+							creating_function = true;
+							calling_function = false;
+						}
+					// if (j > 0 && lexeme[j - 1] == '@'){
+					// 	std::cout << "creating_function set to true" << std::endl;
+					// 	creating_function = true;
+					// 	calling_function = false;
+					// }
 					else if (j >= 3 && strncmp(lexeme + j - 3, "CALL", 3) == 0){
 						creating_function = false;
 						calling_function = true;  // Set the labelFound flag
@@ -126,17 +132,19 @@ strings Lexer::lex(std::string s) {
 				}
 
 				if(creating_function){
-
-					while (!my_isspace(s[i]) && i < len) {
-                        lexeme[j++] = s[i++];
-                    }
-                    creating_function = false;  // Reset pushMode after handling the command
+					
+					while (s[i] != '\n' && i < len) {
+						lexeme[j++] = s[i++];
+					}
+					creating_function = false;  // Reset pushMode after handling the command
+					
 				}
 				else if(calling_function){
-					while (!my_isspace(s[i]) && i < len) {
-                        lexeme[j++] = s[i++];
-                    }
-                    calling_function = false;  // Reset pushMode after handling the command
+					while (s[i] != '\n' && i < len) {
+						lexeme[j++] = s[i++];
+					}
+					calling_function = false;
+
 				}
 				else if(labelFound){
 					// Add the next value (following the space) to the lexeme
@@ -209,7 +217,7 @@ strings Lexer::lex(std::string s) {
 				// 	strlst.push_back(lexeme);
 				// 	j = 0;
 				// }
-
+				takes_params = false;
 				pushMode = false;  // Ensure it's reset after dumping
 				pushNullMode = false;
 				labelFound = false;

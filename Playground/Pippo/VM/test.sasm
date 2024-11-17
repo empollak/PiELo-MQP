@@ -1,3 +1,16 @@
+FLOAT F@ testing()
+PUSHI 6
+PUSHF 5.09
+ADD
+RET
+
+INT F@ test2(int a, int b)
+PUSHI a
+PUSHI b
+SUB
+RET
+
+
 label1: PUSHI 6
 PUSHI 12
 ADD
@@ -20,12 +33,5 @@ PUSHF 3.69
 PUSHI 4
 JMP label3
 CALL testing
+CALL test2(4, 2)
 HALT
-
-F@ testing
-PUSHI 6
-PUSHF 5.09
-ADD
-PUSHNULL
-SWAP
-RET

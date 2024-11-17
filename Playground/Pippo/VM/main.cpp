@@ -47,15 +47,10 @@ int main(int argc, char *argv[]) {
 	vm.loadInstructions(lexemes);
 
 	std::cout << std::endl;
-	// Print the map using a range-based for loop
-    std::cout << "Map contents:" << std::endl;
-    for (const auto& pair : vm.labelMap) {
-        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-    }
 
-	std::cout << std::endl;
-	std::cout << "Step 3: EXECUTING..." << std::endl;
-	vm.run();
+	// std::cout << std::endl;
+	// std::cout << "Step 3: EXECUTING..." << std::endl;
+	// vm.run();
 
 	return 0;
 }

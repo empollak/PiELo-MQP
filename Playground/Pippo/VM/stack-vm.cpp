@@ -26,8 +26,12 @@ bool StackVM::isLabel(const std::string &token) {
     return (!token.empty() && (token.back() == ':' || token.front() == ':'));
 }
 
-bool StackVM::isFunction(const std::string &token) {
+bool StackVM::isCreatingFunction(const std::string &token) {
     return (!token.empty() && (token.front() == 'f' || token.front() == 'F') && token.back() == '@');
+}
+
+bool StackVM::isCallingFunction(const std::string &token) {
+    return (!token.empty() && (token == "CALL"));
 }
 
 Op StackVM::convertToPrimitive(std::string s){
@@ -93,12 +97,19 @@ std::vector<std::string> StackVM::tokenizer(const std::string &line){
     while (ss >> token) {
         tokens.push_back(token);
     }
-    return tokens;
 
+    return tokens;
+	for(int i = 0; i < tokens.size(); i++){
+		std:: cout << tokens[i] << " ";
+	}
+	std::cout << std::endl;
+	
 }
 
 std::tuple<std::string, std::string, std::string> StackVM::analyzeLine(std::string s) {
+	
 	vector<std::string> tokens = tokenizer(s);
+	bool lookingForParams = false;
 
 	if (tokens.empty()) {
 		return std::make_tuple("", "", "");  // Return empty strings in the tuple
@@ -106,8 +117,53 @@ std::tuple<std::string, std::string, std::string> StackVM::analyzeLine(std::stri
 		std::string label = "";
 		std::string operation = "";
 		std::string operand = "";
-		if(isFunction(tokens[0])){
-			label = tokens[1];
+		if(isCreatingFunction(tokens[1])){
+
+			operand = tokens[0]; // store the return type of the function as the operand
+
+			for(int h = 0; h < tokens[2].size(); h++){
+
+				if(!lookingForParams){
+					if (tokens[2][h] == '(') {
+						lookingForParams = true;
+						operation += tokens[2][h];
+        			} else{
+						label += tokens[2][h]; // store the name of the function in the label variable
+					}
+				} else{
+					operation += tokens[2][h];
+				}
+				
+				
+			}
+			
+			if(tokens.size() > 2){
+				for(int p = 3; p < tokens.size(); p++){
+					
+					operation += ' ';
+					for(int d = 0; d < tokens[p].size(); d++){
+						
+						if (tokens[p][d] == ')') {
+							operation += tokens[p][d];
+							break;
+						} 
+						else{
+							operation += tokens[p][d];
+						}
+					
+					}
+				
+				}
+			} else{
+				operation = "()";
+			}
+			
+			// if(tokens.size() > 2){
+			// 	operation = tokens[3];
+			// 	operand = tokens[0];
+			// } else {
+			// 	operand = tokens[0];
+			// }
 		}
 		// Controlla il primo token
 		else if (isLabel(tokens[0])) {
@@ -124,14 +180,38 @@ std::tuple<std::string, std::string, std::string> StackVM::analyzeLine(std::stri
 					operand = tokens[2];
 				}
 			}
-		} 
+		}
 		else {
 			operation = tokens[0];
-			if(tokens.size() > 1){
-				operand = tokens[1];
-			}
-		}
 
+			if(isCallingFunction(operation)){
+				if(tokens.size() > 1){
+					for(int p = 1; p < tokens.size(); p++){
+						operand += ' ';
+						for(int d = 0; d < tokens[p].size(); d++){
+							
+							if (tokens[p][d] == ')') {
+								operand += tokens[p][d];
+								break;
+							} 
+							else{
+								operand += tokens[p][d];
+							}
+						
+						}
+					}
+				} else{
+					operation = "()";
+				}
+			} 
+			else{
+				if(tokens.size() > 1){
+					operand = tokens[1];
+				}
+			}
+			
+		}
+		std::cout << "Label: " << label << "   Operat: " << operation << "   Operand: " << operand << std::endl;
 		return make_tuple(label, operation, operand);
 	}
 
@@ -161,8 +241,59 @@ void StackVM::printMap(){
     }
 }
 
+
+// Create and initialize a FunctionInfo instance
+FunctionInfo StackVM::createFunctionInfo(std::string label, std::string operation, int address) {
+    std::vector<ValueType> variables_types;  // Vector to store types
+    std::vector<std::string> variables_names;
+            // FIND VARIABLES NAMES
+    size_t start = operation.find('(');
+    size_t end = operation.find(')');
+    
+    if (start == std::string::npos || end == std::string::npos || start >= end) {
+        // no params
+    }
+
+    std::string params = operation.substr(start + 1, end - start - 1);  // Extract substring between parentheses
+    std::stringstream ss(params);
+    std::string type, var;
+
+    while (ss >> type) {  // Read each type
+        if (ss.peek() == ',') {  // Check if the next character is a comma
+            ss.ignore();  // Ignore the comma
+        }
+        
+        // Read the variable name
+        ss >> var;  // Read the variable name
+
+        // Remove any trailing commas from the variable name
+        if (var.back() == ',') {
+            var.pop_back();
+        }
+        
+        variables_names.push_back(var);  // Store the variable name
+
+        if(type == "int" || type == "INT"){
+            variables_types.push_back(INT);
+        } else if(type == "float" || type == "FLOAT"){
+            variables_types.push_back(FLOAT);
+        } else if(type == "double" || type == "DOUBLE"){
+            variables_types.push_back(DOUBLE);
+        } else if(type == "string" || type == "STRING"){
+            variables_types.push_back(STRING);
+        } else if(type == "nil" || type == "null" || type == "NIL"){
+            variables_types.push_back(NIL);
+        }
+    }
+
+    return {label, variables_names, variables_types, address};
+}
+
+
 void StackVM::loadInstructions(strings s){//, StackVM::StackVM vm){
-	
+
+	bool amIinFunction = false;
+
 	for(int i = 0; i < s.size(); i++){
 
 		std::vector<TaggedValue> instruction_line;
@@ -176,42 +307,144 @@ void StackVM::loadInstructions(strings s){//, StackVM::StackVM vm){
 		// Stampa il risultato dell'analisi
     	if (!label.empty()) {
         	//std::cout << "Label: " << label << "	";
-			labelMap[label] = i; //we are supposed to store the label in a map but we do not have a pc
+			labelMap[label] = i; 
     	}
+		
 		if (!operation.empty()) {
 			//std::cout << "Operazione: " << operation <<  "	";
+			if(operation.at(0) == '('){	// if we are creating a function
+				amIinFunction = true;
+				function_table[label] = createFunctionInfo(label, operation, i); 
 
-			if(isPrimitive(operation)){
+			}
+			else if(isPrimitive(operation)){
 				//Op instruction = tok2op(operation);
-				instruction_line.push_back(TaggedValue(operation));
+				if(amIinFunction){
+					if(operation != "pushi" && operation != "PUSHI" &&  operation != "pushf" && operation != "PUSHF" && 
+					operation != "pushd" && operation != "PUSHD"){
+						instruction_line.push_back(TaggedValue(operation));
+					}
+					
+				}
 				
 			} else {
 				throw InvalidPrimitiveException(operation);
 				
 			}
     	}
+
 		if (!operand.empty()) {
 
 			//std::cout << "Operando: " << operand << "\n";
-			if(operation == "CALL" || operation == "call"){
-				TaggedValue instruction(operand);
-				instruction_line.push_back(instruction);
+			if(operand == "INT" || operand == "FLOAT" || operand == "DOUBLE" || operand == "STRING" || operand == "NIL"){
+				//do nothing
 			}
-			else if((operation == "JUMP" || operation == "JMP" || operation == "jump" || operation == "jmp") || (operation == "jump_if_zero" || operation == "JUMP_IF_ZERO" || operation == "JMP_IF_ZERO" || operation == "jmp_if_zero" || operation == "jz" || operation == "JZ")){
+			else if(operation == "CALL" || operation == "call"){
+
+				size_t start = 0;
+				while (start < operand.length() && std::isspace(operand[start])) {
+					++start;
+				}
+
+				// Find the position of the first '(' after any leading spaces
+				size_t pos = operand.find('(', start);
+
+				// Return the substring from the first non-space character to '(' or the end of the string
+				std::string function_call_name = (pos != std::string::npos) ? operand.substr(start, pos - start) : operand.substr(start);
+
+				TaggedValue instruction(function_call_name);
+				instruction_line.push_back(instruction);
+
+				// Extract values
+				std::vector<TaggedValue> values;
+
+				// Find the opening and closing parentheses
+				size_t open_paren = operand.find('(');
+				size_t close_paren = operand.find(')');
+
+				// Extract the arguments string
+				std::string arg_str = operand.substr(open_paren + 1, close_paren - open_paren - 1);
+
+				// Create a string stream to parse the arguments
+				std::stringstream ss(arg_str);
+
+				// Parse each argument and push it into the vector
+				int arg;
+				while (ss >> arg) {
+					values.push_back(arg);
+
+					// Skip the comma if there's another argument
+					char comma;
+					ss >> comma;
+				}
+
+				if(function_table.find(function_call_name) != function_table.end()){
+					
+					for(int i = 0; i < function_table[function_call_name].paramNames.size(); i++){
+						if(function_table[function_call_name].paramTypes[i] == INT){
+							TaggedValue instruction = values[i];
+							instruction_line.push_back(instruction);
+						} else if(function_table[function_call_name].paramTypes[i] == FLOAT){
+							TaggedValue instruction = values[i];
+							instruction_line.push_back(instruction);
+						} else if(function_table[function_call_name].paramTypes[i] == DOUBLE){
+							TaggedValue instruction = values[i];
+							instruction_line.push_back(instruction);
+						} else if(function_table[function_call_name].paramTypes[i] == STRING){
+							TaggedValue instruction = values[i];
+							instruction_line.push_back(instruction);
+						}
+					}
+					
+
+				} else {
+					throw FunctionNotDefinedException(function_call_name);
+				}
+
+
+			} else if((operation == "JUMP" || operation == "JMP" || operation == "jump" || operation == "jmp") || (operation == "jump_if_zero" || operation == "JUMP_IF_ZERO" || operation == "JMP_IF_ZERO" || operation == "jmp_if_zero" || operation == "jz" || operation == "JZ")){
 				TaggedValue instruction(operand);
 				instruction_line.push_back(instruction);
 
 			} else if(operation == "PUSHI" || operation == "pushi"){
-				TaggedValue instruction(stoi(operand));
-				instruction_line.push_back(instruction);
+				if(amIinFunction){
+					try{
+						TaggedValue instruction(stoi(operand));
+						instruction_line.push_back(instruction);
+					} catch(const std::exception& e){
+						// if the operand is a variable we do nothing, because we already are pushing onto the stack the parameteres when the function is called.
+					}
+				} else {
+					TaggedValue instruction(stoi(operand));
+					instruction_line.push_back(instruction);
+				}
 
 			} else if(operation == "PUSHF" || operation == "pushf"){
-				TaggedValue instruction(stof(operand));
-				instruction_line.push_back(instruction);
+
+				if(amIinFunction){
+					try{
+						TaggedValue instruction(stof(operand));
+						instruction_line.push_back(instruction);
+					} catch(const std::exception& e){
+						// if the operand is a variable we do nothing, because we already are pushing onto the stack the parameteres when the function is called.
+					}
+				} else {
+					TaggedValue instruction(stof(operand));
+					instruction_line.push_back(instruction);
+				}
 
 			} else if(operation == "PUSHD" || operation == "pushd"){
-				TaggedValue instruction(stod(operand));
-				instruction_line.push_back(instruction);
+				if(amIinFunction){
+					try{
+						TaggedValue instruction(stod(operand));
+						instruction_line.push_back(instruction);
+					} catch(const std::exception& e){
+						// if the operand is a variable we do nothing, because we already are pushing onto the stack the parameteres when the function is called.
+					}
+				} else {
+					TaggedValue instruction(stod(operand));
+					instruction_line.push_back(instruction);
+				}
 			} else {
 				throw InvalidOperandException(operation);
 			}
@@ -226,11 +459,11 @@ void StackVM::loadInstructions(strings s){//, StackVM::StackVM vm){
 		//std::cout << std::endl;
 	}
 
-	// if(policy[policy.size()][0].getString() != "HALT"){
-	// 	vector<TaggedValue> end_of_program;
-	// 	end_of_program.push_back(TaggedValue("HALT"));
-	// 	policy.push_back(end_of_program); // always halt at the end
-	// }
+	if(policy[policy.size() - 1][0].getString() != "HALT"){
+		vector<TaggedValue> end_of_program;
+		end_of_program.push_back(TaggedValue("HALT"));
+		policy.push_back(end_of_program); // always halt at the end
+	}
 
 	printProgram();
 	printMap();
@@ -284,6 +517,10 @@ void StackVM::decode(TaggedValue instruction_token) {
 }
 
 void StackVM::execute(TaggedValue instruction_token) {
+
+	//if(instruction_token.getType() == STRING && instruction_token.getString().at(0) == '(')
+
+
 	if(instruction_token.getType() == STRING && isPrimitive(instruction_token.getString())){
 		//Op operation = tok2op(instruction_token.getString());
 		//std::cout << instruction_token.getString() << " ";
@@ -305,13 +542,6 @@ void StackVM::execute(TaggedValue instruction_token) {
 }
 
 void StackVM::pushNull_operation(){
- 	// move to the next instruction that contains the value
-	// if(policy[pc][tc++].empty()){
-	// 	stack.push(TaggedValue()); // push the actual value onto the stack
-	// 	std::cout << "PUSH NULL" << std::endl;
-	// } else {
-	// 	InvalidTypeException();
-	// }
 	std::cout << "PUSH NULL" << "	";
 	stack.push(TaggedValue());
 
@@ -1269,12 +1499,26 @@ void StackVM::call_function(){
 	tc++;
 	std::string function_name = policy[pc][tc].getString();
 	if(labelMap.find(function_name) != labelMap.end()){
+		if(function_table[function_name].paramNames.size() > 0){
+			for(int j = 0; j < function_table[function_name].paramNames.size(); j++){
+				if(function_table[function_name].paramTypes[j] == INT){
+					pushi_operation();
+				} else if(function_table[function_name].paramTypes[j] == FLOAT){
+					pushf_operation();
+				} else if(function_table[function_name].paramTypes[j] == DOUBLE){
+					pushd_operation();
+				}
+			}
+		}
+
 		stack.push(TaggedValue(pc+1));
 		next_pc = pc + 1;
 		stack.pop();
 		int target_address = labelMap.at(function_name);
 		std::cout << "CALL: Jumping to function " << function_name << "	";
 		pc = target_address;
+	} else {
+		throw FunctionNotDefinedException(function_name);
 	}
 }
 

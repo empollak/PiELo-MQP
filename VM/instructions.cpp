@@ -34,10 +34,10 @@ namespace PiELo{
             } else if(a.type == NIL || b.type == NIL) {
                 throw InvalidTypeForOperationException("ADD", "NIL");
                 state = ERROR;
-            } else if(a.type == FLOAT && b.type != FLOAT){
+            } else if(a.type == FLOAT && b.type == INT){
                 Variable result = a.getFloatValue() + static_cast<float>(b.getIntValue());
                 stack.push(result);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 Variable result =  static_cast<float>(a.getIntValue()) + b.getFloatValue();
                 stack.push(result);
             } else if(a.type == INT && b.type == INT){
@@ -64,10 +64,10 @@ namespace PiELo{
             } else if(a.type == NIL || b.type == NIL) {
                 throw InvalidTypeForOperationException("SUB", "NIL");
                 state = ERROR;
-            } else if(a.type == FLOAT && b.type != FLOAT){
+            } else if(a.type == FLOAT && b.type == INT){
                 Variable result = static_cast<float>(b.getIntValue()) - a.getFloatValue();
                 stack.push(result);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 Variable result =  b.getFloatValue() - static_cast<float>(a.getIntValue());
                 stack.push(result);
             } else if(a.type == INT && b.type == INT){
@@ -94,10 +94,10 @@ namespace PiELo{
             } else if(a.type == NIL || b.type == NIL) {
                 throw InvalidTypeForOperationException("MUL", "NIL");
                 state = ERROR;
-            } else if(a.type == FLOAT && b.type != FLOAT){
+            } else if(a.type == FLOAT && b.type == INT){
                 Variable result = static_cast<float>(b.getIntValue()) * a.getFloatValue();
                 stack.push(result);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 Variable result = b.getFloatValue() * static_cast<float>(a.getIntValue());
                 stack.push(result);
             } else if(a.type == INT && b.type == INT){
@@ -128,10 +128,10 @@ namespace PiELo{
                 throw DivisionByZeroException();
                 state = ERROR;
             }
-            else if(a.type == FLOAT && b.type != FLOAT){
+            else if(a.type == FLOAT && b.type == INT){
                 Variable result = static_cast<float>(b.getIntValue()) / a.getFloatValue();
                 stack.push(result);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 Variable result =  b.getFloatValue() / static_cast<float>(a.getIntValue());
                 stack.push(result);
             } else if(a.type == INT && b.type == INT){
@@ -203,12 +203,15 @@ namespace PiELo{
                 stack.push(0);
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(1);
-            } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            } else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("EQL", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() == conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value == b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -235,12 +238,15 @@ namespace PiELo{
                 stack.push(1);
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(0);
-            } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            } else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("EQL", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() != conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value != b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -269,12 +275,15 @@ namespace PiELo{
                 state = ERROR;
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(0);
-            } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            } else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("GT", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() > conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value > b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -303,12 +312,15 @@ namespace PiELo{
                 state = ERROR;
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(1);
-            } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            } else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("GTE", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() >= conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value >= b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -321,7 +333,6 @@ namespace PiELo{
             state = ERROR;
         }
     }
-
 
     void lt(){
         if(stack.size() >= 2){
@@ -339,11 +350,15 @@ namespace PiELo{
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(0);
             } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("LT", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() < conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value < b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -373,11 +388,15 @@ namespace PiELo{
             } else if(a.type == NIL && b.type == NIL){
                 stack.push(1);
             } 
-            // check for closure, comparing closures should be illegal
-            else if(a.type == FLOAT && b.type != FLOAT){
+            else if((a.type == PIELO_CLOSURE || b.type == PIELO_CLOSURE) || (a.type == C_CLOSURE || b.type == C_CLOSURE)){
+                // check for closure, comparing closures should be illegal
+                throw InvalidTypeForOperationException("LTE", "CLOSURE");
+                state = ERROR;
+            }
+            else if(a.type == FLOAT && b.type == INT){
                 float conversion_value = static_cast<float>(b.getIntValue());
                 stack.push(a.getFloatValue() <= conversion_value ? 1 : 0);
-            } else if(a.type != FLOAT && b.type == FLOAT){
+            } else if(a.type == INT && b.type == FLOAT){
                 float conversion_value = static_cast<float>(a.getIntValue());
                 stack.push(conversion_value <= b.getFloatValue() ? 1 : 0);
             } else if(a.type == FLOAT && b.type == FLOAT){
@@ -386,9 +405,20 @@ namespace PiELo{
                 stack.push(a.getIntValue() <= b.getIntValue() ? 1 : 0);
             }
         } else {
-            throw ShortOnElementsOnStackException("GTE");
+            throw ShortOnElementsOnStackException("LTE");
             state = ERROR;
         }
+    }
+
+    void jump(){
+
+    }
+
+    void jump_if_zero(){
+
+    }
+    void jump_if_not_zero(){
+
     }
 
     void pop() {

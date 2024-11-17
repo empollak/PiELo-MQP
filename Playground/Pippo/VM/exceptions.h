@@ -73,4 +73,9 @@ public:
     TopStackNotZeroException() : CustomException("Error 10: TopStackNotZeroException --  Cannot perform JZ (JUMP_IF-ZERO) because Top of the Stack is not Zero.") {}
 };
 
+class FunctionNotDefinedException  : public CustomException {
+public:
+    FunctionNotDefinedException(std::string function_name) : CustomException("Error 11: FunctionNotDefinedException --  Cannot CALL the function '"  + function_name + "', make sure the function is defined before it's called.") {}
+};
+
 #endif

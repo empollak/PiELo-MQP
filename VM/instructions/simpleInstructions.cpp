@@ -5,7 +5,6 @@ using namespace PiELo;
 
     void pushNil(){
         Variable null_val;
-        null_val.type = NIL;
 
         stack.push(null_val);
     }

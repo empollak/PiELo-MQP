@@ -139,46 +139,34 @@ namespace PiELo {
     };
 
     // All variables should be malloc'd? - i think we settled on no
-
-    class Variable {
-    private:
+    class VariableData {
+        public:
         union {
             int asInt;
             float asFloat;
-            ClosureData* asClosure;
-            std::string* asName;
+            int asClosureIndex;
         };
-    public:
         Type type = NIL;
+    };
+
+    class Variable {
+    private:
+        VariableData data;
+    public:
         bool changed = 0;
         // List of indices in the closure list
         std::vector<size_t> dependants;
         std::vector<Tag> tags;
-        Variable* cachedValue; // Pointer because a struct definition can't include itself
+        VariableData cachedValue; // Pointer because a struct definition can't include itself
 
-        Variable() {
-            cachedValue = (Variable*) malloc(sizeof(Variable));
-        }
+        Variable() {data.type = NIL;}
 
-        Variable(std::string name) : type(NAME) {
-            asName = (std::string*) malloc(sizeof(std::string));
-            Variable();
-        }
+        Variable(int i) {data.type = INT; data.asInt = i;}
 
-        Variable(int i): type(INT), asInt(i) {Variable();}
-
-        Variable(float f) : type(FLOAT), asFloat(f) {Variable();}
-
-        Variable(ClosureData c) : type(PIELO_CLOSURE), asClosure((ClosureData*) malloc(sizeof(ClosureData))) {Variable();}
-
-        ~Variable() {
-            free(cachedValue);
-            if (type == NAME) free(asName);
-            else if (type == PIELO_CLOSURE) free(asClosure);
-        }
+        Variable(float f) {data.type = FLOAT; data.asFloat = f;}
 
         std::string getTypeAsString() {
-            switch (type) {
+            switch (data.type) {
                 case NIL: return "NIL";
                 case PIELO_CLOSURE: return "PIELO_CLOSURE";
                 case C_CLOSURE: return "C_CLOSURE";
@@ -190,24 +178,16 @@ namespace PiELo {
         }
 
         float getFloatValue() {
-            if (type != FLOAT) throw InvalidTypeAccessException("FLOAT", getTypeAsString());
-            return asFloat;
+            if (data.type != FLOAT) throw InvalidTypeAccessException("FLOAT", getTypeAsString());
+            return data.asFloat;
         }
 
         int getIntValue() {
-            if (type != INT) throw InvalidTypeAccessException("INT", getTypeAsString());
-            return asInt;
+            if (data.type != INT) throw InvalidTypeAccessException("INT", getTypeAsString());
+            return data.asInt;
         }
 
-        ClosureData* getClosureDataValue() {
-            if (type != PIELO_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
-            return asClosure;
-        }
-        
-        std::string* getNameValue() {
-            if (type != NAME) throw InvalidTypeAccessException("NAME", getTypeAsString());
-            return asName;
-        }
+        Type getType() {return data.type;}
     };
 
     struct scopeData{

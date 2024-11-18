@@ -16,9 +16,9 @@ namespace PiELo{
 
         Variable var = stack.top();
         stack.pop();
-
-        std::string varName = *(var.getNameValue());
-        (*currentSymbolTable)[varName] = var;
+        // TODO: fix to take name from instruction argument
+        // std::string varName = *(var.getNameValue());
+        // (*currentSymbolTable)[varName] = var;
     }
 
     void loadToStack(const std::string& varName){
@@ -134,16 +134,12 @@ namespace PiELo{
 
             case PRINT:
                 std::cout << "Stack top: ";
-                if(stack.top().type == NIL){
+                if(stack.top().getType() == NIL){
                     std::cout << "nil";
-                } else if(stack.top().type == INT){
+                } else if(stack.top().getType() == INT){
                     std::cout << stack.top().getIntValue();
-                } else if(stack.top().type == FLOAT){
+                } else if(stack.top().getType() == FLOAT){
                     std::cout << stack.top().getFloatValue();
-                } else if(stack.top().type == NAME){
-                    std::cout << stack.top().getNameValue();
-                } else {
-                    std::cout << stack.top().getClosureDataValue()->codePointer;
                 }
                 std::cout << std::endl;
                 break;

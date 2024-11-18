@@ -15,7 +15,9 @@ void Parser::initHandlers() {
         {"pop", [&]() {handlePop();}},
         {"add", [&]() { handleArithmetic(ADD); }},
         {"sub", [&]() { handleArithmetic(SUB); }},
-        {"print", [&]() { handleSimple(PRINT); }},
+        {"mul", [&]() { handleArithmetic(MUL); }},
+        {"div", [&]() { handleArithmetic(DIV); }},
+        {"print", [&]() {printf("Parsing: print\n"); handleSimple(PRINT); }},
         {"eql", [&]() { handleSimple(EQL); }},
         {"neql", [&]() { handleSimple(NEQL); }},
         {"gt", [&]() { handleSimple(GT); }},
@@ -27,9 +29,9 @@ void Parser::initHandlers() {
         {"jmp_if_not_zero", [&]() { handleJump(JMP_IF_NOT_ZERO); }},
         {"func", [&]() { handleFunctionOrLabel("func"); }},
         {"label", [&]() { handleFunctionOrLabel("label"); }},
-        {"end", [&]() { handleSimple(END); }},
-        {"define_closure", [&]() { handleDefineClosure(); }},
-        {"call_closure", [&]() { handleSimple(CALL_CLOSURE); }},
+        {"end", [&]() {printf("Parsing: end\n"); handleSimple(END); }},
+        {"define_closure", [&]() {printf("Parsing: define_closure\n"); handleDefineClosure(); }},
+        {"call_closure", [&]() {printf("parsing: call_closure\n"); handleSimple(CALL_CLOSURE); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
     };
@@ -64,7 +66,7 @@ void Parser::handlePush() {
     if (type == "i") {
         bytecode.push_back(PUSHI);
         bytecode.push_back(parseNextInt());
-        std::cout << "pushed int " << bytecode.at(bytecode.size() - 1).asInt << std::endl;
+        std::cout << "parsed: push int " << bytecode.at(bytecode.size() - 1).asInt << std::endl;
     }
     else if (type == "f") {
         bytecode.push_back(PUSHF);
@@ -114,8 +116,16 @@ void Parser::handleTag() {
 }
 
 void Parser::handleLoad() {
+    std::cout << "parser: Handling load" << std::endl;
     bytecode.push_back(LOAD_TO_STACK);
+    // printf("1\n");
+    // opCodeInstructionOrArgument name = parseNextString();
+    // opCodeInstructionOrArgument name2 = name;
+    // std::cout << "name str: " << name.asString << " name2 str: " << name2.asString << std::endl;
     bytecode.push_back(parseNextString());  // variable name
+    std::cout << " Pushed type " << bytecode[bytecode.size() - 1].type << std::endl;
+    std::cout << " value " << *bytecode[bytecode.size()-1].asString << std::endl;
+    // printf("2\n");
 }
 
 void Parser::handlePop() {
@@ -147,20 +157,35 @@ void Parser::handleJump(const Instruction opcode) {
 }
 
 void Parser::handleDefineClosure() {
-    bytecode.push_back(DEFINE_CLOSURE);
+    // bytecode.push_back(DEFINE_CLOSURE);
     ClosureData closure;
+
     std::string name = parseNextString();
-    bytecode.push_back(name);
+    // bytecode.push_back(name);
+
+
     int numArgs = parseNextInt();
+    std::cout << "Defineclosure: num args: " << numArgs << std::endl;
+    
     for (int i = 0; i < numArgs; i++) {
-        closure.argTypes[i] = stringToType(parseNextString());
-        closure.argNames[i] = parseNextString();
+        closure.argTypes.push_back(stringToType(parseNextString()));
+        closure.argNames.push_back(parseNextString());
     }
+
+    std::cout << "Done with args. " << std::endl;
     int numDependencies = parseNextInt();
+    std::cout << "num deps: " << numDependencies << std::endl;
     for (int i = 0; i < numDependencies; i++) {
-        closure.dependencies[i] = parseNextString();
+        std::cout << "Parsing dep." << std::endl;
+        closure.dependencies.push_back(parseNextString());
     }
-    bytecode.push_back(closure);
+    std::cout << "Done with deps " << std::endl;
+
+    closure.codePointer = bytecode.size() - 1;
+
+    // bytecode.push_back(closure);
+    defineClosure(name, closure);
+    std::cout << "Done with defineClosure" << std::endl;
 }
 
 int Parser::parseNextInt() {
@@ -178,6 +203,7 @@ float Parser::parseNextFloat() {
 std::string Parser::parseNextString() {
     std::string value;
     file >> value;
+    std::cout << "parsed next string " << value << " addr: " << &value <<  std::endl;
     return value;
 }
 

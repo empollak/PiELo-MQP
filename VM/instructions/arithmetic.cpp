@@ -8,19 +8,19 @@ void add(){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
 
-        if(a.type == NAME || b.type == NAME){
+        if(a.getType() == NAME || b.getType() == NAME){
             throw InvalidTypeForOperationException("ADD", "NAME");
             state = ERROR;
-        } else if(a.type == NIL || b.type == NIL) {
+        } else if(a.getType() == NIL || b.getType() == NIL) {
             throw InvalidTypeForOperationException("ADD", "NIL");
             state = ERROR;
-        } else if(a.type == FLOAT && b.type == INT){
+        } else if(a.getType() == FLOAT && b.getType() == INT){
             Variable result = a.getFloatValue() + static_cast<float>(b.getIntValue());
             stack.push(result);
-        } else if(a.type == INT && b.type == FLOAT){
+        } else if(a.getType() == INT && b.getType() == FLOAT){
             Variable result =  static_cast<float>(a.getIntValue()) + b.getFloatValue();
             stack.push(result);
-        } else if(a.type == INT && b.type == INT){
+        } else if(a.getType() == INT && b.getType() == INT){
             Variable result =  a.getIntValue() + b.getIntValue();
             stack.push(result);
         } else { 
@@ -38,19 +38,19 @@ void sub(){ // subtracts from the second element in the stack(b) the top of the 
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
 
-        if(a.type == NAME || b.type == NAME){
+        if(a.getType() == NAME || b.getType() == NAME){
             throw InvalidTypeForOperationException("SUB", "NAME");
             state = ERROR;
-        } else if(a.type == NIL || b.type == NIL) {
+        } else if(a.getType() == NIL || b.getType() == NIL) {
             throw InvalidTypeForOperationException("SUB", "NIL");
             state = ERROR;
-        } else if(a.type == FLOAT && b.type == INT){
+        } else if(a.getType() == FLOAT && b.getType() == INT){
             Variable result = static_cast<float>(b.getIntValue()) - a.getFloatValue();
             stack.push(result);
-        } else if(a.type == INT && b.type == FLOAT){
+        } else if(a.getType() == INT && b.getType() == FLOAT){
             Variable result =  b.getFloatValue() - static_cast<float>(a.getIntValue());
             stack.push(result);
-        } else if(a.type == INT && b.type == INT){
+        } else if(a.getType() == INT && b.getType() == INT){
             Variable result = b.getIntValue() - a.getIntValue();
             stack.push(result);
         } else { 
@@ -68,19 +68,19 @@ void mul(){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
 
-        if(a.type == NAME || b.type == NAME){
+        if(a.getType() == NAME || b.getType() == NAME){
             throw InvalidTypeForOperationException("MUL", "STRING");
             state = ERROR;
-        } else if(a.type == NIL || b.type == NIL) {
+        } else if(a.getType() == NIL || b.getType() == NIL) {
             throw InvalidTypeForOperationException("MUL", "NIL");
             state = ERROR;
-        } else if(a.type == FLOAT && b.type == INT){
+        } else if(a.getType() == FLOAT && b.getType() == INT){
             Variable result = static_cast<float>(b.getIntValue()) * a.getFloatValue();
             stack.push(result);
-        } else if(a.type == INT && b.type == FLOAT){
+        } else if(a.getType() == INT && b.getType() == FLOAT){
             Variable result = b.getFloatValue() * static_cast<float>(a.getIntValue());
             stack.push(result);
-        } else if(a.type == INT && b.type == INT){
+        } else if(a.getType() == INT && b.getType() == INT){
             Variable result = b.getIntValue() * a.getIntValue();
             stack.push(result);
         } else { 
@@ -98,23 +98,23 @@ void div(){ // divide from the second element in the stack(b) the top of the sta
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
 
-        if(a.type == NAME || b.type == NAME){
+        if(a.getType() == NAME || b.getType() == NAME){
             throw InvalidTypeForOperationException("DIV", "STRING");
             state = ERROR;
-        } else if(a.type == NIL || b.type == NIL) {
+        } else if(a.getType() == NIL || b.getType() == NIL) {
             throw InvalidTypeForOperationException("DIV", "NIL");
             state = ERROR;
-        } else if((a.type == INT && a.getIntValue() == 0) || (a.type == FLOAT && a.getFloatValue() == 0.0f)){
+        } else if((a.getType() == INT && a.getIntValue() == 0) || (a.getType() == FLOAT && a.getFloatValue() == 0.0f)){
             throw DivisionByZeroException();
             state = ERROR;
         }
-        else if(a.type == FLOAT && b.type == INT){
+        else if(a.getType() == FLOAT && b.getType() == INT){
             Variable result = static_cast<float>(b.getIntValue()) / a.getFloatValue();
             stack.push(result);
-        } else if(a.type == INT && b.type == FLOAT){
+        } else if(a.getType() == INT && b.getType() == FLOAT){
             Variable result =  b.getFloatValue() / static_cast<float>(a.getIntValue());
             stack.push(result);
-        } else if(a.type == INT && b.type == INT){
+        } else if(a.getType() == INT && b.getType() == INT){
             Variable result = b.getIntValue() / a.getIntValue();
             stack.push(result);
         } else { 
@@ -132,7 +132,7 @@ void mod(){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
 
-        if(a.type != INT || b.type != INT) {
+        if(a.getType() != INT || b.getType() != INT) {
             throw InvalidTypeForOperationException("MOD", "!= than INT. Only INT type is allowed.");
             state = ERROR;
         } else if (a.getIntValue() == 0){

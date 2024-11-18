@@ -32,6 +32,24 @@ namespace PiELo {
 
     typedef std::map<std::string, Variable> symbolTable;
 
+    class VariableData {
+        public:
+        union {
+            int asInt;
+            float asFloat;
+            size_t asClosureIndex;
+        };
+        Type type = NIL;
+
+        VariableData(int i) {asInt = i; type = INT;}
+
+        VariableData(float f) {asFloat = f; type = FLOAT;}
+
+        VariableData(size_t s) {asClosureIndex = s; type = PIELO_CLOSURE;}
+
+        VariableData() {type=NIL;}
+    };
+
     struct ClosureData {
         // Pointer to code, however we decide to store that
         codePtr codePointer;
@@ -39,6 +57,7 @@ namespace PiELo {
         std::vector<std::string> argNames;
         std::vector<Type> argTypes;
         std::vector<std::string> dependencies;
+        VariableData cachedValue;
     };
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
@@ -76,25 +95,66 @@ namespace PiELo {
 
         opCodeInstructionOrArgument(ClosureData closureData) {
             type = PIELO_CLOSURE;
-            asClosure = (ClosureData*) malloc(sizeof(ClosureData));
+            printf("Typed\n");
+            asClosure = new ClosureData;
+            printf("malloc'd\n");
             *asClosure = closureData;
+            printf("Done mallocing\n");
         }
 
         //opCodeInstructionOrArgument(const std::string& value_s) : type(STRING) {value.asString = new std::string(value);}
         
         opCodeInstructionOrArgument(const std::string s) : type(STRING) {
-            asString = (std::string*) malloc(sizeof(std::string));
-            *asString = s; 
+            asString = new std::string(s);
         }
 
         ~opCodeInstructionOrArgument() {
             if (type == STRING) {
-                printf("Freeing string \n");
-                free(asString);
+                std::cout << "freeing string ptr: " << asString << std::endl;
+                std::cout << "had value " << *asString << std::endl;
+                delete asString;
             } else if (type == PIELO_CLOSURE) {
                 printf("Freeing closure \n");
-                free(asClosure);
+                delete asClosure;
             }
+        }
+
+        opCodeInstructionOrArgument(const opCodeInstructionOrArgument& other) {
+            // printf("Copying!\n");
+            if (this != &other) {
+                type = other.type;
+                switch (other.type) {
+                    case INSTRUCTION: asInstruction = other.asInstruction; break;
+                    case FLOAT: asFloat = other.asFloat; break;
+                    case INT: asInt = other.asInt; break;
+                    case STRING: asString = new std::string(*other.asString); break;
+                    case NIL: break;
+                    case PIELO_CLOSURE: 
+                        asClosure = new ClosureData();
+                        *asClosure = *other.asClosure;
+                        break;
+                    case NAME: asString = new std::string(*other.asString); break;
+                }
+            }
+        }
+
+        opCodeInstructionOrArgument& operator= (const opCodeInstructionOrArgument& other) {
+            printf("operator=\n");
+            if (this != &other) {
+                type = other.type;
+                switch (other.type) {
+                    case INSTRUCTION: asInstruction = other.asInstruction; break;
+                    case FLOAT: asFloat = other.asFloat; break;
+                    case INT: asInt = other.asInt; break;
+                    case STRING: asString = new std::string(*other.asString); break;
+                    case NIL: break;
+                    case PIELO_CLOSURE: 
+                        asClosure = (ClosureData*) malloc(sizeof(ClosureData));
+                        *asClosure = *other.asClosure;
+                    case NAME: asString = new std::string(*other.asString); break;
+                }
+            }
+            return *this;
         }
         
         std::string getTypeAsString() const {
@@ -138,16 +198,6 @@ namespace PiELo {
         std::string tagName;
     };
 
-    // All variables should be malloc'd? - i think we settled on no
-    class VariableData {
-        public:
-        union {
-            int asInt;
-            float asFloat;
-            int asClosureIndex;
-        };
-        Type type = NIL;
-    };
 
     class Variable {
     private:
@@ -157,13 +207,14 @@ namespace PiELo {
         // List of indices in the closure list
         std::vector<size_t> dependants;
         std::vector<Tag> tags;
-        VariableData cachedValue; // Pointer because a struct definition can't include itself
 
         Variable() {data.type = NIL;}
 
         Variable(int i) {data.type = INT; data.asInt = i;}
 
         Variable(float f) {data.type = FLOAT; data.asFloat = f;}
+
+        Variable(size_t s) {data.type = PIELO_CLOSURE; data.asClosureIndex = s;}
 
         std::string getTypeAsString() {
             switch (data.type) {
@@ -187,7 +238,25 @@ namespace PiELo {
             return data.asInt;
         }
 
+        int getClosureIndex() {
+            if (data.type != PIELO_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
+            return data.asClosureIndex;
+        }
+
         Type getType() {return data.type;}
+
+        void print() {
+            if(getType() == NIL){
+                std::cout << "nil";
+            } else if(getType() == INT){
+                std::cout << "int " << getIntValue();
+            } else if(getType() == FLOAT){
+                std::cout << "float " << getFloatValue();
+            } else if (getType() == PIELO_CLOSURE) {
+                std::cout << "closure index: ";
+                std::cout << getClosureIndex();
+            }
+        }
     };
 
     struct scopeData{
@@ -203,6 +272,7 @@ namespace PiELo {
     // Variables which are at the top level but not tagged
     extern symbolTable globalSymbolTable;
     extern std::vector<ClosureData> closureList;
+    extern std::vector<ClosureData> closureTemplates;
     extern std::stack<Variable> stack;
 
 
@@ -212,7 +282,11 @@ namespace PiELo {
 
     extern std::vector<Tag> robotTagList;
 
+    extern size_t currentClosureIndex;
+
     extern VMState state;
+
+    Variable* findVariable(std::string name);
 
     // Run one line of assembly code
     VMState step();

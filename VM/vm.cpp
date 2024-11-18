@@ -21,6 +21,7 @@ namespace PiELo {
     // Variables which are at the top level but not tagged
     symbolTable globalSymbolTable;
     std::vector<ClosureData> closureList;
+    std::vector<ClosureData> closureTemplates;
     std::stack<Variable> stack;
 
 
@@ -30,9 +31,12 @@ namespace PiELo {
 
     std::vector<Tag> robotTagList;
 
+    size_t currentClosureIndex;
+
     VMState state;
 
     Parser parser;   
+
 
     VMState load(std::string filename) {
         parser.load(filename);
@@ -47,5 +51,13 @@ namespace PiELo {
         programCounter++;
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
         return VMState::READY;
+    }
+
+    Variable* findVariable(std::string name) {
+        try {
+            return &currentSymbolTable->at(name);
+        } catch (...) {
+            return &taggedTable.at(name);
+        }
     }
 }

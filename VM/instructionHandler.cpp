@@ -4,107 +4,32 @@
 #include "instructions/closureInstructions.h"
 #include "instructions/comparisonJumps.h"
 #include "instructions/simpleInstructions.h"
+#include "instructions/storeLoad.h"
 #include "vm.h"
 
 namespace PiELo{
 
+    // Variable* findVariable(std::string name) {
 
-    void storeLocal(){
-        if (stack.empty()){
-            throw std::runtime_error("Stack underflow: storeLocal");
-        }
-
-        Variable var = stack.top();
-        stack.pop();
-        // TODO: fix to take name from instruction argument
-        // std::string varName = *(var.getNameValue());
-        // (*currentSymbolTable)[varName] = var;
-    }
-
-    void loadToStack(const std::string& varName){
-        Variable* var = nullptr;
-
-        // search local sym table
-        auto local = currentSymbolTable -> find(varName);
-        if (local != currentSymbolTable -> end()) {
-            var = &(local -> second);
-        }
-
-        // search tagged table
-        if (!var){
-            auto tag = taggedTable.find(varName);
-            if (tag != taggedTable.end()) {
-                var = &(tag -> second);
-            }
-        }
-        
-        if (!var){
-            throw std::runtime_error("Variable not found (loadToStack): "+ varName);
-        }
-
-        stack.push(*var);
-    }
-
-    void tagVariable(const std::string& varName, const std::string& tagName) {
-        Variable* var = nullptr;
-
-        // search local sym table
-        auto local = currentSymbolTable -> find(varName);
-        if (local != currentSymbolTable -> end()){
-            var = &(local -> second);
-        }
-
-        // search tagged table
-        if (!var){
-            auto tag = taggedTable.find(varName);
-            if (tag != taggedTable.end()) {
-                var = &(tag -> second);
-            }
-        }
-
-        if (!var){
-            throw std::runtime_error("Variable not found (tagVariable): " + varName);
-        }
-
-        // add tag
-        var -> tags.push_back(Tag{tagName});
-    }
-
-    void tagRobot(const std::string& tagName) {
-        
-        // check if tag already exists
-        for (const auto& tag : robotTagList){
-            if (tag.tagName == tagName){
-                // no need to add if it exists
-                return;
-            }
-        }
-
-        robotTagList.push_back(Tag{tagName});
-    }
-
-    void storeTagged(const std::string& tagName){
-        if (stack.empty()){
-            throw std::runtime_error("Stack underflow: storeTagged");
-        }
-
-        Variable var = stack.top();
-        stack.pop();
-
-        var.tags.push_back(Tag{tagName});
-        
-        taggedTable[tagName] = var;
-    }
+    // }
 
     void handleInstruction(opCodeInstructionOrArgument op) {
         if (op.type != op.INSTRUCTION) {
             throw std::runtime_error("Attempted to run non-instruction as instruction");
         }
         Instruction instruction = op.asInstruction;
+        std::cout << "Running instruction " << instruction << std::endl;
+        std::string name;
+        ClosureData closure;
         switch(instruction) {
             case DEFINE_CLOSURE:
                 // Get closure name, closure data from bytecode
-                defineClosure(*bytecode[programCounter++].asString, *bytecode[programCounter++].asClosure);
+                std::cout << "running define_closure" << std::endl;
+                name = *bytecode[++programCounter].asString;
+                std::cout << " Got name " << name << std::endl;
+                closure = *bytecode[++programCounter].asClosure;
+                std::cout << " got closure " << std::endl;
+                defineClosure(name, closure);
                 break;
             case CALL_CLOSURE:
                 callClosure();
@@ -118,10 +43,10 @@ namespace PiELo{
                 storeLocal();
                 break;
             case STORE_TAGGED:
-                storeTagged(*bytecode[programCounter++].asString);
+                storeTagged(*bytecode[++programCounter].asString);
                 break;
             case TAG_VARIABLE:
-                tagVariable(*bytecode[programCounter++].asString, *bytecode[programCounter++].asString);
+                tagVariable(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);
                 break;
 
             case TAG_ROBOT:
@@ -129,7 +54,19 @@ namespace PiELo{
                 break;
 
             case LOAD_TO_STACK:
-                loadToStack(*bytecode[programCounter++].asString);
+                printf("Loading!\n");
+                std::cout << " symbol table has: " << std::endl;
+                for (auto it : *currentSymbolTable) {
+                    printf("what\n");
+                    std::cout << "  " << it.first << ":";
+                    it.second.print();
+                    std::cout << std::endl;
+                }
+                // std::cout << "Bytecode size: " << bytecode.size() << " pc: " << programCounter << std::endl;
+                // std::cout << "type: " << bytecode[programCounter].type << std::endl;
+                name = *bytecode[++programCounter].asString;
+                // printf("Got name\n");
+                loadToStack(name);
                 break;
 
             case PRINT:
@@ -150,6 +87,7 @@ namespace PiELo{
             
             case END:
 			    state = DONE;
+                printf("Ran end.\n");
                 break;
 
             case PUSH_NIL:

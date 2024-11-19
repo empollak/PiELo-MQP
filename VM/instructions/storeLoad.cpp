@@ -1,0 +1,107 @@
+#include "storeLoad.h"
+#include "../vm.h"
+#include "../instructionHandler.h"
+
+namespace PiELo {
+ void storeLocal(std::string varName){
+        if (stack.empty()){
+            throw std::runtime_error("Stack underflow: storeLocal");
+        }
+
+        Variable var = stack.top();
+        stack.pop();
+        // TODO: fix to take name from instruction argument
+        // std::string varName = *(var.getNameValue());
+        (*currentSymbolTable)[varName] = var;
+    }
+
+    void loadToStack(const std::string& varName){
+        std::cout << "Beginning loadToStack " << std::endl;
+        Variable* var = nullptr;
+
+        // search local sym table
+        printf("huh whuh\n");
+        std::cout << "Searching current symbol table for " << varName << std::endl;
+        std::cout << " symbol table has: " << std::endl;
+        for (auto it : *currentSymbolTable) {
+            std::cout << "  " << it.first << ":";
+            it.second.print();
+            std::cout << std::endl;
+        }
+
+        auto local = currentSymbolTable -> find(varName);
+        if (local != currentSymbolTable -> end()) {
+            std::cout << "Found it! " << std::endl;
+            var = &(local -> second);
+        }
+
+        // search tagged table
+        if (!var){
+            auto tag = taggedTable.find(varName);
+            if (tag != taggedTable.end()) {
+                var = &(tag -> second);
+            }
+        }
+        
+        if (!var){
+            throw std::runtime_error("Variable not found (loadToStack): "+ varName);
+        }
+
+        stack.push(*var);
+        std::cout << "load result: ";
+        std::cout << "Stack top: ";
+        stack.top().print();
+        std::cout << std::endl;
+    }
+
+    void tagVariable(const std::string& varName, const std::string& tagName) {
+        Variable* var = nullptr;
+
+        // search local sym table
+        auto local = currentSymbolTable -> find(varName);
+        if (local != currentSymbolTable -> end()){
+            var = &(local -> second);
+        }
+
+        // search tagged table
+        if (!var){
+            auto tag = taggedTable.find(varName);
+            if (tag != taggedTable.end()) {
+                var = &(tag -> second);
+            }
+        }
+
+        if (!var){
+            throw std::runtime_error("Variable not found (tagVariable): " + varName);
+        }
+
+        // add tag
+        var -> tags.push_back(Tag{tagName});
+    }
+
+    void tagRobot(const std::string& tagName) {
+        
+        // check if tag already exists
+        for (const auto& tag : robotTagList){
+            if (tag.tagName == tagName){
+                // no need to add if it exists
+                return;
+            }
+        }
+
+        robotTagList.push_back(Tag{tagName});
+    }
+
+    void storeTagged(const std::string& varName, const std::string& tagName){
+        if (stack.empty()){
+            throw std::runtime_error("Stack underflow: storeTagged");
+        }
+
+        Variable var = stack.top();
+        stack.pop();
+
+        var.tags.push_back(Tag{tagName});
+        
+        taggedTable[varName] = var;
+    }
+}

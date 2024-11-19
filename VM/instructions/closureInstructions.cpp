@@ -11,7 +11,7 @@ namespace PiELo{
         // TODO: storeTagged with name closureName, value closureVar
         closureTemplates.push_back(closureData);
         stack.push((size_t) (closureTemplates.size() - 1));
-        storeTagged(closureName);
+        storeTagged(closureName, "global");
     }
 
     // Expects the stack to have format:

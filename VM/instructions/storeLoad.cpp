@@ -97,11 +97,17 @@ namespace PiELo {
             throw std::runtime_error("Stack underflow: storeTagged");
         }
 
-        Variable var = stack.top();
-        stack.pop();
+        try {
+            // This will throw an error if varName is not found
+            Variable* var = &taggedTable.at(varName);
 
-        var.tags.push_back(Tag{tagName});
-        
-        taggedTable[varName] = var;
+            // TODO: Decide what to do with the tag
+            var->tags.push_back(Tag{tagName});
+            var->mutateValue(stack.top());
+        } catch (...) {
+            taggedTable[varName] = stack.top();
+            taggedTable[varName].tags.push_back(Tag{tagName});
+        }
+        stack.pop();
     }
 }

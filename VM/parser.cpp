@@ -88,10 +88,12 @@ void Parser::handleStore() {
     
     if (type == "local") {
         bytecode.push_back(STORE_LOCAL);
+        bytecode.push_back(parseNextString()); // var name
     } 
     else if (type == "tagged") {
         bytecode.push_back(STORE_TAGGED);
-        bytecode.push_back(parseNextString());  // tag name
+        bytecode.push_back(parseNextString());  // var name
+        bytecode.push_back(parseNextString()); // tag name
     } 
     else {
         throwInvalidInstruction("store " + type);

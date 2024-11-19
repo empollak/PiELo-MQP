@@ -40,10 +40,10 @@ namespace PiELo{
                 break;
             
             case STORE_LOCAL:
-                storeLocal();
+                storeLocal(*bytecode[++programCounter].asString);
                 break;
             case STORE_TAGGED:
-                storeTagged(*bytecode[++programCounter].asString);
+                storeTagged(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);
                 break;
             case TAG_VARIABLE:
                 tagVariable(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);

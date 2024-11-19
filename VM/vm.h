@@ -110,11 +110,11 @@ namespace PiELo {
 
         ~opCodeInstructionOrArgument() {
             if (type == STRING) {
-                std::cout << "freeing string ptr: " << asString << std::endl;
-                std::cout << "had value " << *asString << std::endl;
+                // std::cout << "freeing string ptr: " << asString << std::endl;
+                // std::cout << "had value " << *asString << std::endl;
                 delete asString;
             } else if (type == PIELO_CLOSURE) {
-                printf("Freeing closure \n");
+                // printf("Freeing closure \n");
                 delete asClosure;
             }
         }
@@ -244,6 +244,11 @@ namespace PiELo {
         }
 
         Type getType() {return data.type;}
+
+        void mutateValue(float f) {data = f;}
+        void mutateValue(int i) {data = i;}
+        void mutateValue(size_t s) {data = s;}
+        void mutateValue(Variable v) {data = v.data;}
 
         void print() {
             if(getType() == NIL){

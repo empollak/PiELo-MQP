@@ -1,0 +1,11 @@
+push i 1
+push f 3.4
+add
+label test
+push i 2
+div
+push i 1
+gt
+jmp_if_not_zero test
+print
+end

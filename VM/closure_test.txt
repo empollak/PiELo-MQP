@@ -1,0 +1,15 @@
+push i 3
+push i 1
+load f
+call_closure
+pop # pop closure index
+print
+end
+
+define_closure f 1 int x 0
+load x
+push i 1
+add
+print
+push i 1 # has a return value (should be x+1)
+ret_from_closure

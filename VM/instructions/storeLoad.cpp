@@ -104,6 +104,11 @@ namespace PiELo {
             // TODO: Decide what to do with the tag
             var->tags.push_back(Tag{tagName});
             var->mutateValue(stack.top());
+
+            if (var->dependants.size() > 0) {
+                // Reactivity!
+                
+            }
         } catch (...) {
             taggedTable[varName] = stack.top();
             taggedTable[varName].tags.push_back(Tag{tagName});

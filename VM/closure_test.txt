@@ -2,7 +2,7 @@ push i 3
 push i 1
 load f
 call_closure
-pop # pop closure index
+store tagged fResult global # store the result of the closure in fResult (really stores the index)
 print
 end
 

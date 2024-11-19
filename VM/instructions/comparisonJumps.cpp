@@ -210,16 +210,13 @@ void jump_if_zero(){
     programCounter++;
     Variable top = stack.top();
     if((top.getType() == FLOAT && top.getFloatValue() == 0.0f) || (top.getType() == INT && top.getIntValue() == 0)){
-        if(bytecode.at(programCounter).getTypeAsString() == "INT"){
+        if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();
             programCounter = target_address;
         } else {
             throw AddressNotDecleredException();
             state = ERROR;
         }
-    } else {
-        throw TopStackNotZeroException();
-        state = ERROR;
     }
 }
 
@@ -227,15 +224,12 @@ void jump_if_not_zero(){
     programCounter++;
     Variable top = stack.top();
     if((top.getType() == FLOAT && top.getFloatValue() != 0.0f) || (top.getType() == INT && top.getIntValue() != 0)){
-        if(bytecode.at(programCounter).getTypeAsString() == "INT"){
+        if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();
             programCounter = target_address;
         } else {
             throw AddressNotDecleredException();
             state = ERROR;
         }
-    } else {
-        throw TopStackNotZeroException();
-        state = ERROR;
     }
 }

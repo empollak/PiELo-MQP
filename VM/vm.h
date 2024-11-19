@@ -37,6 +37,7 @@ namespace PiELo {
         union {
             int asInt;
             float asFloat;
+            // TODO: Change this to be a pointer lol
             size_t asClosureIndex;
         };
         Type type = NIL;

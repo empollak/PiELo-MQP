@@ -155,7 +155,7 @@ namespace PiELo {
         }
 
         opCodeInstructionOrArgument& operator= (const opCodeInstructionOrArgument& other) {
-            printf("operator=\n");
+            // printf("operator=\n");
             if (this != &other) {
                 type = other.type;
                 switch (other.type) {
@@ -165,7 +165,7 @@ namespace PiELo {
                     case STRING: asString = new std::string(*other.asString); break;
                     case NIL: break;
                     case PIELO_CLOSURE: 
-                        asClosure = (ClosureData*) malloc(sizeof(ClosureData));
+                        asClosure = new ClosureData;
                         *asClosure = *other.asClosure;
                     case NAME: asString = new std::string(*other.asString); break;
                 }

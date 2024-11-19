@@ -1,15 +1,21 @@
+push i 7
+store tagged speed global
 push i 3
 push i 1
 load f
 call_closure
+print
 store tagged fResult global # store the result of the closure in fResult (really stores the index)
+push i 8
+store tagged speed global
+load fResult
 print
 end
 
-define_closure f 1 int x 0
+define_closure f 1 int x 1 speed
 load x
-push i 1
+load speed
 add
 print
-push i 1 # has a return value (should be x+1)
+push i 1 # has a return value (should be x+speed)
 ret_from_closure

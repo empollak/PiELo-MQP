@@ -46,12 +46,12 @@ namespace PiELo{
             closureData.localSymbolTable[argName] = stack.top();
             std::cout << " added arg name " << argName << " value ";
             closureData.localSymbolTable[argName].print();
-            std::cout << std::endl;
+            std::cout << "..." << std::endl;
             stack.pop();
         }
 
         // Update current local symbol table
-
+        std::cout << " updating closure list " << std::endl;
         size_t closureIndex = closureList.size();
         closureList.push_back(closureData);
 
@@ -80,8 +80,25 @@ namespace PiELo{
                 case FLOAT: closureList[currentClosureIndex].cachedValue = stack.top().getFloatValue(); break;
                 case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = stack.top().getClosureIndex(); break;
             }
+            stack.pop();
+
+            // TODO: Check if I have dependants!!
+            // Need to run any closure which depends on a variable which contains this closure's index
+            // This is hard. 
+            // for (std::string dep : closureList[currentClosureIndex].) {
+
+            // }
         }
         stack.push(currentClosureIndex);
+    }
+
+    void rerunClosure(size_t closureIndex) {
+        std::cout << "Rerunning closure with index " << closureIndex << std::endl;
+        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
+        currentSymbolTable = &closureList[closureIndex].localSymbolTable;
+        currentClosureIndex = closureIndex;
+        programCounter = closureList[closureIndex].codePointer;
+        std::cout << " pc now " << programCounter << std::endl;
     }
 
 }

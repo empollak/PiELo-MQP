@@ -92,7 +92,9 @@ void Parser::handleStore() {
     } 
     else if (type == "tagged") {
         bytecode.push_back(STORE_TAGGED);
-        bytecode.push_back(parseNextString());  // var name
+        std::string name = parseNextString();
+        std::cout << " parsed: store tag name " << name << std::endl;
+        bytecode.push_back(name);  // var name
         bytecode.push_back(parseNextString()); // tag name
     } 
     else {

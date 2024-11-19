@@ -15,6 +15,7 @@ namespace PiELo {
     }
 
     std::vector<opCodeInstructionOrArgument> bytecode;
+    std::vector<opCodeInstructionOrArgument> reactivityBytecodes;
     codePtr programCounter = 0;
 
     symbolTable taggedTable;
@@ -57,6 +58,7 @@ namespace PiELo {
         try {
             return &currentSymbolTable->at(name);
         } catch (...) {
+            std::cout << "  findVariable: finding " << name << std::endl;
             return &taggedTable.at(name);
         }
     }

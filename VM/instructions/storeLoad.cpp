@@ -96,7 +96,7 @@ namespace PiELo {
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
         }
-
+        std::cout << "Storing variable " << varName << " tag " << tagName << std::endl;
         try {
             // This will throw an error if varName is not found
             Variable* var = &taggedTable.at(varName);
@@ -105,9 +105,16 @@ namespace PiELo {
             var->tags.push_back(Tag{tagName});
             var->mutateValue(stack.top());
 
+            // TODO: fix this
             if (var->dependants.size() > 0) {
-                // Reactivity!
-                
+                for (int i = 0; i < var->dependants.size(); i++) {
+                    // Run each dependant closure
+                    std::cout << "Rerunning closure at index " << var->dependants[i] << std::endl;
+                    bytecode.insert(bytecode.begin() + programCounter + (1 + 3*i), RERUN_CLOSURE);
+                    bytecode.insert(bytecode.begin() + programCounter + (2 + 3*i), (int) var->dependants[i]);
+                    // Pop the closure index that ret_from_closure will push
+                    bytecode.insert(bytecode.begin() + programCounter + (3 + 3*i), POP);
+                }
             }
         } catch (...) {
             taggedTable[varName] = stack.top();

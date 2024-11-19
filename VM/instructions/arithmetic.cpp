@@ -23,10 +23,23 @@ void add(){
         } else if(a.getType() == INT && b.getType() == INT){
             Variable result =  a.getIntValue() + b.getIntValue();
             stack.push(result);
-        } else { 
-            throw InvalidTypeForOperationException("ADD", "CLOSURE");
-            state = ERROR;
         }
+        // } else if (a.getType == PIELO_CLOSURE || b.getType == PIELO_CLOSURE){ 
+
+        //     if(a.getType == PIELO_CLOSURE){
+        //         Variable a_cv = closureList[a.getClosureIndex()].cachedValue
+        //         if(a_cv.getType() == NIL || a_cv.getType() == PIELO_CLOSURE){
+        //             // throw an error
+        //         } 
+        //     } 
+
+        //     if(b.getType)
+        //     if(b.getType == PIELO_CLOSURE){
+        //         Variable b_cv = closureList[a.getClosureIndex()].cachedValue
+        //     }
+        //     // throw InvalidTypeForOperationException("ADD", "CLOSURE");
+        //     // state = ERROR;
+        // }
     } else {
         throw ShortOnElementsOnStackException("ADD");
         state = ERROR;

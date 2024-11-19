@@ -38,12 +38,18 @@ namespace PiELo{
             case RET_FROM_CLOSURE:
                 retFromClosure();
                 break;
+
+            case RERUN_CLOSURE:
+                rerunClosure(bytecode[++programCounter].asInt);
+                break;
             
             case STORE_LOCAL:
                 storeLocal(*bytecode[++programCounter].asString);
                 break;
             case STORE_TAGGED:
-                storeTagged(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);
+                name = *bytecode[++programCounter].asString;
+                std::cout << "instructionHandler: store name: " << name << std::endl;
+                storeTagged(name, *bytecode[++programCounter].asString);
                 break;
             case TAG_VARIABLE:
                 tagVariable(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);
@@ -77,6 +83,9 @@ namespace PiELo{
                     std::cout << stack.top().getIntValue();
                 } else if(stack.top().getType() == FLOAT){
                     std::cout << stack.top().getFloatValue();
+                } else if (stack.top().getType() == PIELO_CLOSURE) {
+                    std::cout << " cached value: ";
+                    closureList[stack.top().getClosureIndex()].cachedValue.print();
                 }
                 std::cout << std::endl;
                 break;

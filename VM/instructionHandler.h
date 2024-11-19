@@ -40,6 +40,7 @@ namespace PiELo {
         DEFINE_CLOSURE,
         CALL_CLOSURE,
         RET_FROM_CLOSURE,
+        RERUN_CLOSURE,
 
         PRINT
     };

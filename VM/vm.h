@@ -49,6 +49,21 @@ namespace PiELo {
         VariableData(size_t s) {asClosureIndex = s; type = PIELO_CLOSURE;}
 
         VariableData() {type=NIL;}
+
+        Type getType() {return type;}
+
+        void print() {
+            if(getType() == NIL){
+                std::cout << "nil";
+            } else if(getType() == INT){
+                std::cout << "int " << asInt;
+            } else if(getType() == FLOAT){
+                std::cout << "float " << asFloat;
+            } else if (getType() == PIELO_CLOSURE) {
+                std::cout << "closure index: ";
+                std::cout << asClosureIndex;
+            }
+        }
     };
 
     struct ClosureData {
@@ -272,6 +287,7 @@ namespace PiELo {
 
     
     extern std::vector<opCodeInstructionOrArgument> bytecode;
+    extern std::vector<opCodeInstructionOrArgument> reactivityBytecodes;
     extern codePtr programCounter;
 
     extern symbolTable taggedTable;

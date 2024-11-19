@@ -8,4 +8,5 @@ namespace PiELo {
     void defineClosure(std::string closureName, ClosureData closureData); 
     void callClosure();
     void retFromClosure();
+    void rerunClosure(size_t closureIndex);
 }

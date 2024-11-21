@@ -13,7 +13,7 @@ namespace PiELo{
         stack.push((size_t) (closureTemplates.size() - 1));
         storeTagged(closureName, "global");
     }
-    
+
     // Expects the stack to have format:
     // Bottom
     // arg1 
@@ -32,6 +32,7 @@ namespace PiELo{
         
         stack.pop();
         int numArgs = stack.top().getIntValue();
+        stack.pop();
         if (stack.size() < numArgs) throw ShortOnElementsOnStackException("call_closure arguments");
         std::cout << " Num args: " << numArgs << std::endl;
 

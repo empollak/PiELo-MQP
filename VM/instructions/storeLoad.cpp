@@ -107,14 +107,20 @@ namespace PiELo {
 
             // TODO: fix this
             if (var->dependants.size() > 0) {
+                // Store where we currently are
+                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
                 for (int i = 0; i < var->dependants.size(); i++) {
-                    // Run each dependant closure
-                    // std::cout << "Rerunning closure at index " << var->dependants[i] << std::endl;
-                    // bytecode.insert(bytecode.begin() + programCounter + (1 + 3*i), RERUN_CLOSURE);
-                    // bytecode.insert(bytecode.begin() + programCounter + (2 + 3*i), (int) var->dependants[i]);
-                    // // Pop the closure index that ret_from_closure will push
-                    // bytecode.insert(bytecode.begin() + programCounter + (3 + 3*i), POP);
+                    // Push the info of each closure to the return address stack
+                    // This way, we will return to them in order
+                    Variable currDepVar = var->dependants[i];
+                    ClosureData* currClosure = &closureList[currDepVar.getClosureIndex()];
+                    std::cout << "Pushing info of closure at index " << i << ": " << " code pointer: " << currClosure->codePointer << std::endl;
+                    returnAddrStack.push((scopeData) {.scopeSymbolTable = &currClosure->localSymbolTable, .codePointer = currClosure->codePointer});
                 }
+                // Go to the first closure in the list
+                programCounter = returnAddrStack.top().codePointer;
+                currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+                returnAddrStack.pop();
             }
         } catch (...) {
             taggedTable[varName] = stack.top();

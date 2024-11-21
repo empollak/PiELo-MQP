@@ -13,7 +13,7 @@ namespace PiELo{
         stack.push((size_t) (closureTemplates.size() - 1));
         storeTagged(closureName, "global");
     }
-
+    
     // Expects the stack to have format:
     // Bottom
     // arg1 
@@ -54,7 +54,7 @@ namespace PiELo{
         std::cout << " updating closure list " << std::endl;
         size_t closureIndex = closureList.size();
         closureList.push_back(closureData);
-
+        
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
 
@@ -67,6 +67,34 @@ namespace PiELo{
 
         programCounter = closureData.codePointer;
         std::cout << " updated pc: " << programCounter << " state: " << state << std::endl;
+    }
+
+    // Expects the stack to have format:
+    // Bottom
+    // arg1 
+    // arg2 
+    // number of args : int
+    // ClosureData
+    // top
+    void callClosureAndStore(std::string resultVarName) {
+        // Call the closure
+        callClosure();
+
+        // Store the closure's index in the given variable name
+        // callClosure updates currentClosureIndex
+        stack.push(currentClosureIndex);
+        storeTagged(resultVarName, "global");
+    }
+
+    // Expects the stack to have format:
+    // Bottom
+    // arg1 
+    // arg2 
+    // number of args : int
+    // ClosureData
+    // top
+    void callClosureNoStore() {
+        callClosure();
     }
 
     void retFromClosure() {
@@ -89,7 +117,7 @@ namespace PiELo{
 
             // }
         }
-        stack.push(currentClosureIndex);
+        // stack.push(currentClosureIndex);
     }
 
     void rerunClosure(size_t closureIndex) {

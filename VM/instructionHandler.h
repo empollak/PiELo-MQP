@@ -38,11 +38,13 @@ namespace PiELo {
         LOAD_TO_STACK,  
 
         DEFINE_CLOSURE,
-        CALL_CLOSURE,
+        CALL_CLOSURE_STORE,
+        CALL_CLOSURE_NO_STORE,
         RET_FROM_CLOSURE,
         RERUN_CLOSURE,
 
-        PRINT
+        PRINT,
+        DEBUG_PRINT,
     };
     struct opCodeInstructionOrArgument;
 

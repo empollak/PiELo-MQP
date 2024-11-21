@@ -3,12 +3,15 @@ store tagged speed global
 push i 3
 push i 1
 load f
-call_closure
+call_closure store fResult
+load fResult
+debug_print -------------- fResult number 1:
 print
-store tagged fResult global # store the result of the closure in fResult (really stores the index)
+pop
 push i 8
 store tagged speed global
 load fResult
+debug_print -------------- fResult number 2:
 print
 end
 

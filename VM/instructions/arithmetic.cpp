@@ -23,23 +23,31 @@ void add(){
         } else if(a.getType() == INT && b.getType() == INT){
             Variable result =  a.getIntValue() + b.getIntValue();
             stack.push(result);
+        } else if (a.getType() == PIELO_CLOSURE || b.getType() == PIELO_CLOSURE){ 
+            VariableData a_cv;
+            if(a.getType() == PIELO_CLOSURE){
+                a_cv = closureList[a.getClosureIndex()].cachedValue;
+                if(a_cv.getType() == NIL || a_cv.getType() == PIELO_CLOSURE){
+                    // throw an error
+                } 
+            }  else {
+                a_cv = a.getVariableData();
+            }
+            VariableData b_cv;
+            if(b.getType() == PIELO_CLOSURE){
+                b_cv = closureList[b.getClosureIndex()].cachedValue;
+            } else {
+                b_cv = b.getVariableData();
+            }
+
+            // Add using the cached values (these will get popped)
+            stack.push(a_cv);
+            stack.push(b_cv);
+            add();
+            
+            // throw InvalidTypeForOperationException("ADD", "CLOSURE");
+            // state = ERROR;
         }
-        // } else if (a.getType == PIELO_CLOSURE || b.getType == PIELO_CLOSURE){ 
-
-        //     if(a.getType == PIELO_CLOSURE){
-        //         Variable a_cv = closureList[a.getClosureIndex()].cachedValue
-        //         if(a_cv.getType() == NIL || a_cv.getType() == PIELO_CLOSURE){
-        //             // throw an error
-        //         } 
-        //     } 
-
-        //     if(b.getType)
-        //     if(b.getType == PIELO_CLOSURE){
-        //         Variable b_cv = closureList[a.getClosureIndex()].cachedValue
-        //     }
-        //     // throw InvalidTypeForOperationException("ADD", "CLOSURE");
-        //     // state = ERROR;
-        // }
     } else {
         throw ShortOnElementsOnStackException("ADD");
         state = ERROR;

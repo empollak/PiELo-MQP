@@ -20,7 +20,6 @@ namespace PiELo {
         Variable* var = nullptr;
 
         // search local sym table
-        printf("huh whuh\n");
         std::cout << "Searching current symbol table for " << varName << std::endl;
         std::cout << " symbol table has: " << std::endl;
         for (auto it : *currentSymbolTable) {
@@ -92,6 +91,18 @@ namespace PiELo {
         robotTagList.push_back(Tag{tagName});
     }
 
+    // Takes in a closure index and does what it says it will do
+    void recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex) {
+        // Push the closure itself to the return address stack
+        ClosureData* closure = &closureList[closureIndex];
+        returnAddrStack.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer});
+
+        // Push each of its dependants to the return address stack, recursively
+        for (size_t depIndex : closure->dependants) {
+            recursivelyAddDependantsOfClosureToReturnAddrStack(depIndex);
+        }
+    }
+
     void storeTagged(const std::string& varName, const std::string& tagName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
@@ -108,15 +119,20 @@ namespace PiELo {
             // TODO: fix this
             if (var->dependants.size() > 0) {
                 // Store where we currently are
+                std::cout << " " << varName << " has closure index dependencies: ";
                 returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
                 for (int i = 0; i < var->dependants.size(); i++) {
+                    std::cout << i << ", ";
                     // Push the info of each closure to the return address stack
                     // This way, we will return to them in order
-                    Variable currDepVar = var->dependants[i];
-                    ClosureData* currClosure = &closureList[currDepVar.getClosureIndex()];
-                    std::cout << "Pushing info of closure at index " << i << ": " << " code pointer: " << currClosure->codePointer << std::endl;
-                    returnAddrStack.push((scopeData) {.scopeSymbolTable = &currClosure->localSymbolTable, .codePointer = currClosure->codePointer});
+                    recursivelyAddDependantsOfClosureToReturnAddrStack(var->dependants[i]);
+                    // Variable currDepVar = var->dependants[i];
+                    // ClosureData* currClosure = &closureList[currDepVar.getClosureIndex()];
+                    // std::cout << "Pushing info of closure at index " << i << ": " << " code pointer: " << currClosure->codePointer << std::endl;
+                    // returnAddrStack.push((scopeData) {.scopeSymbolTable = &currClosure->localSymbolTable, .codePointer = currClosure->codePointer});
+
                 }
+                std::cout << std::endl;
                 // Go to the first closure in the list
                 programCounter = returnAddrStack.top().codePointer;
                 currentSymbolTable = returnAddrStack.top().scopeSymbolTable;

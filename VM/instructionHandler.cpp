@@ -67,7 +67,6 @@ namespace PiELo{
                 printf("Loading!\n");
                 std::cout << " symbol table has: " << std::endl;
                 for (auto it : *currentSymbolTable) {
-                    printf("what\n");
                     std::cout << "  " << it.first << ":";
                     it.second.print();
                     std::cout << std::endl;

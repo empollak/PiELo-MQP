@@ -62,7 +62,11 @@ namespace PiELo{
         // Handle the dependency list
         if (closureData.dependencies.size() > 0) {
             for (std::string name : closureData.dependencies) {
-                findVariable(name)->dependants.push_back(closureIndex);
+                Variable* dependency = findVariable(name);
+                dependency->dependants.push_back(closureIndex);
+                if (dependency->getType() == PIELO_CLOSURE) {
+                    closureList[dependency->getClosureIndex()].dependants.push_back(closureIndex);
+                }
             }
         }
 
@@ -100,15 +104,21 @@ namespace PiELo{
 
     void retFromClosure() {
         programCounter = returnAddrStack.top().codePointer;
+        currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+        returnAddrStack.pop();
+        std::cout << " ret_from_closure got pc " << programCounter << std::endl;
         if (stack.size() < 1) throw std::runtime_error("Stack empty before ret_from_closure");
         int hasReturn = stack.top().getIntValue();
         stack.pop();
+        std::cout << " ret_from_closure got hasReturn " << hasReturn << std::endl;
         if (hasReturn == 1) {
+            std::cout << "ret_from_closure stack size " << stack.size() << std::endl;
             switch (stack.top().getType()) {
                 case INT: closureList[currentClosureIndex].cachedValue = stack.top().getIntValue(); break;
                 case FLOAT: closureList[currentClosureIndex].cachedValue = stack.top().getFloatValue(); break;
                 case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = stack.top().getClosureIndex(); break;
             }
+
             stack.pop();
 
             // TODO: Check if I have dependants!!

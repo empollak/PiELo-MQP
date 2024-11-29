@@ -77,10 +77,16 @@ public:
     TopStackZeroException() : CustomException("Error 11: TopStackZeroException --  Cannot perform JUMP_IF_NOT_ZERO because Top of the Stack is  Zero.") {}
 };
 
-
 class InvalidTypeAccessException : public CustomException {
 public:
     InvalidTypeAccessException(std::string accessType, std::string variableType) : CustomException("Error 12: InvalidTypeAccessException -- Attempted to access variable as type " + accessType + ", but variable has type " + variableType + ".") {}
 };
+
+class InvalidCachedValueTypeException : public CustomException {
+public:
+    InvalidCachedValueTypeException(std::string operation) : CustomException("Error 13: InvalidCachedValueTypeException -- Attempted to perform the " + operation + " operation using a closure where its cached value is either NIL or PIELO_CLOSURE type.") {}
+};
+
+
 
 #endif

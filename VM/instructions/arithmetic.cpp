@@ -23,78 +23,30 @@ void add(){
         } else if(a.getType() == INT && b.getType() == INT){
             Variable result =  a.getIntValue() + b.getIntValue();
             stack.push(result);
-        }
-
-        if(a.getType() == PIELO_CLOSURE || b.getType() == PIELO_CLOSURE){
+        } else if (a.getType() == PIELO_CLOSURE || b.getType() == PIELO_CLOSURE){ 
             VariableData a_cv;
-            VariableData b_cv;
-
-            if(a.getType() == PIELO_CLOSURE && b.getType() != PIELO_CLOSURE){
-
+            if(a.getType() == PIELO_CLOSURE){
                 a_cv = closureList[a.getClosureIndex()].cachedValue;
-
                 if(a_cv.getType() == NIL || a_cv.getType() == PIELO_CLOSURE){
-                    throw InvalidCachedValueTypeException("ADD");
-                    state = ERROR;
-                } else if(a_cv.getType() == FLOAT && b.getType() == FLOAT){
-                    Variable result = b.getFloatValue() + a_cv.asFloat;
-                    stack.push(result);
-                } else if(a_cv.getType() == FLOAT && b.getType() == INT){
-                    Variable result = static_cast<float>(b.getIntValue()) + a_cv.asFloat;
-                    stack.push(result);
-                } else if(a_cv.getType() == INT && b.getType() == FLOAT){
-                    Variable result = b.getFloatValue() + static_cast<float>(a_cv.asInt);
-                    stack.push(result);
-                } else if(a_cv.getType() == INT && b.getType() == INT){
-                    Variable result = b.getIntValue() + a_cv.asInt;
-                    stack.push(result);
-                }
-                
-            } 
-            else if(a.getType() != PIELO_CLOSURE && b.getType() == PIELO_CLOSURE){
-
-                b_cv = closureList[b.getClosureIndex()].cachedValue;
-
-                if(b_cv.getType() == NIL || b_cv.getType() == PIELO_CLOSURE){
-                    throw InvalidCachedValueTypeException("ADD");
-                    state = ERROR;
-                } else if(b_cv.getType() == FLOAT && a.getType() == FLOAT){
-                    Variable result = a.getFloatValue() + b_cv.asFloat;
-                    stack.push(result);
-                } else if(b_cv.getType() == FLOAT && a.getType() == INT){
-                    Variable result = static_cast<float>(a.getIntValue()) + b_cv.asFloat;
-                    stack.push(result);
-                } else if(b_cv.getType() == INT && a.getType() == FLOAT){
-                    Variable result = a.getFloatValue() + static_cast<float>(b_cv.asInt);
-                    stack.push(result);
-                } else if(b_cv.getType() == INT && a.getType() == INT){
-                    Variable result = a.getIntValue() + b_cv.asInt;
-                    stack.push(result);
-                }
-                
-            } else if(a.getType() == PIELO_CLOSURE && b.getType() == PIELO_CLOSURE){
-
-                a_cv = closureList[a.getClosureIndex()].cachedValue;
-                b_cv = closureList[b.getClosureIndex()].cachedValue;
-
-                if(a_cv.getType() == NIL || a_cv.getType() == PIELO_CLOSURE || b_cv.getType() == NIL || b_cv.getType() == PIELO_CLOSURE){
-                    throw InvalidCachedValueTypeException("ADD");
-                    state = ERROR;
-                } else if(b_cv.getType() == FLOAT && a_cv.getType() == FLOAT){
-                    Variable result = a_cv.asFloat + b_cv.asFloat;
-                    stack.push(result);
-                } else if(b_cv.getType() == FLOAT && a_cv.getType() == INT){
-                    Variable result = static_cast<float>(a_cv.asInt) + b_cv.asFloat;
-                    stack.push(result);
-                } else if(b_cv.getType() == INT && a.getType() == FLOAT){
-                    Variable result = a_cv.asFloat + static_cast<float>(b_cv.asInt);
-                    stack.push(result);
-                } else if(a_cv.getType() == INT && b_cv.getType() == INT){
-                    Variable result = a_cv.asInt + b_cv.asInt;
-                    stack.push(result);
-                }
-                
+                    // throw an error
+                } 
+            }  else {
+                a_cv = a.getVariableData();
             }
+            VariableData b_cv;
+            if(b.getType() == PIELO_CLOSURE){
+                b_cv = closureList[b.getClosureIndex()].cachedValue;
+            } else {
+                b_cv = b.getVariableData();
+            }
+
+            // Add using the cached values (these will get popped)
+            stack.push(a_cv);
+            stack.push(b_cv);
+            add();
+            
+            // throw InvalidTypeForOperationException("ADD", "CLOSURE");
+            // state = ERROR;
         }
     } else {
         throw ShortOnElementsOnStackException("ADD");

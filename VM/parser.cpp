@@ -31,9 +31,10 @@ void Parser::initHandlers() {
         {"label", [&]() { handleFunctionOrLabel("label"); }},
         {"end", [&]() {printf("Parsing: end\n"); handleSimple(END); }},
         {"define_closure", [&]() {printf("Parsing: define_closure\n"); handleDefineClosure(); }},
-        {"call_closure", [&]() {printf("parsing: call_closure\n"); handleSimple(CALL_CLOSURE); }},
+        {"call_closure", [&]() {printf("parsing: call_closure\n"); handleCallClosure(); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
+        {"debug_print", [&]() {handleDebugPrint();}}
     };
 }
 
@@ -57,6 +58,13 @@ void Parser::load(std::string filename){
     }
 
     // return bytecode;
+}
+
+void Parser::handleDebugPrint() {
+    std::string line;
+    std::getline(file, line);
+    bytecode.push_back(DEBUG_PRINT);
+    bytecode.push_back(line);
 }
 
 void Parser::handlePush() {
@@ -190,6 +198,20 @@ void Parser::handleDefineClosure() {
     // bytecode.push_back(closure);
     defineClosure(name, closure);
     std::cout << "Done with defineClosure" << std::endl;
+}
+
+void Parser::handleCallClosure() {
+    std::string type;
+    file >> type;
+
+    if (type == "store") {
+        bytecode.push_back(CALL_CLOSURE_STORE);
+        bytecode.push_back(parseNextString());
+    } else if (type == "nostore") {
+        bytecode.push_back(CALL_CLOSURE_NO_STORE);
+    } else {
+        throwInvalidInstruction("call_closure " + type);
+    }
 }
 
 int Parser::parseNextInt() {

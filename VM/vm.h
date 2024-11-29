@@ -73,6 +73,7 @@ namespace PiELo {
         std::vector<std::string> argNames;
         std::vector<Type> argTypes;
         std::vector<std::string> dependencies;
+        std::vector<size_t> dependants;
         VariableData cachedValue;
     };
 
@@ -232,6 +233,8 @@ namespace PiELo {
 
         Variable(size_t s) {data.type = PIELO_CLOSURE; data.asClosureIndex = s;}
 
+        Variable(VariableData v) {data = v;}
+
         std::string getTypeAsString() {
             switch (data.type) {
                 case NIL: return "NIL";
@@ -254,9 +257,14 @@ namespace PiELo {
             return data.asInt;
         }
 
-        int getClosureIndex() {
+        size_t getClosureIndex() {
             if (data.type != PIELO_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
             return data.asClosureIndex;
+        }
+
+        // DO NOT USE TO EXTRACT DATA!
+        VariableData getVariableData() {
+            return data;
         }
 
         Type getType() {return data.type;}
@@ -283,6 +291,7 @@ namespace PiELo {
     struct scopeData{
         symbolTable* scopeSymbolTable;
         codePtr codePointer;
+        size_t closureIndex;
     };
 
     

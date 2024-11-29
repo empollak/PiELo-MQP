@@ -23,6 +23,7 @@ namespace PiELo {
             // init handlers;
             void initHandlers();
 
+            void handleDebugPrint();
             void handlePush();
             void handleStore();
             void handleTag();
@@ -33,6 +34,7 @@ namespace PiELo {
             void handleFunctionOrLabel(const std::string &type);
             void handleJump(const Instruction opcode);
             void handleDefineClosure();
+            void handleCallClosure();
 
             void pushIntToCode();
             void pushFloatToCode();

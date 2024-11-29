@@ -31,8 +31,12 @@ namespace PiELo{
                 std::cout << " got closure " << std::endl;
                 defineClosure(name, closure);
                 break;
-            case CALL_CLOSURE:
-                callClosure();
+            case CALL_CLOSURE_NO_STORE:
+                callClosureNoStore();
+                break;
+
+            case CALL_CLOSURE_STORE:
+                callClosureAndStore(*bytecode[++programCounter].asString);
                 break;
             
             case RET_FROM_CLOSURE:
@@ -60,14 +64,13 @@ namespace PiELo{
                 break;
 
             case LOAD_TO_STACK:
-                printf("Loading!\n");
-                std::cout << " symbol table has: " << std::endl;
-                for (auto it : *currentSymbolTable) {
-                    printf("what\n");
-                    std::cout << "  " << it.first << ":";
-                    it.second.print();
-                    std::cout << std::endl;
-                }
+                // printf("Loading!\n");
+                // std::cout << " symbol table has: " << std::endl;
+                // for (auto it : *currentSymbolTable) {
+                //     std::cout << "  " << it.first << ":";
+                //     it.second.print();
+                //     std::cout << std::endl;
+                // }
                 // std::cout << "Bytecode size: " << bytecode.size() << " pc: " << programCounter << std::endl;
                 // std::cout << "type: " << bytecode[programCounter].type << std::endl;
                 name = *bytecode[++programCounter].asString;
@@ -88,6 +91,10 @@ namespace PiELo{
                     closureList[stack.top().getClosureIndex()].cachedValue.print();
                 }
                 std::cout << std::endl;
+                break;
+
+            case DEBUG_PRINT:
+                std::cout << *bytecode[++programCounter].asString << std::endl;
                 break;
 
             case NOP:

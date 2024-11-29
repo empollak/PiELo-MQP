@@ -1,21 +1,54 @@
 push i 7
 store tagged speed global
+
+# Call f
 push i 3
 push i 1
 load f
-call_closure
+call_closure store fResult
+load fResult
+debug_print -------------- fResult number 1:
 print
-store tagged fResult global # store the result of the closure in fResult (really stores the index)
+pop
+
+# Call fResultPlusOne
+push i 0
+load fResultPlusOne
+call_closure store valFResultPlusOne
+load valFResultPlusOne
+debug_print -------------- fResultPlusOne number 1:
+print
+pop
+
+# Update speed
 push i 8
 store tagged speed global
+
+# Check values of fResult and fResultPlusOne
 load fResult
+debug_print -------------- fResult number 2:
 print
+pop
+load valFResultPlusOne
+debug_print -------------- fResultPlusOne number 2:
+print
+pop
 end
 
 define_closure f 1 int x 1 speed
+debug_print ---------------------- In f
 load x
 load speed
 add
 print
 push i 1 # has a return value (should be x+speed)
+ret_from_closure
+
+define_closure fResultPlusOne 0 1 fResult
+debug_print ---------------------- in fResultPlusOne
+load fResult
+push i 1
+add
+print
+push i 1
 ret_from_closure

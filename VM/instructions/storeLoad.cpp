@@ -92,14 +92,14 @@ namespace PiELo {
     }
 
     // Takes in a closure index and does what it says it will do
-    void recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex) {
+    void recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex, std::stack<scopeData> &dependants) {
         // Push the closure itself to the return address stack
         ClosureData* closure = &closureList[closureIndex];
-        returnAddrStack.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer});
-
-        // Push each of its dependants to the return address stack, recursively
+        dependants.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer, .closureIndex = closureIndex});
+        std::cout << closureIndex << ", ";
+        // Push each of its dependants to the dependants stack, recursively
         for (size_t depIndex : closure->dependants) {
-            recursivelyAddDependantsOfClosureToReturnAddrStack(depIndex);
+            recursivelyAddDependantsOfClosureToReturnAddrStack(depIndex, dependants);
         }
     }
 
@@ -119,23 +119,27 @@ namespace PiELo {
             // TODO: fix this
             if (var->dependants.size() > 0) {
                 // Store where we currently are
-                std::cout << " " << varName << " has closure index dependencies: ";
-                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
+                std::cout << " " << varName << " has closure index dependants: ";
+                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
+                
+                std::stack<scopeData> dependants;
                 for (int i = 0; i < var->dependants.size(); i++) {
-                    std::cout << i << ", ";
-                    // Push the info of each closure to the return address stack
-                    // This way, we will return to them in order
-                    recursivelyAddDependantsOfClosureToReturnAddrStack(var->dependants[i]);
-                    // Variable currDepVar = var->dependants[i];
-                    // ClosureData* currClosure = &closureList[currDepVar.getClosureIndex()];
-                    // std::cout << "Pushing info of closure at index " << i << ": " << " code pointer: " << currClosure->codePointer << std::endl;
-                    // returnAddrStack.push((scopeData) {.scopeSymbolTable = &currClosure->localSymbolTable, .codePointer = currClosure->codePointer});
+                    // Push the info of each dependant closure and all of its dependants to the dependants stack
+                    recursivelyAddDependantsOfClosureToReturnAddrStack(var->dependants[i], dependants);
+                }
 
+                // Reverse the order of the found dependants. This ensures that parent nodes are updated before their children
+                size_t numDeps = dependants.size();
+                for (size_t i = 0; i < numDeps; i++) {
+                    returnAddrStack.push(dependants.top());
+                    dependants.pop();
                 }
                 std::cout << std::endl;
+
                 // Go to the first closure in the list
                 programCounter = returnAddrStack.top().codePointer;
                 currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+                currentClosureIndex = returnAddrStack.top().closureIndex;
                 returnAddrStack.pop();
             }
         } catch (...) {

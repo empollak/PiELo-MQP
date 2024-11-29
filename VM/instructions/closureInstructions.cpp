@@ -11,6 +11,7 @@ namespace PiELo{
         // TODO: storeTagged with name closureName, value closureVar
         closureTemplates.push_back(closureData);
         stack.push((size_t) (closureTemplates.size() - 1));
+        std::cout << " at closureTemplates index " << closureTemplates.size() - 1 << std::endl;
         storeTagged(closureName, "global");
     }
 
@@ -24,7 +25,7 @@ namespace PiELo{
     void callClosure() {
         // Save the current scope
         std::cout << " calling closure! " << std::endl;
-        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
+        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
         // Copy closure template from the variable on the stack
@@ -103,9 +104,6 @@ namespace PiELo{
     }
 
     void retFromClosure() {
-        programCounter = returnAddrStack.top().codePointer;
-        currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
-        returnAddrStack.pop();
         std::cout << " ret_from_closure got pc " << programCounter << std::endl;
         if (stack.size() < 1) throw std::runtime_error("Stack empty before ret_from_closure");
         int hasReturn = stack.top().getIntValue();
@@ -113,27 +111,37 @@ namespace PiELo{
         std::cout << " ret_from_closure got hasReturn " << hasReturn << std::endl;
         if (hasReturn == 1) {
             std::cout << "ret_from_closure stack size " << stack.size() << std::endl;
+            
+        
             switch (stack.top().getType()) {
-                case INT: closureList[currentClosureIndex].cachedValue = stack.top().getIntValue(); break;
-                case FLOAT: closureList[currentClosureIndex].cachedValue = stack.top().getFloatValue(); break;
-                case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = stack.top().getClosureIndex(); break;
+                case INT: closureList[currentClosureIndex].cachedValue = 
+                    stack.top().getIntValue(); 
+                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    break;
+                case FLOAT: closureList[currentClosureIndex].cachedValue = 
+                    stack.top().getFloatValue(); 
+                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    break;
+                case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = 
+                    stack.top().getClosureIndex(); 
+                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    break;
             }
 
+        
             stack.pop();
 
-            // TODO: Check if I have dependants!!
-            // Need to run any closure which depends on a variable which contains this closure's index
-            // This is hard. 
-            // for (std::string dep : closureList[currentClosureIndex].) {
-
-            // }
         }
-        // stack.push(currentClosureIndex);
+
+        programCounter = returnAddrStack.top().codePointer;
+        currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+        currentClosureIndex = returnAddrStack.top().closureIndex;
+        returnAddrStack.pop();
     }
 
     void rerunClosure(size_t closureIndex) {
         std::cout << "Rerunning closure with index " << closureIndex << std::endl;
-        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter});
+        returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
         programCounter = closureList[closureIndex].codePointer;

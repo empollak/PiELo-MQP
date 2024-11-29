@@ -64,13 +64,13 @@ namespace PiELo{
                 break;
 
             case LOAD_TO_STACK:
-                printf("Loading!\n");
-                std::cout << " symbol table has: " << std::endl;
-                for (auto it : *currentSymbolTable) {
-                    std::cout << "  " << it.first << ":";
-                    it.second.print();
-                    std::cout << std::endl;
-                }
+                // printf("Loading!\n");
+                // std::cout << " symbol table has: " << std::endl;
+                // for (auto it : *currentSymbolTable) {
+                //     std::cout << "  " << it.first << ":";
+                //     it.second.print();
+                //     std::cout << std::endl;
+                // }
                 // std::cout << "Bytecode size: " << bytecode.size() << " pc: " << programCounter << std::endl;
                 // std::cout << "type: " << bytecode[programCounter].type << std::endl;
                 name = *bytecode[++programCounter].asString;

@@ -291,6 +291,7 @@ namespace PiELo {
     struct scopeData{
         symbolTable* scopeSymbolTable;
         codePtr codePointer;
+        size_t closureIndex;
     };
 
     

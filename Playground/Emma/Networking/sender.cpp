@@ -42,6 +42,10 @@ int main() {
         perror("setsockopt");
     }
 
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(int)) < 0) {
+        perror("setsockopt");
+    }
+
     char istr[MAXBUFLEN];
     sockaddr_in* ipv4 = (sockaddr_in*) res->ai_addr;
     inet_ntop(res->ai_family, &ipv4->sin_addr, istr, MAXBUFLEN);

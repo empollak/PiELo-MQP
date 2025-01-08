@@ -83,6 +83,18 @@ int main(int argc, char **argv)
         std::printf("Client bound to %s:%d\n", ipStr, ntohs(localAddr.sin_port));
     }
 
+    std::string initMessage = "init";
+    ssize_t sentBytes = sendto(sockfd,
+                               initMessage.c_str(),
+                               initMessage.size(),
+                               0,
+                               routerinfo->ai_addr,
+                               routerinfo->ai_addrlen);
+    if (sentBytes == -1)
+    {
+        perror("client: sendto");
+    }
+
     // prompt user for a message, then send to router
     std::string message;
     std::cout << "Enter a message to send to router: ";
@@ -91,7 +103,7 @@ int main(int argc, char **argv)
         std::cerr << "Error reading from stdin\n";
     }
 
-    ssize_t sentBytes = sendto(sockfd,
+    sentBytes = sendto(sockfd,
                                message.c_str(),
                                message.size(),
                                0,

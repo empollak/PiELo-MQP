@@ -19,7 +19,8 @@ int main()
     struct sockaddr_in their_addr;
     struct ip_mreq mreq;
     int numbytes;
-    int ttl = 1; // Example TTL value
+    int ttl = 64;
+    //int ttl = 1; // Example TTL value
     char message[MAX_MSG_LEN];
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {

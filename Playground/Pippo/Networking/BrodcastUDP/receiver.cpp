@@ -22,7 +22,7 @@ int main() {
 
     // Allow multiple sockets to use the same PORT number
     int reuse = 1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
         perror("setsockopt (SO_REUSEADDR)");
         return 1;
     }

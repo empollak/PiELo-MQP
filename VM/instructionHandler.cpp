@@ -6,29 +6,30 @@
 #include "instructions/simpleInstructions.h"
 #include "instructions/storeLoad.h"
 #include "vm.h"
+#ifdef __DEBUG_INSTRUCTIONS__
+#define debugPrint(e) std::cout << e;
+#else
+#define debugPrint(e)
+#endif
 
 namespace PiELo{
-
-    // Variable* findVariable(std::string name) {
-
-    // }
-
     void handleInstruction(opCodeInstructionOrArgument op) {
         if (op.type != op.INSTRUCTION) {
             throw std::runtime_error("Attempted to run non-instruction as instruction");
         }
         Instruction instruction = op.asInstruction;
-        std::cout << "Running instruction " << instruction << std::endl;
+        debugPrint("Running instruction " << instruction << std::endl);
         std::string name;
+        
         ClosureData closure;
         switch(instruction) {
             case DEFINE_CLOSURE:
                 // Get closure name, closure data from bytecode
-                std::cout << "running define_closure" << std::endl;
+                debugPrint("running define_closure");
                 name = *bytecode[++programCounter].asString;
-                std::cout << " Got name " << name << std::endl;
+                debugPrint(" Got name " << name);
                 closure = *bytecode[++programCounter].asClosure;
-                std::cout << " got closure " << std::endl;
+                debugPrint(" got closure " << std::endl);
                 defineClosure(name, closure);
                 break;
             case CALL_CLOSURE_NO_STORE:
@@ -52,6 +53,7 @@ namespace PiELo{
                 break;
             case STORE_TAGGED:
                 name = *bytecode[++programCounter].asString;
+                debugPrint("instructionHandler: store name: " << name << std::endl);
                 std::cout << "instructionHandler: store name: " << name << std::endl;
                 storeTagged(name, *bytecode[++programCounter].asString);
                 break;

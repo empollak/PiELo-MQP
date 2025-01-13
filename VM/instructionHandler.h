@@ -1,6 +1,7 @@
 #pragma once
 #include "instructions/closureInstructions.h"
 
+
 namespace PiELo {
     enum Instruction {
         NOP,

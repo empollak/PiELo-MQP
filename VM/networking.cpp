@@ -50,6 +50,17 @@ namespace PiELo {
             return 1;
         }
 
+        // Pause for 10 microseconds when checking for messages
+        // Thanks to https://stackoverflow.com/questions/15941005/making-recvfrom-function-non-blocking
+        timeval read_timeout;
+        read_timeout.tv_sec = 0;
+        read_timeout.tv_usec = 10;
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)) != 0) {
+            perror("setsockopt receive timeout");
+            return 1;
+        }
+
+
         // bind to an ephemeral port so we can receive data
         if (bindEphemeralPort(sockfd) == -1)
         {
@@ -97,5 +108,44 @@ namespace PiELo {
         ssize_t sentBytes = sendto(socketfd, (void*) &msg, sizeof(msg), 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
         std::cout << "Sent " << sentBytes << " bytes update for variable " << name << " to router." << std::endl;
         return currentTime;
+    }
+
+    // Check for a message and update a variable or rebroadcast own value if necessary
+    void checkForMessage(void) {
+        // wait to receive something from the router (blocking!!)
+        Message msg;
+        sockaddr_in fromAddr;
+        socklen_t fromLen = sizeof(fromAddr);
+
+        ssize_t numBytes = recvfrom(socketfd, &msg, sizeof(Message), 0,
+                                    (sockaddr *)&fromAddr,
+                                    &fromLen);
+        if (numBytes == -1)
+        {   
+            // errno set to EAGAIN means no data was available.
+            if (errno == EAGAIN) return;
+            perror("client: recvfrom");
+            exit(-1);
+        } else if (numBytes != sizeof(Message)) {
+            printf("Only received %ld bytes.\n", numBytes);
+        }
+        std::cout << "Received update to variable " << msg.variableName;
+        try {
+            Variable *var = &taggedTable.at(msg.variableName);
+
+            // If the message has a newer timestamp than the variable
+            if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||
+                (var->lastUpdated.tv_sec == msg.variableLastUpdated.tv_sec && var->lastUpdated.tv_usec < msg.variableLastUpdated.tv_usec)) {
+                var->mutateValue(msg.data);
+                var->lastUpdated = msg.variableLastUpdated;
+                std::cout << ". Local version was out of date. Updated." << std::endl;
+            } else {
+                std::cout << ". Local version is newer. Brooadcasting update." << std::endl;
+                broadcastVariable(msg.variableName, var->getVariableData());
+            }
+        } catch(...) {
+            std::cout << ". Local version did not exist." << std::endl;
+            exit(-1);
+        }
     }
 }

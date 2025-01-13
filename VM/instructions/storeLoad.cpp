@@ -3,6 +3,11 @@
 #include "../instructionHandler.h"
 #include "../networking.h"
 #include <sys/time.h>
+#ifdef __DEBUG_INSTRUCTIONS__
+#define debugPrint(e) std::cout << e;
+#else
+#define debugPrint(e)
+#endif
 
 namespace PiELo {
  void storeLocal(std::string varName){
@@ -18,21 +23,23 @@ namespace PiELo {
     }
 
     void loadToStack(const std::string& varName){
-        std::cout << "Beginning loadToStack " << std::endl;
+        debugPrint("Beginning loadToStack " << std::endl);
         Variable* var = nullptr;
 
         // search local sym table
-        std::cout << "Searching current symbol table for " << varName << std::endl;
-        std::cout << " symbol table has: " << std::endl;
-        for (auto it : *currentSymbolTable) {
-            std::cout << "  " << it.first << ":";
-            it.second.print();
-            std::cout << std::endl;
-        }
+        #ifdef __DEBUG_INSTRUCTIONS__
+            std::cout << "Searching current symbol table for " << varName << std::endl;
+            std::cout << " symbol table has: " << std::endl;
+            for (auto it : *currentSymbolTable) {
+                std::cout << "  " << it.first << ":";
+                it.second.print();
+                std::cout << std::endl;
+            }
+        #endif
 
         auto local = currentSymbolTable -> find(varName);
         if (local != currentSymbolTable -> end()) {
-            std::cout << "Found it! " << std::endl;
+            debugPrint("Found it! " << std::endl);
             var = &(local -> second);
         }
 
@@ -49,10 +56,12 @@ namespace PiELo {
         }
 
         stack.push(*var);
+        #ifdef __DEBUG_INSTRUCTIONS__
         std::cout << "load result: ";
         std::cout << "Stack top: ";
         stack.top().print();
         std::cout << std::endl;
+        #endif
     }
 
     void tagVariable(const std::string& varName, const std::string& tagName) {

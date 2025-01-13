@@ -50,6 +50,7 @@ namespace PiELo {
         // std::cout << "now running instruction " << bytecode[programCounter].asInstruction << std::endl;
         // int x = bytecode[programCounter].asInstruction;
         // std::cout << "hello" << std::endl;
+        checkForMessage();
         handleInstruction(bytecode[programCounter]);
         programCounter++;
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;

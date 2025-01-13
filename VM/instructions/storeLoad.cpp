@@ -1,6 +1,7 @@
 #include "storeLoad.h"
 #include "../vm.h"
 #include "../instructionHandler.h"
+#include <sys/time.h>
 
 namespace PiELo {
  void storeLocal(std::string varName){
@@ -115,6 +116,7 @@ namespace PiELo {
             // TODO: Decide what to do with the tag
             var->tags.push_back(Tag{tagName});
             var->mutateValue(stack.top());
+            gettimeofday(&(var->lastUpdated), NULL);
 
             // TODO: fix this
             if (var->dependants.size() > 0) {
@@ -145,6 +147,7 @@ namespace PiELo {
         } catch (...) {
             taggedTable[varName] = stack.top();
             taggedTable[varName].tags.push_back(Tag{tagName});
+            gettimeofday(&taggedTable[varName].lastUpdated, NULL);
         }
         stack.pop();
     }

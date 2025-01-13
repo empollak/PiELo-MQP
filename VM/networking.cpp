@@ -93,5 +93,9 @@ namespace PiELo {
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
         msg.data = d;
+
+        ssize_t sentBytes = sendto(socketfd, (void*) &msg, sizeof(msg), 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
+        std::cout << "Sent " << sentBytes << " bytes update for variable " << name << " to router." << std::endl;
+        return currentTime;
     }
 }

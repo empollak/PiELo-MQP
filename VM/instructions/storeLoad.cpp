@@ -1,6 +1,7 @@
 #include "storeLoad.h"
 #include "../vm.h"
 #include "../instructionHandler.h"
+#include "../networking.h"
 #include <sys/time.h>
 
 namespace PiELo {
@@ -118,7 +119,6 @@ namespace PiELo {
             var->mutateValue(stack.top());
             gettimeofday(&(var->lastUpdated), NULL);
 
-            // TODO: fix this
             if (var->dependants.size() > 0) {
                 // Store where we currently are
                 std::cout << " " << varName << " has closure index dependants: ";
@@ -149,6 +149,9 @@ namespace PiELo {
             taggedTable[varName].tags.push_back(Tag{tagName});
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
         }
+
+        // Can assume that the variable now must exist in the tagged table
+        broadcastVariable(varName, taggedTable[varName].getVariableData());
         stack.pop();
     }
 }

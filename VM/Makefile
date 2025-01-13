@@ -6,7 +6,7 @@ EXECUTABLE = VM
 INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o)
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
 
-all: dir $(EXECUTABLE)
+all: dir $(EXECUTABLE) router
 
 dir:
 	mkdir -p $(BUILDDIR)
@@ -22,6 +22,9 @@ $(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
 
 $(BUILDDIR)/main.o: main.cpp
 	g++ -c main.cpp -o $(BUILDDIR)/main.o
+
+router: router.cpp vm.h networking.h
+	g++ router.cpp -o router
 
 clean:
 	rm $(BUILDDIR)/*.o $(BUILDDIR)/$(INSDIR)/*.o

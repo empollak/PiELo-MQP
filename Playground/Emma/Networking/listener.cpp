@@ -63,10 +63,14 @@ int main() {
     printf("Listening on %s:%s\n", istr, PORT);
 
     addr_len = sizeof their_addr;
-    if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
-        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-        perror("recvfrom");
-        exit(1);
+    int count = 0;
+    while(true) {
+        if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
+            (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+            perror("recvfrom");
+            exit(1);
+        }
+        printf("Received %d messages.\n", ++count);
     }
 
     printf("listener: packet is %d bytes long\n", numbytes);

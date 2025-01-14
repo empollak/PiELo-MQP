@@ -52,9 +52,11 @@ int main() {
     printf("Sending on %s:%s\n", istr, PORT);
 
     char* string = "Hello!";
-    if ((numbytes = sendto(sockfd, string, strlen(string), 0, res->ai_addr, res->ai_addrlen)) == -1) {
-        perror("sender: sendto");
-        exit(1);
+    for (int i = 0; i < 100; i++) {
+        if ((numbytes = sendto(sockfd, string, strlen(string), 0, res->ai_addr, res->ai_addrlen)) == -1) {
+            perror("sender: sendto");
+            exit(1);
+        }
     }
     printf("Sent %d bytes\n", numbytes);
     freeaddrinfo(res);

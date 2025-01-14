@@ -17,7 +17,6 @@ namespace PiELo {
         myAddr.sin_family = AF_INET;
         myAddr.sin_addr.s_addr = htonl(INADDR_ANY);
         myAddr.sin_port = 0; // 0 => let OS choose ephemeral port
-
         if (bind(sockfd, (sockaddr *)&myAddr, sizeof(myAddr)) == -1)
         {
             perror("client: bind ephemeral");
@@ -104,9 +103,14 @@ namespace PiELo {
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
         msg.data = d;
+        char ipStr[INET_ADDRSTRLEN];
+        inet_ntop(routerinfo->ai_family, &routerinfo->ai_addr, ipStr, sizeof(ipStr));
+        in_port_t port;
+        if (routerinfo->ai_family == AF_INET) port = ((sockaddr_in*) routerinfo->ai_addr)->sin_port;
+        else port = ((sockaddr_in6*) routerinfo->ai_addr)->sin6_port;
 
         ssize_t sentBytes = sendto(socketfd, (void*) &msg, sizeof(msg), 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
-        std::cout << "Sent " << sentBytes << " bytes update for variable " << name << " to router." << std::endl;
+        std::cout << "Sent " << sentBytes << " bytes update for variable " << name << " to router at " << ipStr <<":"<< port << " family" << routerinfo->ai_family << std::endl;
         return currentTime;
     }
 
@@ -129,7 +133,11 @@ namespace PiELo {
         } else if (numBytes != sizeof(Message)) {
             printf("Only received %ld bytes.\n", numBytes);
         }
-        std::cout << "Received update to variable " << msg.variableName;
+
+        // print out message
+        char senderIp[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &fromAddr.sin_addr, senderIp, sizeof(senderIp));
+        std::cout << "Received update to variable " << msg.variableName << " from " << senderIp << ":" << ntohs(fromAddr.sin_port);
         try {
             Variable *var = &taggedTable.at(msg.variableName);
 

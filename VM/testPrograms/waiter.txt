@@ -2,6 +2,7 @@ push i 0
 store tagged var global
 load var
 label loop
+debug_print TEST
 pop
 load var
 jmp_if_zero loop

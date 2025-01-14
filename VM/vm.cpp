@@ -1,6 +1,7 @@
 #include "vm.h"
 #include "parser.h"
 #include "networking.h"
+#include "robotFunctions.h"
 
 namespace PiELo {
     Type stringToType(std::string s) {
@@ -47,9 +48,8 @@ namespace PiELo {
     }
 
     VMState step() {
-        // std::cout << "now running instruction " << bytecode[programCounter].asInstruction << std::endl;
-        // int x = bytecode[programCounter].asInstruction;
-        // std::cout << "hello" << std::endl;
+        // TODO: move the robot functions to a registered c function?
+        robot.updatePos();
         checkForMessage();
         handleInstruction(bytecode[programCounter]);
         programCounter++;

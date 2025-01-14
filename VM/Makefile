@@ -19,9 +19,9 @@ $(EXECUTABLE): $(OBJECTS) $(BUILDDIR)/main.o
 
 # see https://www.gnu.org/software/make/manual/html_node/Static-Usage.html for details
 $(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
-	g++ -c $< -o $@
+	g++ -c $< -o $@ -D __DEBUG_INSTRUCTIONS__
 
-$(BUILDDIR)/main.o: main.cpp
+$(BUILDDIR)/main.o: main.cpp robotFunctions.cpp robotFunctions.h
 	g++ -c main.cpp -o $(BUILDDIR)/main.o 
 
 router: router.cpp vm.h networking.h

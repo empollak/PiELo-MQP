@@ -199,7 +199,8 @@ void jump(){
     programCounter++;
     if(bytecode.at(programCounter).getTypeAsString() == "INT"){
         int target_address = bytecode.at(programCounter).getIntFromMemory();
-        programCounter = target_address;
+        // PC gets incremented by PiELo::step() finishing
+        programCounter = target_address - 1;
     } else {
         throw AddressNotDecleredException();
         state = ERROR;
@@ -212,7 +213,8 @@ void jump_if_zero(){
     if((top.getType() == FLOAT && top.getFloatValue() == 0.0f) || (top.getType() == INT && top.getIntValue() == 0)){
         if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();
-            programCounter = target_address;
+            // PC gets incremented by PiELo::step() finishing
+            programCounter = target_address - 1;
         } else {
             throw AddressNotDecleredException();
             state = ERROR;
@@ -226,7 +228,8 @@ void jump_if_not_zero(){
     if((top.getType() == FLOAT && top.getFloatValue() != 0.0f) || (top.getType() == INT && top.getIntValue() != 0)){
         if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();
-            programCounter = target_address;
+            // PC gets incremented by PiELo::step() finishing
+            programCounter = target_address - 1;
         } else {
             throw AddressNotDecleredException();
             state = ERROR;

@@ -15,6 +15,8 @@
 namespace PiELo{
     void handleInstruction(opCodeInstructionOrArgument op) {
         if (op.type != op.INSTRUCTION) {
+            std::cout << "Attempted to run a type " << op.getTypeAsString() << " from pc " << programCounter << std::endl;
+            std::cout << *op.asString << std::endl;
             throw std::runtime_error("Attempted to run non-instruction as instruction");
         }
         Instruction instruction = op.asInstruction;

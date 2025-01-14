@@ -155,7 +155,9 @@ void Parser::handleSimple(const Instruction opcode) {
 
 void Parser::handleFunctionOrLabel(const std::string& type) {
     int32_t position = bytecode.size();
-    labelledLocations[parseNextString()] = position;
+    std::string locName = parseNextString();
+    std::cout << "Parsed label " << locName << " at pos " << position << std::endl;
+    labelledLocations[locName] = position;
 }
 
 void Parser::handleJump(const Instruction opcode) {
@@ -235,7 +237,7 @@ float Parser::parseNextFloat() {
 std::string Parser::parseNextString() {
     std::string value;
     file >> value;
-    std::cout << "parsed next string " << value << " addr: " << &value <<  std::endl;
+    // std::cout << "parsed next string " << value << " addr: " << &value <<  std::endl;
     return value;
 }
 

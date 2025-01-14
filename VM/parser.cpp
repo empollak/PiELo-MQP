@@ -33,6 +33,7 @@ void Parser::initHandlers() {
         {"define_closure", [&]() {printf("Parsing: define_closure\n"); handleDefineClosure(); }},
         {"call_closure", [&]() {printf("parsing: call_closure\n"); handleCallClosure(); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
+        {"call_c_closure", [&]() {Parser::handleCallC();}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
         {"debug_print", [&]() {handleDebugPrint();}}
     };
@@ -154,7 +155,9 @@ void Parser::handleSimple(const Instruction opcode) {
 
 void Parser::handleFunctionOrLabel(const std::string& type) {
     int32_t position = bytecode.size();
-    labelledLocations[parseNextString()] = position;
+    std::string locName = parseNextString();
+    std::cout << "Parsed label " << locName << " at pos " << position << std::endl;
+    labelledLocations[locName] = position;
 }
 
 void Parser::handleJump(const Instruction opcode) {
@@ -214,6 +217,11 @@ void Parser::handleCallClosure() {
     }
 }
 
+void Parser::handleCallC() {
+    bytecode.push_back(CALL_C_CLOSURE);
+    bytecode.push_back(parseNextString());
+}
+
 int Parser::parseNextInt() {
     int value;
     file >> value;
@@ -229,7 +237,7 @@ float Parser::parseNextFloat() {
 std::string Parser::parseNextString() {
     std::string value;
     file >> value;
-    std::cout << "parsed next string " << value << " addr: " << &value <<  std::endl;
+    // std::cout << "parsed next string " << value << " addr: " << &value <<  std::endl;
     return value;
 }
 

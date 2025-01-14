@@ -1,0 +1,2 @@
+call_c_closure do_nothing
+end

@@ -1,6 +1,8 @@
 push i 1
 push f 3.4
 add
+store tagged var global
+load var
 label test
 push i 2
 div

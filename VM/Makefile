@@ -4,9 +4,10 @@ BUILDDIR = build
 EXECUTABLE = VM
 # SOURCES = $(wildcard *.cpp,$(INSDIR)/*.cpp)
 INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o)
-OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
+OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
+DEFINES = 
 
-all: dir $(EXECUTABLE)
+all: dir $(EXECUTABLE) router
 
 dir:
 	mkdir -p $(BUILDDIR)
@@ -21,7 +22,10 @@ $(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
 	g++ -c $< -o $@
 
 $(BUILDDIR)/main.o: main.cpp
-	g++ -c main.cpp -o $(BUILDDIR)/main.o
+	g++ -c main.cpp -o $(BUILDDIR)/main.o 
+
+router: router.cpp vm.h networking.h
+	g++ router.cpp -o router
 
 clean:
 	rm $(BUILDDIR)/*.o $(BUILDDIR)/$(INSDIR)/*.o

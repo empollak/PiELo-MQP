@@ -1,0 +1,10 @@
+push i 0
+store tagged var global
+load var
+label loop
+pop
+load var
+jmp_if_zero loop
+pop
+debug_print Loop done!
+end

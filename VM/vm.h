@@ -32,6 +32,9 @@ namespace PiELo {
 
     typedef std::map<std::string, Variable> symbolTable;
 
+
+    typedef timeval timestamp_t;
+
     class VariableData {
         public:
         union {
@@ -224,6 +227,7 @@ namespace PiELo {
         // List of indices in the closure list
         std::vector<size_t> dependants;
         std::vector<Tag> tags;
+        timestamp_t lastUpdated;
 
         Variable() {data.type = NIL;}
 

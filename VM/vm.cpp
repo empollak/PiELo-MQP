@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "parser.h"
+#include "networking.h"
 
 namespace PiELo {
     Type stringToType(std::string s) {
@@ -41,6 +42,7 @@ namespace PiELo {
 
     VMState load(std::string filename) {
         parser.load(filename);
+        if (initNetworking() != 0) return VMState::ERROR;
         return VMState::READY;
     }
 
@@ -48,6 +50,7 @@ namespace PiELo {
         // std::cout << "now running instruction " << bytecode[programCounter].asInstruction << std::endl;
         // int x = bytecode[programCounter].asInstruction;
         // std::cout << "hello" << std::endl;
+        checkForMessage();
         handleInstruction(bytecode[programCounter]);
         programCounter++;
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;

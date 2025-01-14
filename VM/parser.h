@@ -35,6 +35,7 @@ namespace PiELo {
             void handleJump(const Instruction opcode);
             void handleDefineClosure();
             void handleCallClosure();
+            void handleCallC();
 
             void pushIntToCode();
             void pushFloatToCode();

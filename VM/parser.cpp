@@ -33,6 +33,7 @@ void Parser::initHandlers() {
         {"define_closure", [&]() {printf("Parsing: define_closure\n"); handleDefineClosure(); }},
         {"call_closure", [&]() {printf("parsing: call_closure\n"); handleCallClosure(); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
+        {"call_c_closure", [&]() {Parser::handleCallC();}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
         {"debug_print", [&]() {handleDebugPrint();}}
     };
@@ -212,6 +213,11 @@ void Parser::handleCallClosure() {
     } else {
         throwInvalidInstruction("call_closure " + type);
     }
+}
+
+void Parser::handleCallC() {
+    bytecode.push_back(CALL_C_CLOSURE);
+    bytecode.push_back(parseNextString());
 }
 
 int Parser::parseNextInt() {

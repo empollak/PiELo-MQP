@@ -48,6 +48,12 @@ namespace PiELo{
                 rerunClosure(bytecode[++programCounter].asInt);
                 break;
             
+            case CALL_C_CLOSURE:
+                name = *bytecode[++programCounter].asString;
+                debugPrint("Calling c closure: " << name);
+                taggedTable[name].getFunctionPointer()();
+                break;
+            
             case STORE_LOCAL:
                 storeLocal(*bytecode[++programCounter].asString);
                 break;

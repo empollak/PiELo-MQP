@@ -65,4 +65,9 @@ namespace PiELo {
             return &taggedTable.at(name);
         }
     }
+
+    // For now, c closures are limited to no arguments, no calling pielo closures, nothing!
+    void registerFunction(std::string name, funp f) {
+        taggedTable[name] = f;
+    }
 }

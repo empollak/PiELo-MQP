@@ -43,6 +43,7 @@ namespace PiELo {
         CALL_CLOSURE_NO_STORE,
         RET_FROM_CLOSURE,
         RERUN_CLOSURE,
+        CALL_C_CLOSURE,
 
         PRINT,
         DEBUG_PRINT,

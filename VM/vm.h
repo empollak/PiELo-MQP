@@ -32,6 +32,8 @@ namespace PiELo {
 
     typedef std::map<std::string, Variable> symbolTable;
 
+    typedef int (*funp) (void);
+
 
     typedef timeval timestamp_t;
 
@@ -40,8 +42,8 @@ namespace PiELo {
         union {
             int asInt;
             float asFloat;
-            // TODO: Change this to be a pointer lol
             size_t asClosureIndex;
+            funp asFunctionPointer;
         };
         Type type = NIL;
 
@@ -50,6 +52,8 @@ namespace PiELo {
         VariableData(float f) {asFloat = f; type = FLOAT;}
 
         VariableData(size_t s) {asClosureIndex = s; type = PIELO_CLOSURE;}
+
+        VariableData(funp f) {asFunctionPointer = f; type = C_CLOSURE;}
 
         VariableData() {type=NIL;}
 
@@ -237,6 +241,8 @@ namespace PiELo {
 
         Variable(size_t s) {data.type = PIELO_CLOSURE; data.asClosureIndex = s;}
 
+        Variable(funp f) {data.type = C_CLOSURE; data.asFunctionPointer = f;}
+
         Variable(VariableData v) {data = v;}
 
         std::string getTypeAsString() {
@@ -264,6 +270,11 @@ namespace PiELo {
         size_t getClosureIndex() {
             if (data.type != PIELO_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
             return data.asClosureIndex;
+        }
+
+        funp getFunctionPointer() {
+            if (data.type != C_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
+            return data.asFunctionPointer;
         }
 
         // DO NOT USE TO EXTRACT DATA!
@@ -331,4 +342,6 @@ namespace PiELo {
     // Allows comments with #
     // Loads the instructions into the bytecode vector.
     VMState load(std::string filename);
+
+    void registerFunction(std::string name, funp f);
 }

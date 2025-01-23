@@ -1,0 +1,5 @@
+push i 1
+store stig s
+stig_size s
+print
+end

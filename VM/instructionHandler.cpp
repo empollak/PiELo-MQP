@@ -65,6 +65,10 @@ namespace PiELo{
                 // std::cout << "instructionHandler: store name: " << name << std::endl;
                 storeTagged(name);
                 break;
+            case STORE_STIG:
+                name = *bytecode[++programCounter].asString;
+                storeStig(name);
+                break;
             case TAG_VARIABLE:
                 name = *bytecode[++programCounter].asString;
                 tagVariable(name, *bytecode[++programCounter].asString);
@@ -180,6 +184,9 @@ namespace PiELo{
                 break;
             case JMP_IF_NOT_ZERO:
                 jump_if_not_zero();
+                break;
+            default:
+                throw std::runtime_error("Unimplemented instruction! " + instruction);
                 break;
         }
     }

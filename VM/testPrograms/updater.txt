@@ -1,4 +1,6 @@
 push i 1
 store tagged var
+push i 2
+store stig s
 tag variable var global
 end

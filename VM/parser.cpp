@@ -104,7 +104,10 @@ void Parser::handleStore() {
         std::string name = parseNextString();
         std::cout << " parsed: store tag name " << name << std::endl;
         bytecode.push_back(name);  // var name
-    } 
+    } else if (type == "stig") {
+        bytecode.push_back(STORE_STIG);
+        bytecode.push_back(parseNextString());
+    }
     else {
         throwInvalidInstruction("store " + type);
     }

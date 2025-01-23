@@ -12,7 +12,8 @@ namespace PiELo{
         closureTemplates.push_back(closureData);
         stack.push((size_t) (closureTemplates.size() - 1));
         std::cout << " at closureTemplates index " << closureTemplates.size() - 1 << std::endl;
-        storeTagged(closureName, "global");
+        storeTagged(closureName);
+        tagVariable(closureName, "global");
     }
 
     // Expects the stack to have format:
@@ -89,7 +90,8 @@ namespace PiELo{
         // Store the closure's index in the given variable name
         // callClosure updates currentClosureIndex
         stack.push(currentClosureIndex);
-        storeTagged(resultVarName, "global");
+        storeTagged(resultVarName);
+        tagVariable(resultVarName, "global");
     }
 
     // Expects the stack to have format:

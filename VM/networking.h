@@ -20,13 +20,14 @@ namespace PiELo {
 
     struct Message {
         timestamp_t variableLastUpdated;
-        long robotID;
+        char robotID[16];
         long senderX;
         long senderY;
         long senderZ;
         // TODO: Update this or make it the law
         char variableName[100];
         VariableData data;
+        bool isStigmergy;
     };
 
     // Setup sockets and things. Returns 0 on success

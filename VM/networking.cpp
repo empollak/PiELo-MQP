@@ -1,6 +1,7 @@
 #include "networking.h"
 #include <sys/time.h>
 #include "robotFunctions.h"
+#include "vm.h"
 
 #define ROUTER_HOST "localhost"
 #define ROUTER_PORT "5005"
@@ -98,7 +99,7 @@ namespace PiELo {
         Message msg;
         gettimeofday(&msg.variableLastUpdated, NULL);
         strncpy(msg.variableName, name.c_str(), 100);
-        msg.robotID = 0;
+        strncpy(msg.robotID, (char*) robotID, 16);
         msg.senderX = robot.getRobotPos().x;
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;

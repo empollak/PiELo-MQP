@@ -3,6 +3,7 @@
 #include "networking.h"
 #include "robotFunctions.h"
 
+
 namespace PiELo {
     Type stringToType(std::string s) {
         // Thanks to https://stackoverflow.com/questions/313970/how-to-convert-an-instance-of-stdstring-to-lower-case
@@ -37,11 +38,14 @@ namespace PiELo {
     size_t currentClosureIndex;
 
     VMState state;
+    
+    uuid_t robotID;
 
     Parser parser;   
 
 
     VMState load(std::string filename) {
+        uuid_generate_random(robotID);
         parser.load(filename);
         if (initNetworking() != 0) return VMState::ERROR;
         return VMState::READY;

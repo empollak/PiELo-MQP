@@ -62,7 +62,7 @@ namespace PiELo{
             case STORE_TAGGED:
                 name = *bytecode[++programCounter].asString;
                 debugPrint("instructionHandler: store name: " << name << std::endl);
-                std::cout << "instructionHandler: store name: " << name << std::endl;
+                // std::cout << "instructionHandler: store name: " << name << std::endl;
                 storeTagged(name, *bytecode[++programCounter].asString);
                 break;
             case TAG_VARIABLE:

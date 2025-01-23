@@ -6,6 +6,7 @@
 #include "exceptions.h"
 #include "instructionHandler.h"
 #include <algorithm>
+#include <uuid/uuid.h>
 
 namespace PiELo {
     enum VMState {
@@ -226,8 +227,12 @@ namespace PiELo {
     class Variable {
     private:
         VariableData data;
+        std::map<uuid_t, VariableData> stigmergyData;
+        // VariableData data;
+        
     public:
         bool changed = 0;
+        bool isStigmergy = 0;
         // List of indices in the closure list
         std::vector<size_t> dependants;
         std::vector<Tag> tags;
@@ -258,21 +263,25 @@ namespace PiELo {
         }
 
         float getFloatValue() {
+            if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as float");
             if (data.type != FLOAT) throw InvalidTypeAccessException("FLOAT", getTypeAsString());
             return data.asFloat;
         }
 
         int getIntValue() {
+            if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as int");
             if (data.type != INT) throw InvalidTypeAccessException("INT", getTypeAsString());
             return data.asInt;
         }
 
         size_t getClosureIndex() {
+            if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as closure index");
             if (data.type != PIELO_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
             return data.asClosureIndex;
         }
 
         funp getFunctionPointer() {
+            if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer");
             if (data.type != C_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
             return data.asFunctionPointer;
         }
@@ -331,6 +340,8 @@ namespace PiELo {
     extern size_t currentClosureIndex;
 
     extern VMState state;
+
+    extern uuid_t robotID;
 
     Variable* findVariable(std::string name);
 

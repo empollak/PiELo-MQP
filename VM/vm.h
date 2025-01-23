@@ -36,6 +36,8 @@ namespace PiELo {
     typedef int (*funp) (void);
 
 
+
+    extern std::string robotID;
     typedef timeval timestamp_t;
 
     class VariableData {
@@ -227,7 +229,7 @@ namespace PiELo {
     class Variable {
     private:
         VariableData data;
-        std::map<uuid_t, VariableData> stigmergyData;
+        std::map<std::string, VariableData> stigmergyData;
         // VariableData data;
         
     public:
@@ -293,11 +295,20 @@ namespace PiELo {
 
         Type getType() {return data.type;}
 
-        void mutateValue(float f) {data = f;}
-        void mutateValue(int i) {data = i;}
-        void mutateValue(size_t s) {data = s;}
-        void mutateValue(Variable v) {data = v.data;}
+        void mutateValue(float f) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = f;}
+        void mutateValue(int i) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = i;}
+        void mutateValue(size_t s) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = s;}
+        void mutateValue(Variable v) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = v.data;}
 
+        void updateStigValue(VariableData data) {
+            if (!isStigmergy) throw std::runtime_error("Tried to store stig in a non-stig variable");
+            stigmergyData[robotID] = data;
+        }
+
+        void updateStigValue(Variable v) {
+            updateStigValue(v.data);
+        }
+        
         void print() {
             if(getType() == NIL){
                 std::cout << "nil";
@@ -340,8 +351,6 @@ namespace PiELo {
     extern size_t currentClosureIndex;
 
     extern VMState state;
-
-    extern uuid_t robotID;
 
     Variable* findVariable(std::string name);
 

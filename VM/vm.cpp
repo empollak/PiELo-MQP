@@ -38,14 +38,16 @@ namespace PiELo {
     size_t currentClosureIndex;
 
     VMState state;
-    
-    uuid_t robotID;
+
+    std::string robotID;
 
     Parser parser;   
 
 
     VMState load(std::string filename) {
-        uuid_generate_random(robotID);
+        uuid_t uuid;
+        uuid_generate_random(uuid);
+        robotID = (char*) uuid;
         parser.load(filename);
         if (initNetworking() != 0) return VMState::ERROR;
         return VMState::READY;

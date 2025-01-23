@@ -93,17 +93,18 @@ namespace PiELo {
     }
 
     // Broadcast a variable data
-    timestamp_t broadcastVariable(std::string name, VariableData d) {
+    timestamp_t broadcastVariable(std::string name, Variable v) {
         timestamp_t currentTime;
 
         Message msg;
         gettimeofday(&msg.variableLastUpdated, NULL);
         strncpy(msg.variableName, name.c_str(), 100);
-        strncpy(msg.robotID, (char*) robotID, 16);
+        strncpy(msg.robotID, robotID.c_str(), 16);
         msg.senderX = robot.getRobotPos().x;
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
-        msg.data = d;
+        msg.data = v.getVariableData();
+        msg.isStigmergy = v.isStigmergy;
         char ipStr[INET_ADDRSTRLEN];
         inet_ntop(routerinfo->ai_family, &routerinfo->ai_addr, ipStr, sizeof(ipStr));
         in_port_t port;

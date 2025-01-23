@@ -14,6 +14,8 @@
 static const char *PORT = "5005";
 static const int MAXBUFLEN = 512;
 
+int currentID = 0;
+
 // client info
 struct ClientInfo
 {
@@ -114,8 +116,17 @@ int main()
 
             char ipStr[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &theirAddr.sin_addr, ipStr, sizeof(ipStr));
-            std::printf("New client registered: %s:%d\n",
-                        ipStr, ntohs(theirAddr.sin_port));
+            std::printf("New client registered: %s:%d, id %d\n",
+                        ipStr, ntohs(theirAddr.sin_port), currentID);
+
+            ssize_t sentBytes = sendto(sockfd, &currentID, sizeof(currentID), 0,
+                                       (sockaddr*) &theirAddr, sizeof(sockaddr_in));
+            if (sentBytes == -1)
+            {
+                perror("router: sendto");
+            }
+            currentID++;
+            if (numBytes == 0) continue; // This is the init ping
         }
 
         // print out message

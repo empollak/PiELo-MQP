@@ -1,4 +1,4 @@
 push i 1
 store tagged var
-tag var global
+tag variable var global
 end

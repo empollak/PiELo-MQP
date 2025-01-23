@@ -37,7 +37,7 @@ namespace PiELo {
 
 
 
-    extern std::string robotID;
+    extern int robotID;
     typedef timeval timestamp_t;
 
     class VariableData {
@@ -229,7 +229,7 @@ namespace PiELo {
     class Variable {
     private:
         VariableData data;
-        std::map<std::string, VariableData> stigmergyData;
+        std::map<int, VariableData> stigmergyData;
         // VariableData data;
         
     public:

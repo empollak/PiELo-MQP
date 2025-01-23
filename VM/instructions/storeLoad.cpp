@@ -66,7 +66,7 @@ namespace PiELo {
 
     void tagVariable(const std::string& varName, const std::string& tagName) {
         Variable* var = nullptr;
-
+        std::cout << "Tagging variable " << varName << " with tag " << tagName << std::endl;
         // search local sym table
         auto local = currentSymbolTable -> find(varName);
         if (local != currentSymbolTable -> end()){

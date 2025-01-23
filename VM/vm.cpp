@@ -39,15 +39,12 @@ namespace PiELo {
 
     VMState state;
 
-    std::string robotID;
+    int robotID = -1;
 
     Parser parser;   
 
 
     VMState load(std::string filename) {
-        uuid_t uuid;
-        uuid_generate_random(uuid);
-        robotID = (char*) uuid;
         parser.load(filename);
         if (initNetworking() != 0) return VMState::ERROR;
         return VMState::READY;

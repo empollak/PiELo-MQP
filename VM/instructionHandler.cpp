@@ -66,7 +66,8 @@ namespace PiELo{
                 storeTagged(name);
                 break;
             case TAG_VARIABLE:
-                tagVariable(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);
+                name = *bytecode[++programCounter].asString;
+                tagVariable(name, *bytecode[++programCounter].asString);
                 break;
 
             case TAG_ROBOT:

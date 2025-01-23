@@ -104,7 +104,6 @@ void Parser::handleStore() {
         std::string name = parseNextString();
         std::cout << " parsed: store tag name " << name << std::endl;
         bytecode.push_back(name);  // var name
-        bytecode.push_back(parseNextString()); // tag name
     } 
     else {
         throwInvalidInstruction("store " + type);
@@ -118,8 +117,11 @@ void Parser::handleTag() {
 
     if (type == "variable") {
         bytecode.push_back(TAG_VARIABLE);
-        bytecode.push_back(parseNextString());  // variable name
-        bytecode.push_back(parseNextString());  // tag name
+        std::string name = parseNextString();
+        std::string tag = parseNextString();
+        std::cout << "Parsed tag variable " << name << " with tag " << tag << std::endl;
+        bytecode.push_back(name);  // variable name
+        bytecode.push_back(tag);  // tag name
     } else if (type == "robot") {
         bytecode.push_back(TAG_ROBOT);
         bytecode.push_back(parseNextString());  // tag name

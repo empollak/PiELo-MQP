@@ -84,6 +84,23 @@ namespace PiELo {
         }
 
         socketfd = sockfd;
+        std::cout << "Pinging router for ID" << std::endl;
+        sendto(socketfd, "", 0, 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
+        sockaddr_in fromAddr;
+        socklen_t fromLen = sizeof(fromAddr);
+        while (robotID == -1) {
+            ssize_t numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
+                                        (sockaddr *)&fromAddr,
+                                        &fromLen);
+            if (numBytes == -1)
+            {   
+                // errno set to EAGAIN means no data was available.
+                if (errno == EAGAIN) continue;
+                perror("client: recvfrom");
+                exit(-1);
+            }
+        }
+        std::cout << "My ID is " << robotID << std::endl;
         return 0;
     }
 
@@ -99,12 +116,13 @@ namespace PiELo {
         Message msg;
         gettimeofday(&msg.variableLastUpdated, NULL);
         strncpy(msg.variableName, name.c_str(), 100);
-        strncpy(msg.robotID, robotID.c_str(), 16);
+        msg.robotID = robotID;
         msg.senderX = robot.getRobotPos().x;
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
         msg.data = v.getVariableData();
         msg.isStigmergy = v.isStigmergy;
+
         char ipStr[INET_ADDRSTRLEN];
         inet_ntop(routerinfo->ai_family, &routerinfo->ai_addr, ipStr, sizeof(ipStr));
         in_port_t port;

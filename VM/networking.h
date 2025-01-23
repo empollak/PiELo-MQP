@@ -20,7 +20,7 @@ namespace PiELo {
 
     struct Message {
         timestamp_t variableLastUpdated;
-        char robotID[16];
+        int robotID;
         long senderX;
         long senderY;
         long senderZ;

@@ -114,17 +114,16 @@ namespace PiELo {
         }
     }
 
-    void storeTagged(const std::string& varName, const std::string& tagName){
+    void storeTagged(const std::string& varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
         }
-        std::cout << "Storing variable " << varName << " tag " << tagName << std::endl;
+        std::cout << "Storing variable " << varName << std::endl;
         try {
             // This will throw an error if varName is not found
             Variable* var = &taggedTable.at(varName);
 
             // TODO: Decide what to do with the tag
-            var->tags.push_back(Tag{tagName});
             var->mutateValue(stack.top());
             gettimeofday(&(var->lastUpdated), NULL);
 
@@ -155,7 +154,6 @@ namespace PiELo {
             }
         } catch (...) {
             taggedTable[varName] = stack.top();
-            taggedTable[varName].tags.push_back(Tag{tagName});
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
         }
 

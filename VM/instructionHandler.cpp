@@ -63,7 +63,7 @@ namespace PiELo{
                 name = *bytecode[++programCounter].asString;
                 debugPrint("instructionHandler: store name: " << name << std::endl);
                 // std::cout << "instructionHandler: store name: " << name << std::endl;
-                storeTagged(name, *bytecode[++programCounter].asString);
+                storeTagged(name);
                 break;
             case TAG_VARIABLE:
                 tagVariable(*bytecode[++programCounter].asString, *bytecode[++programCounter].asString);

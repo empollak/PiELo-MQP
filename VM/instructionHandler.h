@@ -34,6 +34,7 @@ namespace PiELo {
 
         STORE_LOCAL,
         STORE_TAGGED,
+        STORE_STIG,
         TAG_VARIABLE,
         TAG_ROBOT,
         LOAD_TO_STACK,  

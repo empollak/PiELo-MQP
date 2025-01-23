@@ -51,16 +51,6 @@ namespace PiELo {
             return 1;
         }
 
-        // Pause for 10 microseconds when checking for messages
-        // Thanks to https://stackoverflow.com/questions/15941005/making-recvfrom-function-non-blocking
-        timeval read_timeout;
-        read_timeout.tv_sec = 0;
-        read_timeout.tv_usec = 10;
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)) != 0) {
-            perror("setsockopt receive timeout");
-            return 1;
-        }
-
 
         // bind to an ephemeral port so we can receive data
         if (bindEphemeralPort(sockfd) == -1)
@@ -89,19 +79,37 @@ namespace PiELo {
         sendto(socketfd, "", 0, 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
         sockaddr_in fromAddr;
         socklen_t fromLen = sizeof(fromAddr);
-        while (robotID == -1) {
-            ssize_t numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
-                                        (sockaddr *)&fromAddr,
-                                        &fromLen);
-            if (numBytes == -1)
-            {   
-                // errno set to EAGAIN means no data was available.
-                if (errno == EAGAIN) continue;
-                perror("client: recvfrom");
-                exit(-1);
-            }
+        ssize_t numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
+                                    (sockaddr *)&fromAddr,
+                                    &fromLen);
+        if (numBytes == -1)
+        {   
+            perror("client: recvfrom");
+            exit(-1);
         }
         std::cout << "My ID is " << robotID << std::endl;
+
+
+        std::cout << "Waiting for start signal." << std::endl;
+        numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
+                                        (sockaddr *)&fromAddr,
+                                        &fromLen);
+        if (numBytes == -1)
+        {   
+            perror("client: recvfrom");
+            exit(-1);
+        }
+        std::cout << "Going!" << std::endl;
+
+        // Pause for 10 microseconds when checking for messages
+        // Thanks to https://stackoverflow.com/questions/15941005/making-recvfrom-function-non-blocking
+        timeval read_timeout;
+        read_timeout.tv_sec = 0;
+        read_timeout.tv_usec = 10;
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)) != 0) {
+            perror("setsockopt receive timeout");
+            return 1;
+        }
         return 0;
     }
 

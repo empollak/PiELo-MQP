@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <vector>
 #include <algorithm>
+#include <unistd.h>
+#include <sys/wait.h>
 
 static const char *PORT = "5005";
 static const int MAXBUFLEN = 512;
@@ -78,79 +80,134 @@ int main()
 
     std::vector<ClientInfo> clients; // We'll store addresses here
 
-    // main receive-forward loop
-    while (true)
-    {
-        struct sockaddr_in theirAddr;
-        socklen_t addrLen = sizeof(theirAddr);
-        char buf[MAXBUFLEN];
+    int status;
+    pid_t child_pid = fork();
 
-        // block until packet received
-        ssize_t numBytes = recvfrom(sockfd, buf, MAXBUFLEN - 1, 0,
-                                    (struct sockaddr *)&theirAddr, &addrLen);
-        if (numBytes == -1)
-        {
-            perror("router: recvfrom");
-            continue; // keep trying
-        } 
-        buf[numBytes] = '\0'; // null-terminate for printing
+    if (child_pid == -1) {
+        perror("fork");
+        exit(-1);
+    }
 
-        // check if client is known
-        bool found = false;
-        for (auto &client : clients)
+    if (child_pid == 0) {
+        // this is the child
+        // Just wait for some input and then exit
+        std::string input;
+        std::cout << "Child alive!" << std::endl;
+        std::cin >> input;
+        std::cout << "Child dead!" << std::endl;
+        exit(0);
+    }
+    else {
+        // main receive-forward loop (parent)
+        while (true)
         {
-            if (sameAddress(client.addr, theirAddr))
-            {
-                found = true;
-                break;
+            struct sockaddr_in theirAddr;
+            socklen_t addrLen = sizeof(theirAddr);
+            char buf[MAXBUFLEN];
+
+            // std::cout << "waiting" << std::endl;;
+            int wpid = waitpid(child_pid, &status, WNOHANG);
+            // If waitpid returns 0, it means there are no children alive (go signal has already been sent)
+            if (wpid != 0) {
+                // std::cout << "wpid " << wpid << " status " << status << std::endl;
+                if (wpid == -1) {
+                    if (errno != ECHILD) {
+                        perror("waitpid");
+                        exit(-1); // Something actually went wrong
+                    }
+                } else {
+                    std::cout << "Sending go signal!" << std::endl;
+                    // The child just died and the go signal should be sent
+                    for (auto &client : clients)
+                    {
+                        ssize_t sentBytes = sendto(sockfd, "", 0, 0,
+                                                (struct sockaddr *)&client.addr, client.addrLen);
+                        if (sentBytes == -1)
+                        {
+                            perror("router: sendto");
+                        }
+                    }
+                }
             }
-        }
-
-        // if unknown add to list
-        if (!found)
-        {
-            ClientInfo ci;
-            ci.addr = theirAddr;
-            ci.addrLen = addrLen;
-            clients.push_back(ci);
-
-            char ipStr[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &theirAddr.sin_addr, ipStr, sizeof(ipStr));
-            std::printf("New client registered: %s:%d, id %d\n",
-                        ipStr, ntohs(theirAddr.sin_port), currentID);
-
-            ssize_t sentBytes = sendto(sockfd, &currentID, sizeof(currentID), 0,
-                                       (sockaddr*) &theirAddr, sizeof(sockaddr_in));
-            if (sentBytes == -1)
-            {
-                perror("router: sendto");
+            
+            // Set timeout to 10 microseconds
+            timeval read_timeout;
+            read_timeout.tv_sec = 0;
+            read_timeout.tv_usec = 10;
+            if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)) != 0) {
+                perror("setsockopt receive timeout");
+                return 1;
             }
-            currentID++;
-            if (numBytes == 0) continue; // This is the init ping
-        }
 
-        // print out message
-        char senderIp[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &theirAddr.sin_addr, senderIp, sizeof(senderIp));
-        if (numBytes != sizeof(PiELo::Message)) {
-            printf("Got incorrectly sized packet from %s:%d. Got %ld bytes.\n", senderIp, ntohs(theirAddr.sin_port), numBytes);
-            continue;
-        }
-        PiELo::Message *msg = (PiELo::Message*) buf;
-        std::printf("Received update to variable %s from %s:%d.\n",
-                    msg->variableName, senderIp, ntohs(theirAddr.sin_port));
+            // block until packet received
+            ssize_t numBytes = recvfrom(sockfd, buf, MAXBUFLEN - 1, 0,
+                                        (struct sockaddr *)&theirAddr, &addrLen);
+            if (numBytes == -1)
+            {   
+                // EAGAIN means nothing was available
+                if(errno != EAGAIN) perror("router: recvfrom");
+                continue; // keep trying
+            } 
+            buf[numBytes] = '\0'; // null-terminate for printing
 
-        // forward the message to all clients
-        for (auto &client : clients)
-        {
-            // if (sameAddress(client.addr, theirAddr)) continue;
-
-            ssize_t sentBytes = sendto(sockfd, buf, numBytes, 0,
-                                       (struct sockaddr *)&client.addr, client.addrLen);
-            if (sentBytes == -1)
+            // check if client is known
+            bool found = false;
+            for (auto &client : clients)
             {
-                perror("router: sendto");
+                if (sameAddress(client.addr, theirAddr))
+                {
+                    found = true;
+                    break;
+                }
             }
+
+            // if unknown add to list
+            if (!found)
+            {
+                ClientInfo ci;
+                ci.addr = theirAddr;
+                ci.addrLen = addrLen;
+                clients.push_back(ci);
+
+                char ipStr[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &theirAddr.sin_addr, ipStr, sizeof(ipStr));
+                std::printf("New client registered: %s:%d, id %d\n",
+                            ipStr, ntohs(theirAddr.sin_port), currentID);
+
+                ssize_t sentBytes = sendto(sockfd, &currentID, sizeof(currentID), 0,
+                                        (sockaddr*) &theirAddr, sizeof(sockaddr_in));
+                if (sentBytes == -1)
+                {
+                    perror("router: sendto");
+                }
+                currentID++;
+                if (numBytes == 0) continue; // This is the init ping
+            }
+
+            // print out message
+            char senderIp[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &theirAddr.sin_addr, senderIp, sizeof(senderIp));
+            if (numBytes != sizeof(PiELo::Message)) {
+                printf("Got incorrectly sized packet from %s:%d. Got %ld bytes.\n", senderIp, ntohs(theirAddr.sin_port), numBytes);
+                continue;
+            }
+            PiELo::Message *msg = (PiELo::Message*) buf;
+            std::printf("Received update to variable %s from %s:%d.\n",
+                        msg->variableName, senderIp, ntohs(theirAddr.sin_port));
+
+            // forward the message to all clients
+            for (auto &client : clients)
+            {
+                // if (sameAddress(client.addr, theirAddr)) continue;
+
+                ssize_t sentBytes = sendto(sockfd, buf, numBytes, 0,
+                                        (struct sockaddr *)&client.addr, client.addrLen);
+                if (sentBytes == -1)
+                {
+                    perror("router: sendto");
+                }
+            }
+            
         }
     }
 

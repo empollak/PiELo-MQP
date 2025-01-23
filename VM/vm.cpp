@@ -45,16 +45,17 @@ namespace PiELo {
 
 
     VMState load(std::string filename) {
-        parser.load(filename);
         if (initNetworking() != 0) return VMState::ERROR;
+        parser.load(filename);
         return VMState::READY;
     }
 
     VMState step() {
         // TODO: move the robot functions to a registered c function?
         robot.updatePos();
-        checkForMessage();
+        // std::cout << "At pc " << programCounter << std::endl;
         handleInstruction(bytecode[programCounter]);
+        checkForMessage();
         programCounter++;
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
         return VMState::READY;

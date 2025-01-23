@@ -37,6 +37,8 @@ namespace PiELo {
             void handleCallClosure();
             void handleCallC();
 
+            void handleStigSize();
+
             void pushIntToCode();
             void pushFloatToCode();
             void pushStringToCode();

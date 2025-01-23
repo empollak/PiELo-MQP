@@ -5,6 +5,7 @@
 #include "instructions/comparisonJumps.h"
 #include "instructions/simpleInstructions.h"
 #include "instructions/storeLoad.h"
+#include "instructions/stigmergy.h"
 #include "vm.h"
 #ifdef __DEBUG_INSTRUCTIONS__
 #define debugPrint(e) std::cout << e;
@@ -20,7 +21,9 @@ namespace PiELo{
             throw std::runtime_error("Attempted to run non-instruction as instruction");
         }
         Instruction instruction = op.asInstruction;
-        debugPrint("Running instruction " << instruction << std::endl);
+        if (instruction != SPIN) {
+            debugPrint("Running instruction " << instruction << std::endl);
+        }
         std::string name;
         
         ClosureData closure;
@@ -62,12 +65,16 @@ namespace PiELo{
             case STORE_TAGGED:
                 name = *bytecode[++programCounter].asString;
                 debugPrint("instructionHandler: store name: " << name << std::endl);
-                // std::cout << "instructionHandler: store name: " << name << std::endl;
                 storeTagged(name);
                 break;
             case STORE_STIG:
                 name = *bytecode[++programCounter].asString;
+                debugPrint("instructionHandler: store stig name: " << name << std::endl);
                 storeStig(name);
+                break;
+            case STIG_SIZE:
+                name = *bytecode[++programCounter].asString;
+                stigSize(name);
                 break;
             case TAG_VARIABLE:
                 name = *bytecode[++programCounter].asString;
@@ -185,8 +192,12 @@ namespace PiELo{
             case JMP_IF_NOT_ZERO:
                 jump_if_not_zero();
                 break;
+            case SPIN:
+                programCounter--;
+                break;
             default:
-                throw std::runtime_error("Unimplemented instruction! " + instruction);
+                std::cout << "Attempted to run unimplemented instruction " << instruction << std::endl;
+                throw std::runtime_error("Unimplemented instruction! ");
                 break;
         }
     }

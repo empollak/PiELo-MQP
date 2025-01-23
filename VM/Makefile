@@ -3,7 +3,7 @@ BUILDDIR = build
 
 EXECUTABLE = VM
 # SOURCES = $(wildcard *.cpp,$(INSDIR)/*.cpp)
-INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o)
+INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o stigmergy.o)
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
 DEFINES = 
 

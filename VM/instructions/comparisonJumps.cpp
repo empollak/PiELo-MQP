@@ -210,6 +210,7 @@ void jump(){
 void jump_if_zero(){
     programCounter++;
     Variable top = stack.top();
+    stack.pop();
     if((top.getType() == FLOAT && top.getFloatValue() == 0.0f) || (top.getType() == INT && top.getIntValue() == 0)){
         if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();
@@ -225,6 +226,7 @@ void jump_if_zero(){
 void jump_if_not_zero(){
     programCounter++;
     Variable top = stack.top();
+    stack.pop();
     if((top.getType() == FLOAT && top.getFloatValue() != 0.0f) || (top.getType() == INT && top.getIntValue() != 0)){
         if(bytecode.at(programCounter).getTypeAsString() == "INT" && bytecode.size() > bytecode.at(programCounter).getIntFromMemory()){
             int target_address = bytecode.at(programCounter).getIntFromMemory();

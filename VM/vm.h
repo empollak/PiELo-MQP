@@ -96,7 +96,8 @@ namespace PiELo {
             NIL,
             PIELO_CLOSURE,
             C_CLOSURE,
-            NAME
+            NAME,
+            LOCATION
         } type;
         union {
             Instruction asInstruction;
@@ -104,6 +105,7 @@ namespace PiELo {
             int asInt;
             std::string* asString;
             ClosureData* asClosure;
+            std::string* asLocation;
         };
     
         opCodeInstructionOrArgument(int value_i) : type(INT) {asInt = value_i;}
@@ -143,6 +145,8 @@ namespace PiELo {
             } else if (type == PIELO_CLOSURE) {
                 // printf("Freeing closure \n");
                 delete asClosure;
+            } else if (type == LOCATION) {
+                delete asLocation;
             }
         }
 
@@ -161,6 +165,7 @@ namespace PiELo {
                         *asClosure = *other.asClosure;
                         break;
                     case NAME: asString = new std::string(*other.asString); break;
+                    case LOCATION: asLocation = new std::string(*other.asLocation); break;
                 }
             }
         }
@@ -179,6 +184,7 @@ namespace PiELo {
                         asClosure = new ClosureData;
                         *asClosure = *other.asClosure;
                     case NAME: asString = new std::string(*other.asString); break;
+                    case LOCATION: asLocation = new std::string(*other.asLocation); break;
                 }
             }
             return *this;
@@ -194,6 +200,7 @@ namespace PiELo {
                 case NAME: return "NAME";
                 case INSTRUCTION: return "INSTRUCTION";
                 case STRING: return "STRING";
+                case LOCATION: return "LOCATION";
                 default: return "invalid type";
             }
         }
@@ -300,13 +307,18 @@ namespace PiELo {
         void mutateValue(size_t s) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = s;}
         void mutateValue(Variable v) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = v.data;}
 
-        void updateStigValue(VariableData data) {
+        void updateStigValue(int id, VariableData data) {
             if (!isStigmergy) throw std::runtime_error("Tried to store stig in a non-stig variable");
-            stigmergyData[robotID] = data;
+            stigmergyData[id] = data;
         }
 
-        void updateStigValue(Variable v) {
-            updateStigValue(v.data);
+        void updateStigValue(int id, Variable v) {
+            updateStigValue(id, v.data);
+        }
+
+        int getStigSize() {
+            if (!isStigmergy) throw std::runtime_error("Tried to get stig size of non-stig variable");
+            return stigmergyData.size();
         }
         
         void print() {

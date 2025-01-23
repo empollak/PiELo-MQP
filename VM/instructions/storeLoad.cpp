@@ -114,6 +114,35 @@ namespace PiELo {
         }
     }
 
+    void handleDependants(Variable& var) {
+        if (var.dependants.size() > 0) {
+            // Store where we currently are
+            std::cout << " Variable has closure index dependants: ";
+            returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
+            
+            std::stack<scopeData> dependants;
+            for (int i = 0; i < var.dependants.size(); i++) {
+                // Push the info of each dependant closure and all of its dependants to the dependants stack
+                recursivelyAddDependantsOfClosureToReturnAddrStack(var.dependants[i], dependants);
+            }
+
+            // Reverse the order of the found dependants. This ensures that parent nodes are updated before their children
+            size_t numDeps = dependants.size();
+            for (size_t i = 0; i < numDeps; i++) {
+                returnAddrStack.push(dependants.top());
+                dependants.pop();
+            }
+            std::cout << std::endl;
+
+            // Go to the first closure in the list
+            programCounter = returnAddrStack.top().codePointer;
+            currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+            currentClosureIndex = returnAddrStack.top().closureIndex;
+            returnAddrStack.pop();
+            std::cout << " Jumped to PC " << programCounter << std::endl;
+        }
+    }
+
     void storeTagged(const std::string& varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
@@ -126,31 +155,7 @@ namespace PiELo {
             var->mutateValue(stack.top());
             gettimeofday(&(var->lastUpdated), NULL);
 
-            if (var->dependants.size() > 0) {
-                // Store where we currently are
-                std::cout << " " << varName << " has closure index dependants: ";
-                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
-                
-                std::stack<scopeData> dependants;
-                for (int i = 0; i < var->dependants.size(); i++) {
-                    // Push the info of each dependant closure and all of its dependants to the dependants stack
-                    recursivelyAddDependantsOfClosureToReturnAddrStack(var->dependants[i], dependants);
-                }
-
-                // Reverse the order of the found dependants. This ensures that parent nodes are updated before their children
-                size_t numDeps = dependants.size();
-                for (size_t i = 0; i < numDeps; i++) {
-                    returnAddrStack.push(dependants.top());
-                    dependants.pop();
-                }
-                std::cout << std::endl;
-
-                // Go to the first closure in the list
-                programCounter = returnAddrStack.top().codePointer;
-                currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
-                currentClosureIndex = returnAddrStack.top().closureIndex;
-                returnAddrStack.pop();
-            }
+            handleDependants(*var);
         } catch (...) {
             taggedTable[varName] = stack.top();
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
@@ -170,7 +175,7 @@ namespace PiELo {
             // This will throw an error if varName is not found
             Variable* var = &taggedTable.at(varName);
 
-            var->updateStigValue(stack.top());
+            var->updateStigValue(robotID, stack.top());
             gettimeofday(&(var->lastUpdated), NULL);
 
             if (var->dependants.size() > 0) {
@@ -202,8 +207,9 @@ namespace PiELo {
             Variable empty;
             taggedTable[varName] = empty;
             taggedTable[varName].isStigmergy = true;
-            taggedTable[varName].updateStigValue(stack.top());
+            taggedTable[varName].updateStigValue(robotID, stack.top());
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
+
         }
 
         // Can assume that the variable now must exist in the tagged table

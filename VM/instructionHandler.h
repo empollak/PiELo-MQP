@@ -39,6 +39,8 @@ namespace PiELo {
         TAG_ROBOT,
         LOAD_TO_STACK,  
 
+        STIG_SIZE,
+
         DEFINE_CLOSURE,
         CALL_CLOSURE_STORE,
         CALL_CLOSURE_NO_STORE,
@@ -48,6 +50,7 @@ namespace PiELo {
 
         PRINT,
         DEBUG_PRINT,
+        SPIN,
     };
     struct opCodeInstructionOrArgument;
 

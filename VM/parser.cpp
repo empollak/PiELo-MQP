@@ -34,8 +34,10 @@ void Parser::initHandlers() {
         {"call_closure", [&]() {printf("parsing: call_closure\n"); handleCallClosure(); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"call_c_closure", [&]() {Parser::handleCallC();}},
+        {"stig_size", [&]() {Parser::handleStigSize();}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
-        {"debug_print", [&]() {handleDebugPrint();}}
+        {"debug_print", [&]() {handleDebugPrint();}},
+        {"spin", [&]() { handleSimple(SPIN); std::cout << "bytecode size after spin is " << bytecode.size() << std::endl;}}
     };
 }
 
@@ -55,6 +57,23 @@ void Parser::load(std::string filename){
         }
         else {
             throwInvalidInstruction(instruction);
+        }
+    }
+
+    // Go back through the bytecode and replace all location labels with their bytecode counter locations
+    // Can't do this on the first pass because the labels might be defined after when they get used
+    for (size_t i = 0; i < bytecode.size(); i++) {
+        auto ins = bytecode[i];
+        if (ins.type == ins.LOCATION) {
+            // If the opcode is a location, swap it out for the bytecode location stored in labelledLocations
+            auto it = labelledLocations.find(*ins.asLocation);
+            if (it != labelledLocations.end()) {
+                bytecode[i] = (int) it->second;
+                std::cout << "Swapped location " << *ins.asLocation << " for bytecode position " << it->second << std::endl;
+            } else {
+                throw std::runtime_error("Could not find labelled location " + *ins.asLocation);
+            }
+            
         }
     }
 
@@ -168,12 +187,15 @@ void Parser::handleFunctionOrLabel(const std::string& type) {
 void Parser::handleJump(const Instruction opcode) {
     bytecode.push_back(opcode);
     std::string name = parseNextString();
-    auto it = labelledLocations.find(name);
-    if (it != labelledLocations.end()) {
-        bytecode.push_back((int) it->second);  // label
-    } else {
-        throw std::runtime_error("Invalid label name " + name);
-    }
+    opCodeInstructionOrArgument locName = name;
+    locName.type = locName.LOCATION;
+    bytecode.push_back(locName);
+    // auto it = labelledLocations.find(name);
+    // if (it != labelledLocations.end()) {
+    //     bytecode.push_back((int) it->second);  // label
+    // } else {
+    //     throw std::runtime_error("Invalid label name " + name);
+    // }
 }
 
 void Parser::handleDefineClosure() {
@@ -224,6 +246,11 @@ void Parser::handleCallClosure() {
 
 void Parser::handleCallC() {
     bytecode.push_back(CALL_C_CLOSURE);
+    bytecode.push_back(parseNextString());
+}
+
+void Parser::handleStigSize() {
+    bytecode.push_back(STIG_SIZE);
     bytecode.push_back(parseNextString());
 }
 

@@ -2,6 +2,7 @@
 #include <sys/time.h>
 #include "robotFunctions.h"
 #include "vm.h"
+#include "instructions/storeLoad.h"
 
 #define ROUTER_HOST "localhost"
 #define ROUTER_PORT "5005"
@@ -160,17 +161,22 @@ namespace PiELo {
         std::cout << "Received update to variable " << msg.variableName << " from " << senderIp << ":" << ntohs(fromAddr.sin_port);
         try {
             Variable *var = &taggedTable.at(msg.variableName);
-
-            // If the message has a newer timestamp than the variable
-            if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||
-                (var->lastUpdated.tv_sec == msg.variableLastUpdated.tv_sec && var->lastUpdated.tv_usec < msg.variableLastUpdated.tv_usec)) {
-                var->mutateValue(msg.data);
-                var->lastUpdated = msg.variableLastUpdated;
-                std::cout << ". Local version was out of date. Updated." << std::endl;
+            if (!var->isStigmergy) {
+                // If the message has a newer timestamp than the variable
+                if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||
+                    (var->lastUpdated.tv_sec == msg.variableLastUpdated.tv_sec && var->lastUpdated.tv_usec < msg.variableLastUpdated.tv_usec)) {
+                    var->mutateValue(msg.data);
+                    var->lastUpdated = msg.variableLastUpdated;
+                    std::cout << ". Local version was out of date. Updated." << std::endl;
+                } else {
+                    std::cout << ". Local version is newer. Brooadcasting update." << std::endl;
+                    broadcastVariable(msg.variableName, var->getVariableData());
+                }
             } else {
-                std::cout << ". Local version is newer. Brooadcasting update." << std::endl;
-                broadcastVariable(msg.variableName, var->getVariableData());
+                var->updateStigValue(msg.robotID, msg.data);
+                std::cout << ". Updated stigmergy for ID " << msg.robotID << std::endl;
             }
+            handleDependants(*var);
         } catch(...) {
             std::cout << ". Local version did not exist." << std::endl;
             exit(-1);

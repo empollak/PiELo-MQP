@@ -91,7 +91,6 @@ namespace PiELo{
         // callClosure updates currentClosureIndex
         stack.push(currentClosureIndex);
         storeTagged(resultVarName);
-        tagVariable(resultVarName, "global");
     }
 
     // Expects the stack to have format:

@@ -122,6 +122,13 @@ namespace PiELo {
     timestamp_t broadcastVariable(std::string name, Variable v) {
         timestamp_t currentTime;
 
+        VariableData data = v.getVariableData();
+
+        // Get the cached value if it's a closure that updated
+        if (v.getType() == Type::PIELO_CLOSURE) {
+            data = closureList[v.getClosureIndex()].cachedValue;
+        }
+
         Message msg;
         gettimeofday(&msg.variableLastUpdated, NULL);
         strncpy(msg.variableName, name.c_str(), 100);
@@ -129,7 +136,7 @@ namespace PiELo {
         msg.senderX = robot.getRobotPos().x;
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
-        msg.data = v.getVariableData();
+        msg.data = data;
         msg.isStigmergy = v.isStigmergy;
 
         char ipStr[INET_ADDRSTRLEN];
@@ -167,13 +174,20 @@ namespace PiELo {
         char senderIp[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &fromAddr.sin_addr, senderIp, sizeof(senderIp));
         std::cout << "Received update to variable " << msg.variableName << " from " << senderIp << ":" << ntohs(fromAddr.sin_port);
+        // if (std::string(msg.variableName) == "wait") {
+            // std::cout << " value " << msg.data.asClosureIndex;
+        // }
         try {
             Variable *var = &taggedTable.at(msg.variableName);
             if (!var->isStigmergy) {
                 // If the message has a newer timestamp than the variable
                 if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||
                     (var->lastUpdated.tv_sec == msg.variableLastUpdated.tv_sec && var->lastUpdated.tv_usec < msg.variableLastUpdated.tv_usec)) {
-                    var->mutateValue(msg.data);
+                    if (var->getType() == PIELO_CLOSURE) {
+                        closureList[var->getClosureIndex()].cachedValue = msg.data;
+                    } else {
+                        var->mutateValue(msg.data);
+                    }
                     var->lastUpdated = msg.variableLastUpdated;
                     std::cout << ". Local version was out of date. Updated." << std::endl;
                 } else {

@@ -34,3 +34,4 @@
 *.app
 VM/VM
 VM/router
+*.DS_Store

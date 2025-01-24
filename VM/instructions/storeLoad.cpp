@@ -17,7 +17,7 @@ namespace PiELo {
 
         Variable var = stack.top();
         stack.pop();
-        // TODO: fix to take name from instruction argument
+
         // std::string varName = *(var.getNameValue());
         (*currentSymbolTable)[varName] = var;
     }
@@ -39,6 +39,12 @@ namespace PiELo {
 
         auto local = currentSymbolTable -> find(varName);
         if (local != currentSymbolTable -> end()) {
+            debugPrint("Found it! " << std::endl);
+            var = &(local -> second);
+        }
+
+        local = globalSymbolTable.find(varName);
+        if (local != globalSymbolTable.end()) {
             debugPrint("Found it! " << std::endl);
             var = &(local -> second);
         }
@@ -162,7 +168,9 @@ namespace PiELo {
         }
 
         // Can assume that the variable now must exist in the tagged table
+        std::cout << "got here222 " << std::endl;
         broadcastVariable(varName, taggedTable[varName].getVariableData());
+        std::cout << "got here " << std::endl;
         stack.pop();
     }
 

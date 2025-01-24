@@ -82,6 +82,7 @@ int main()
 
     int status;
     pid_t child_pid = fork();
+    bool goSignalSent = false;
 
     if (child_pid == -1) {
         perror("fork");
@@ -117,6 +118,7 @@ int main()
                     }
                 } else {
                     std::cout << "Sending go signal!" << std::endl;
+                    goSignalSent = true;
                     // The child just died and the go signal should be sent
                     for (auto &client : clients)
                     {
@@ -181,6 +183,16 @@ int main()
                     perror("router: sendto");
                 }
                 currentID++;
+
+                if (goSignalSent) {
+                    std::cout << "Sent go signal as they are late." << std::endl;
+                    sentBytes = sendto(sockfd, "", 0, 0,
+                                            (struct sockaddr *)&theirAddr, sizeof(sockaddr_in));
+                    if (sentBytes == -1)
+                    {
+                        perror("router: sendto");
+                    }
+                }
                 if (numBytes == 0) continue; // This is the init ping
             }
 

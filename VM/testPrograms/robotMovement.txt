@@ -1,6 +1,5 @@
-push i 0
 call_c_closure go_forward
 label loop
 call_c_closure print_robot_pos
-jmp_if_zero loop
+jmp loop
 end

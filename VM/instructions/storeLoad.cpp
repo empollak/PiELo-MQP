@@ -60,7 +60,6 @@ namespace PiELo {
         if (!var){
             throw std::runtime_error("Variable not found (loadToStack): "+ varName);
         }
-
         stack.push(*var);
         #ifdef __DEBUG_INSTRUCTIONS__
         std::cout << "load result: ";

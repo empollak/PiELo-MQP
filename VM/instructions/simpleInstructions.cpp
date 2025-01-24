@@ -48,5 +48,6 @@ using namespace PiELo;
 
     
     void pop() {
+        if(stack.size() == 0) throw ShortOnElementsOnStackException("POP");
         stack.pop();
     }

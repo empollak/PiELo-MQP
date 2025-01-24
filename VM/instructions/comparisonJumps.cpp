@@ -1,6 +1,5 @@
 #include "comparisonJumps.h"
 #include "../vm.h"
-
 using namespace PiELo;
 
 void eql(){
@@ -209,6 +208,7 @@ void jump(){
 
 void jump_if_zero(){
     programCounter++;
+    if (stack.size() < 1) throw ShortOnElementsOnStackException("jmp_if_zero");
     Variable top = stack.top();
     stack.pop();
     if((top.getType() == FLOAT && top.getFloatValue() == 0.0f) || (top.getType() == INT && top.getIntValue() == 0)){
@@ -225,6 +225,7 @@ void jump_if_zero(){
 
 void jump_if_not_zero(){
     programCounter++;
+    if (stack.size() < 1) throw ShortOnElementsOnStackException("jmp_if_not_zero");
     Variable top = stack.top();
     stack.pop();
     if((top.getType() == FLOAT && top.getFloatValue() != 0.0f) || (top.getType() == INT && top.getIntValue() != 0)){

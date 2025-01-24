@@ -1,7 +1,8 @@
 push i 1
 push f 3.4
 add
-store tagged var global
+store tagged var
+tag variable var global
 load var
 label test
 push i 2

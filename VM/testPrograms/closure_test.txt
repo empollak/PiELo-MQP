@@ -1,5 +1,6 @@
 push i 7
-store tagged speed global
+store tagged speed
+tag variable speed global
 
 # Call f
 push i 3
@@ -22,7 +23,7 @@ pop
 
 # Update speed
 push i 8
-store tagged speed global
+store tagged speed
 
 # Check values of fResult and fResultPlusOne
 load fResult

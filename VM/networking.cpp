@@ -126,7 +126,9 @@ namespace PiELo {
 
         // Get the cached value if it's a closure that updated
         if (v.getType() == Type::PIELO_CLOSURE) {
+            std::cout << "Getting closure cached value" << " for closure " << name << " index " << v.getClosureIndex() << std::endl;
             data = closureList[v.getClosureIndex()].cachedValue;
+            std::cout << "got" << std::endl;
         }
 
         Message msg;

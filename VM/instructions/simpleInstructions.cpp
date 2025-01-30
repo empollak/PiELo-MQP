@@ -51,3 +51,8 @@ using namespace PiELo;
         if(stack.size() == 0) throw ShortOnElementsOnStackException("POP");
         stack.pop();
     }
+
+    void isNil() {
+        if(stack.size() == 0) throw ShortOnElementsOnStackException("isNil");
+        stack.push(stack.top().getType() == NIL);
+    }

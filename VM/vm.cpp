@@ -74,4 +74,25 @@ namespace PiELo {
     void registerFunction(std::string name, funp f) {
         taggedTable[name] = f;
     }
+
+    VariableData Variable::nextIterValue() {
+        ensureStig();
+        VariableData data;
+        if (iter != stigmergyData.end()) {
+            // std::cout << " in here " << "with type " << iter->second.getTypeAsString() << std::endl;
+            data = iter->second;
+            iter++;
+        }
+        return data;
+    }
+
+    VariableData Variable::peekIterValue() {
+        ensureStig();
+        VariableData data;
+        if (iter != stigmergyData.end()) {
+            // std::cout << " peeking iter value " << "with type " << iter->second.getTypeAsString() << std::endl;
+            data = iter->second;
+        }
+        return data;
+    }
 }

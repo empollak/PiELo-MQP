@@ -13,6 +13,7 @@ void Parser::initHandlers() {
         {"load", [&]() {Parser::handleLoad();}},
         {"push", [&]() {Parser::handlePush();}},
         {"pop", [&]() {handlePop();}},
+        {"is_nil", [&]() { handleJump(IS_NIL); }},
         {"add", [&]() { handleArithmetic(ADD); }},
         {"sub", [&]() { handleArithmetic(SUB); }},
         {"mul", [&]() { handleArithmetic(MUL); }},
@@ -34,6 +35,12 @@ void Parser::initHandlers() {
         {"call_closure", [&]() {printf("parsing: call_closure\n"); handleCallClosure(); }},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"call_c_closure", [&]() {Parser::handleCallC();}},
+        {"push_next_in_stig", [&]() {bytecode.push_back(PUSH_NEXT_IN_STIG);
+                                        bytecode.push_back(parseNextString());}},
+        {"is_iter_at_end", [&]() {bytecode.push_back(IS_ITER_AT_END);
+                                    bytecode.push_back(parseNextString());}},
+        {"reset_iter", [&]() {bytecode.push_back(RESET_ITER);
+                                    bytecode.push_back(parseNextString());}},
         {"stig_size", [&]() {Parser::handleStigSize();}},
         {"#", [&]() { file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); }},
         {"debug_print", [&]() {handleDebugPrint();}},

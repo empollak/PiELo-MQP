@@ -62,6 +62,18 @@ namespace PiELo {
 
         Type getType() {return type;}
 
+        std::string getTypeAsString() {
+            switch (type) {
+                case NIL: return "NIL";
+                case PIELO_CLOSURE: return "PIELO_CLOSURE";
+                case C_CLOSURE: return "C_CLOSURE";
+                case FLOAT: return "FLOAT";
+                case INT: return "INT";
+                case NAME: return "NAME";
+                default: return "invalid type";
+            }
+        }
+
         void print() {
             if(getType() == NIL){
                 std::cout << "nil";
@@ -232,14 +244,15 @@ namespace PiELo {
         std::string tagName;
     };
 
-
     class Variable {
     private:
         VariableData data;
-        std::map<int, VariableData> stigmergyData;
+        std::map<int, VariableData>::iterator iter;
         // VariableData data;
         
     public:
+
+        std::map<int, VariableData> stigmergyData;
         bool changed = 0;
         bool isStigmergy = 0;
         // List of indices in the closure list
@@ -260,18 +273,11 @@ namespace PiELo {
         Variable(VariableData v) {data = v;}
 
         std::string getTypeAsString() {
-            switch (data.type) {
-                case NIL: return "NIL";
-                case PIELO_CLOSURE: return "PIELO_CLOSURE";
-                case C_CLOSURE: return "C_CLOSURE";
-                case FLOAT: return "FLOAT";
-                case INT: return "INT";
-                case NAME: return "NAME";
-                default: return "invalid type";
-            }
+            return data.getTypeAsString();
         }
 
         float getFloatValue() {
+            stigmergyData.begin();
             if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as float");
             if (data.type != FLOAT) throw InvalidTypeAccessException("FLOAT", getTypeAsString());
             return data.asFloat;
@@ -307,8 +313,14 @@ namespace PiELo {
         void mutateValue(size_t s) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = s;}
         void mutateValue(Variable v) {if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer"); data = v.data;}
 
+        // Throws an error if this variable is not stigmergy
+        void ensureStig() {
+            if (!isStigmergy) throw std::runtime_error("Tried use stigmergy function on non-stigmergy variable");
+        }
+
         void updateStigValue(int id, VariableData data) {
-            if (!isStigmergy) throw std::runtime_error("Tried to store stig in a non-stig variable");
+            ensureStig();
+            this->data.type = data.type;
             stigmergyData[id] = data;
         }
 
@@ -317,8 +329,22 @@ namespace PiELo {
         }
 
         int getStigSize() {
-            if (!isStigmergy) throw std::runtime_error("Tried to get stig size of non-stig variable");
+            ensureStig();
             return stigmergyData.size();
+        }
+
+        VariableData nextIterValue();
+        
+        VariableData peekIterValue();
+
+        bool isIterAtEnd() {
+            ensureStig();
+            return iter == stigmergyData.end();
+        }
+
+        void resetIter() {
+            ensureStig();
+            iter = stigmergyData.begin();
         }
         
         void print() {
@@ -334,6 +360,7 @@ namespace PiELo {
             }
         }
     };
+
 
     struct scopeData{
         symbolTable* scopeSymbolTable;

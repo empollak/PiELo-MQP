@@ -1,0 +1,35 @@
+debug_print 1 && 0
+push i 1
+push i 0
+land
+print
+pop
+debug_print 1 && 1
+push i 1
+push i 1
+land
+print
+pop
+debug_print 2. && 0
+push f 2
+push i 0
+land
+print
+pop
+debug_print 1 || 0
+push i 1
+push i 0
+lor
+print
+pop
+debug_print !30.0
+push f 30
+lnot
+print
+pop
+debug_print !0
+push i 0
+lnot
+print
+pop
+end

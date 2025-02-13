@@ -5,7 +5,21 @@ EXECUTABLE = VM
 # SOURCES = $(wildcard *.cpp,$(INSDIR)/*.cpp)
 INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o stigmergy.o)
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
-DEFINES = $(patsubst %, -D __%__, DEBUG_INSTRUCTIONS TEST)
+DEBUG_PARSER = 0
+DEBUG_INSTRUCTIONS = 0
+
+ifeq ($(DEBUG_PARSER), 1)
+	DEBUG_PARSER = DEBUG_PARSER
+else
+	DEBUG_PARSER = 
+endif
+
+ifeq ($(DEBUG_INSTRUCTIONS), 1)
+	DEBUG_INSTRUCTIONS = DEBUG_INSTRUCTIONS
+else
+	DEBUG_INSTRUCTIONS = 
+endif
+DEFINES = $(patsubst %, -D __%__, $(DEBUG_PARSER) $(DEBUG_INSTRUCTIONS))
 
 all: dir $(EXECUTABLE) router
 

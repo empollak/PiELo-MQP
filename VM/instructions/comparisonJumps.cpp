@@ -194,6 +194,61 @@ void lte(){
     }
 }
 
+bool convertVarToBool(Variable var) {
+    bool boolVal = true;
+    if (var.getType() == NIL) boolVal = false;
+    else if (var.getType() == INT) {
+        if (var.getIntValue() == 0) boolVal = false;
+    } else if (var.getType() == FLOAT) {
+        if (var.getFloatValue() == 0) boolVal = false;
+    }
+    return boolVal;
+}
+
+void land() {
+    if(stack.size() >= 2){
+        Variable a = stack.top(); stack.pop();
+        Variable b = stack.top(); stack.pop();
+
+        bool aVal = convertVarToBool(a);
+        bool bVal = convertVarToBool(b);
+        if (aVal && bVal) stack.push(1);
+        else stack.push(0);
+    } else {
+        throw ShortOnElementsOnStackException("LAND");
+        state = ERROR;
+    }
+}
+
+void lor() {
+    if(stack.size() >= 2){
+        Variable a = stack.top(); stack.pop();
+        Variable b = stack.top(); stack.pop();
+
+        bool aVal = convertVarToBool(a);
+        bool bVal = convertVarToBool(b);
+        if (aVal || bVal) stack.push(1);
+        else stack.push(0);
+    } else {
+        throw ShortOnElementsOnStackException("LOR");
+        state = ERROR;
+    }
+}
+
+void lnot() {
+    if(stack.size() >= 1){
+        Variable a = stack.top(); stack.pop();
+
+        bool aVal = convertVarToBool(a);
+        if (aVal) stack.push(0);
+        else stack.push(1);
+    } else {
+        throw ShortOnElementsOnStackException("LOR");
+        state = ERROR;
+    }
+}
+
+
 void jump(){
     programCounter++;
     if(bytecode.at(programCounter).getTypeAsString() == "INT"){

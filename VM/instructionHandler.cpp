@@ -201,6 +201,15 @@ namespace PiELo{
             case LTE:
                 lte();
                 break;
+            case LAND:
+                land();
+                break;
+            case LOR:
+                lor();
+                break;
+            case LNOT:
+                lnot();
+                break;
             case JMP:
                 jump();
                 break;

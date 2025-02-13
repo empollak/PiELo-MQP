@@ -29,6 +29,10 @@ namespace PiELo {
         LT,
         LTE,
 
+        LAND,
+        LOR,
+        LNOT,
+
         JMP,
         JMP_IF_ZERO,
         JMP_IF_NOT_ZERO,

@@ -1,0 +1,34 @@
+push i 2 # some sensor data or something
+store stig stigVar
+push i 0
+load sum
+call_closure nostore
+
+lambda 2 a b
+load a
+load b
+add
+ret_from_closure
+
+spin
+
+
+define_closure sum 0 1 stigVar
+push i 0
+store local sumVar
+reset_iter stigVar
+label start
+is_iter_at_end stigVar
+jmp_if_not_zero return # jump to return if iter is at end
+push_next_in_stig stigVar
+debug_print ----- value of stigVar:
+print
+load sumVar
+add
+debug_print ----------------- PRINT:
+print
+store local sumVar
+jmp start
+label return
+push i 0
+ret_from_closure

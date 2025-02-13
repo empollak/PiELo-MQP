@@ -5,7 +5,7 @@ EXECUTABLE = VM
 # SOURCES = $(wildcard *.cpp,$(INSDIR)/*.cpp)
 INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o stigmergy.o)
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o)  $(INSOBJECTS) 
-DEFINES = 
+DEFINES = $(patsubst %, -D __%__, DEBUG_INSTRUCTIONS TEST)
 
 all: dir $(EXECUTABLE) router
 
@@ -19,7 +19,7 @@ $(EXECUTABLE): $(OBJECTS) $(BUILDDIR)/main.o
 
 # see https://www.gnu.org/software/make/manual/html_node/Static-Usage.html for details
 $(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
-	g++ -c $< -o $@ -D __DEBUG_INSTRUCTIONS__
+	g++ -c $< -o $@ $(DEFINES)
 
 $(BUILDDIR)/main.o: main.cpp robotFunctions.cpp robotFunctions.h
 	g++ -c main.cpp -o $(BUILDDIR)/main.o 

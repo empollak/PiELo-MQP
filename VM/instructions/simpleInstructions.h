@@ -9,3 +9,4 @@ void pushFloat();
 void dup();
 void swap();
 void pop();
+void isNil();

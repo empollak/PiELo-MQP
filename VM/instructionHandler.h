@@ -11,6 +11,7 @@ namespace PiELo {
         PUSHF,
         PUSHS,
         POP,
+        IS_NIL,
 
         ADD,
         SUB,
@@ -38,6 +39,9 @@ namespace PiELo {
         TAG_VARIABLE,
         TAG_ROBOT,
         LOAD_TO_STACK,  
+        PUSH_NEXT_IN_STIG,
+        IS_ITER_AT_END,
+        RESET_ITER,
 
         STIG_SIZE,
 

@@ -10,4 +10,7 @@ namespace PiELo {
     void storeTagged(const std::string& varName);
     void handleDependants(Variable& var);
     void storeStig(const std::string& varName);
+    void pushNextElementOfStig(const std::string& varName);
+    void isIterAtEnd(const std::string& varName);
+    void resetIter(const std::string& varName);
 }

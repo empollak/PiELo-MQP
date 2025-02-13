@@ -72,6 +72,21 @@ namespace PiELo{
                 debugPrint("instructionHandler: store stig name: " << name << std::endl);
                 storeStig(name);
                 break;
+            case PUSH_NEXT_IN_STIG:
+                name = *bytecode[++programCounter].asString;
+                debugPrint("instructionHandler: pushing next element of name: " << name << std::endl);
+                pushNextElementOfStig(name);
+                break;
+            case IS_ITER_AT_END:
+                name = *bytecode[++programCounter].asString;
+                debugPrint("instructionHandler: is iter at end of name: " << name << std::endl);
+                isIterAtEnd(name);
+                break;
+            case RESET_ITER:
+                name = *bytecode[++programCounter].asString;
+                debugPrint("instructionHandler: resetting iter for name: " << name << std::endl);
+                resetIter(name);
+                break;
             case STIG_SIZE:
                 name = *bytecode[++programCounter].asString;
                 stigSize(name);
@@ -143,6 +158,9 @@ namespace PiELo{
                 break;
             case POP:
                 pop();
+                break;
+            case IS_NIL:
+                isNil();
                 break;
             case ADD:
                 add();

@@ -121,8 +121,12 @@ namespace PiELo {
     // Broadcast a variable data
     timestamp_t broadcastVariable(std::string name, Variable v) {
         timestamp_t currentTime;
-
-        VariableData data = v.getVariableData();
+        VariableData data;
+        if (v.isStigmergy) {
+            std::cout << " broadcasting stigmergy for " << name << " with int value " << v.stigmergyData[robotID].asInt;
+            data = v.stigmergyData[robotID];
+        }
+        else data = v.getVariableData();
 
         // Get the cached value if it's a closure that updated
         if (v.getType() == Type::PIELO_CLOSURE) {
@@ -198,12 +202,22 @@ namespace PiELo {
                 }
             } else {
                 var->updateStigValue(msg.robotID, msg.data);
-                std::cout << ". Updated stigmergy for ID " << msg.robotID << std::endl;
+                std::cout << ". Updated stigmergy for ID " << msg.robotID << " int value " << msg.data.asInt << std::endl;
             }
             handleDependants(*var);
         } catch(...) {
+            if (msg.isStigmergy) {
+                taggedTable[msg.variableName] = Variable();
+                taggedTable[msg.variableName].isStigmergy = true;
+                taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
+                taggedTable[msg.variableName].stigmergyData[msg.robotID] = msg.data;
+                taggedTable[msg.variableName].resetIter();
+            } else {
+                taggedTable[msg.variableName] = msg.data;
+                taggedTable[msg.variableName].isStigmergy = false;
+                taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
+            }
             std::cout << ". Local version did not exist." << std::endl;
-            exit(-1);
         }
     }
 }

@@ -202,9 +202,14 @@ void Parser::handleFunctionOrLabel(const std::string& type) {
 void Parser::handleJump(const Instruction opcode) {
     bytecode.push_back(opcode);
     std::string name = parseNextString();
-    opCodeInstructionOrArgument locName = name;
-    locName.type = locName.LOCATION;
-    bytecode.push_back(locName);
+    try {
+        bytecode.push_back(std::stoi(name));
+    } catch (...) {
+        opCodeInstructionOrArgument locName = name;
+        locName.type = locName.LOCATION;
+        bytecode.push_back(locName);
+    }
+    
     // auto it = labelledLocations.find(name);
     // if (it != labelledLocations.end()) {
     //     bytecode.push_back((int) it->second);  // label

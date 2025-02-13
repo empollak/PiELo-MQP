@@ -2,16 +2,22 @@
 #include "../vm.h"
 #include "storeLoad.h"
 
+#ifdef __DEBUG_INSTRUCTIONS__
+#define debugPrint(e) std::cout << e;
+#else
+#define debugPrint(e)
+#endif
+
 namespace PiELo{
     // Defines a closure
     void defineClosure(std::string closureName, ClosureData closureData) {
-        std::cout << "defining closure " << std::endl;
-        std::cout << "Defining closure with name " << closureName << std::endl;
+        debugPrint("Defining closure with name " << closureName << std::endl)
+
         // Variable closureVar(closureData);
         // TODO: storeTagged with name closureName, value closureVar
         closureTemplates.push_back(closureData);
         stack.push((size_t) (closureTemplates.size() - 1));
-        std::cout << " at closureTemplates index " << closureTemplates.size() - 1 << std::endl;
+        debugPrint(" at closureTemplates index " << closureTemplates.size() - 1 << std::endl);
         storeLocal(closureName);
     }
 
@@ -24,7 +30,7 @@ namespace PiELo{
     // top
     void callClosure() {
         // Save the current scope
-        std::cout << " calling closure! " << std::endl;
+        debugPrint(" calling closure! " << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
@@ -35,7 +41,7 @@ namespace PiELo{
         int numArgs = stack.top().getIntValue();
         stack.pop();
         if (stack.size() < numArgs) throw ShortOnElementsOnStackException("call_closure arguments");
-        std::cout << " Num args: " << numArgs << std::endl;
+        debugPrint(" Num args: " << numArgs << std::endl);
 
         if (numArgs != closureData.argNames.size()) throw std::runtime_error("Mismatched number of arguments for call_closure");
 
@@ -46,14 +52,14 @@ namespace PiELo{
             Type argType = closureData.argTypes[i];
             if (stack.top().getType() != argType) throw std::runtime_error("Mismatched argument types for call_closure");
             closureData.localSymbolTable[argName] = stack.top();
-            std::cout << " added arg name " << argName << " value ";
+            debugPrint(" added arg name " << argName << " value ");
             closureData.localSymbolTable[argName].print();
-            std::cout << "..." << std::endl;
+            debugPrint("..." << std::endl);
             stack.pop();
         }
 
         // Update current local symbol table
-        std::cout << " updating closure list " << std::endl;
+        debugPrint(" updating closure list " << std::endl);
         size_t closureIndex = closureList.size();
         closureList.push_back(closureData);
         
@@ -72,7 +78,7 @@ namespace PiELo{
         }
 
         programCounter = closureData.codePointer;
-        std::cout << " updated pc: " << programCounter << " state: " << state << std::endl;
+        debugPrint(" updated pc: " << programCounter << " state: " << state << std::endl);
     }
 
     // Expects the stack to have format:
@@ -104,27 +110,27 @@ namespace PiELo{
     }
 
     void retFromClosure() {
-        std::cout << " ret_from_closure got pc " << programCounter << std::endl;
+        debugPrint(" ret_from_closure got pc " << programCounter << std::endl);
         if (stack.size() < 1) throw std::runtime_error("Stack empty before ret_from_closure");
         int hasReturn = stack.top().getIntValue();
         stack.pop();
-        std::cout << " ret_from_closure got hasReturn " << hasReturn << std::endl;
+        debugPrint(" ret_from_closure got hasReturn " << hasReturn << std::endl);
         if (hasReturn == 1) {
-            std::cout << "ret_from_closure stack size " << stack.size() << std::endl;
+            debugPrint("ret_from_closure stack size " << stack.size() << std::endl);
             
         
             switch (stack.top().getType()) {
                 case INT: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getIntValue(); 
-                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
                 case FLOAT: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getFloatValue(); 
-                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
                 case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getClosureIndex(); 
-                    std::cout << " placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl;
+                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
             }
 
@@ -140,12 +146,12 @@ namespace PiELo{
     }
 
     void rerunClosure(size_t closureIndex) {
-        std::cout << "Rerunning closure with index " << closureIndex << std::endl;
+        debugPrint("Rerunning closure with index " << closureIndex << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
         programCounter = closureList[closureIndex].codePointer;
-        std::cout << " pc now " << programCounter << std::endl;
+        debugPrint(" pc now " << programCounter << std::endl);
     }
 
 }

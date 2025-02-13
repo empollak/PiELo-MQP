@@ -28,12 +28,12 @@ namespace PiELo {
 
         // search local sym table
         #ifdef __DEBUG_INSTRUCTIONS__
-            std::cout << "Searching current symbol table for " << varName << std::endl;
-            std::cout << " symbol table has: " << std::endl;
+            debugPrint("Searching current symbol table for " << varName << std::endl);
+            debugPrint(" symbol table has: " << std::endl);
             for (auto it : *currentSymbolTable) {
-                std::cout << "  " << it.first << ":";
+                debugPrint("  " << it.first << ":");
                 it.second.print();
-                std::cout << std::endl;
+                debugPrint(std::endl);
             }
         #endif
 
@@ -62,16 +62,16 @@ namespace PiELo {
         }
         stack.push(*var);
         #ifdef __DEBUG_INSTRUCTIONS__
-        std::cout << "load result: ";
-        std::cout << "Stack top: ";
+        debugPrint("load result: ");
+        debugPrint("Stack top: ");
         stack.top().print();
-        std::cout << std::endl;
+        debugPrint(std::endl);
         #endif
     }
 
     void tagVariable(const std::string& varName, const std::string& tagName) {
         Variable* var = nullptr;
-        std::cout << "Tagging variable " << varName << " with tag " << tagName << std::endl;
+        debugPrint("Tagging variable " << varName << " with tag " << tagName << std::endl);
         // search local sym table
         auto local = currentSymbolTable -> find(varName);
         if (local != currentSymbolTable -> end()){
@@ -112,7 +112,7 @@ namespace PiELo {
         // Push the closure itself to the return address stack
         ClosureData* closure = &closureList[closureIndex];
         dependants.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer, .closureIndex = closureIndex});
-        std::cout << closureIndex << ", ";
+        debugPrint(closureIndex << ", ");
         // Push each of its dependants to the dependants stack, recursively
         for (size_t depIndex : closure->dependants) {
             recursivelyAddDependantsOfClosureToReturnAddrStack(depIndex, dependants);
@@ -122,7 +122,7 @@ namespace PiELo {
     void handleDependants(Variable& var) {
         if (var.dependants.size() > 0) {
             // Store where we currently are
-            std::cout << " Variable has closure index dependants: ";
+            debugPrint(" Variable has closure index dependants: ");
             returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
             
             std::stack<scopeData> dependants;
@@ -137,14 +137,14 @@ namespace PiELo {
                 returnAddrStack.push(dependants.top());
                 dependants.pop();
             }
-            std::cout << std::endl;
+            debugPrint(std::endl);
 
             // Go to the first closure in the list
             programCounter = returnAddrStack.top().codePointer;
             currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
             currentClosureIndex = returnAddrStack.top().closureIndex;
             returnAddrStack.pop();
-            std::cout << " Jumped to PC " << programCounter << std::endl;
+            debugPrint(" Jumped to PC " << programCounter << std::endl);
         }
     }
 
@@ -152,7 +152,7 @@ namespace PiELo {
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
         }
-        std::cout << "Storing variable " << varName << std::endl;
+        debugPrint("Storing variable " << varName << std::endl);
         try {
             // This will throw an error if varName is not found
             Variable* var = &taggedTable.at(varName);

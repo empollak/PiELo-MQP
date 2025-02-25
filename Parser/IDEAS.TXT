@@ -1,0 +1,12 @@
+Tokenize into nested array for all operations (take out parens and stuff)
+
+eval() just writes to the file instead of executing 
+
+Type definitions:
+Symbol = string
+Number = (int, float)
+Atom = (Symbol, Number)
+List = vector
+Exp = (Atom, List)
+Env = dict
+

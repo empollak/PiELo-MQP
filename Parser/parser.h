@@ -12,12 +12,11 @@ namespace PiELo {
 
     };
 
-    enum ExpressionType {
-        LIST, INT, FLOAT, SYMBOL, NIL
-    };
-
     class Expression {
         public:
+        enum ExpressionType {
+            LIST, INT, FLOAT, SYMBOL, NIL
+        };
         ExpressionType type;
         std::vector<Expression> listValue;  
         union {

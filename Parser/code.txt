@@ -1,7 +1,9 @@
-load x
+push f -5.600000
 push i 2
 push i 3
 add
 push f 4.200000
 add
 add
+print
+end

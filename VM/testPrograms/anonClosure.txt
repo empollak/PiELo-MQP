@@ -1,0 +1,11 @@
+# (var local reactive x)
+# (set x (+ a b))
+
+# has dependencies a and b
+lambda 2 a b # pushes the closure index to the stack
+load a
+load b
+add
+push i 1 # has return value
+ret_from_closure # consumes 1 and result of add
+store local x # store the closure index in x

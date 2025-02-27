@@ -11,6 +11,8 @@ namespace PiELo {
         // Open the file for input/output, and discard all current contents
         file.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
         codegen(e);
+        file << "print" << std::endl;
+        file << "end" << std::endl;
         file.close();
     }
 
@@ -23,6 +25,8 @@ namespace PiELo {
     void codegenProcedure(Expression e) {
         if (e.symbolValue == "+") {
             file << "add" << std::endl;
+        } else if (e.symbolValue == "print") {
+            file << "print" << std::endl;
         } else {
             // Was not a built-in procedure
             codegenClosureCall(e);
@@ -33,7 +37,7 @@ namespace PiELo {
 
     // For use when the expression is known to be of type LIST
     void codegenList(Expression e) {
-        if (e.listValue[0].type != SYMBOL) {
+        if (e.listValue[0].type != Expression::SYMBOL) {
             throw std::runtime_error("codegenList got LIST with a first element of type " + e.typeToString() + " expression string " + e.toString());
         }
         if (e.listValue[0].symbolValue == "if") {
@@ -50,16 +54,16 @@ namespace PiELo {
 
     void codegen(Expression expression) {
         switch (expression.type) {
-            case LIST:
+            case Expression::LIST:
             codegenList(expression);
             break;
-            case INT:
+            case Expression::INT:
             file << "push i " << std::to_string(expression.intValue) << std::endl;
             break;
-            case FLOAT:
+            case Expression::FLOAT:
             file << "push f " << std::to_string(expression.floatValue) << std::endl;
             break;
-            case SYMBOL:
+            case Expression::SYMBOL:
             // Assuming this is not a procedure call as that would be in codegenProcedure
             file << "load " << expression.symbolValue << std::endl;
             break;

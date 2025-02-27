@@ -17,7 +17,7 @@ namespace PiELo {
         std::cout << "readFromTokens got token " << token << std::endl;
         if (token == "(") {
             Expression E;
-            E.type = LIST;
+            E.type = Expression::LIST;
             std::cout << "Got token (" << std::endl;
             // Add all tokens in this () pair, while nesting any nested () pairs
             while(*tokens.begin() != ")") {
@@ -41,15 +41,15 @@ namespace PiELo {
             if (token.find(".") != std::string::npos) {
                 // There was a . so assume it's a float
                 result.floatValue = std::stof(token);
-                result.type = FLOAT;
+                result.type = Expression::FLOAT;
                 std::cout << "float " << result.floatValue << std::endl;
             } else {
                 result.intValue = std::stoi(token);
-                result.type = INT;
+                result.type = Expression::INT;
                 std::cout << "int " << result.intValue << std::endl;
             }
         } catch (std::invalid_argument e) {
-            result.type = SYMBOL;
+            result.type = Expression::SYMBOL;
             result.symbolValue = token;
             std::cout << "symbol " << result.symbolValue << std::endl;
         }
@@ -59,25 +59,25 @@ namespace PiELo {
     std::string Expression::toString() {
         std::string retVal = "";
         switch (type) {
-            case LIST:
+            case Expression::LIST:
                 retVal += "[";
                 for (Expression listExpression : listValue) {
                     retVal += listExpression.toString();
                 }
                 retVal += "]";
                 break;
-            case INT:
+            case Expression::INT:
                 retVal += std::to_string(intValue);
                 break;
-            case FLOAT:
+            case Expression::FLOAT:
                 retVal += std::to_string(floatValue);
                 break;
-            case SYMBOL:
+            case Expression::SYMBOL:
                 retVal += "'";
                 retVal += symbolValue;
                 retVal += "'";
                 break;
-            case NIL:
+            case Expression::NIL:
                 retVal += "NIL";
                 break;
         }

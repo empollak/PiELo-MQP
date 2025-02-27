@@ -17,6 +17,7 @@ void Parser::initHandlers() {
         {"tag", [&]() {Parser::handleTag();}},
         {"load", [&]() {Parser::handleLoad();}},
         {"push", [&]() {Parser::handlePush();}},
+        {"push_nil", [&]() { handleSimple(PUSH_NIL); }},
         {"pop", [&]() {handlePop();}},
         {"is_nil", [&]() { handleJump(IS_NIL); }},
         {"add", [&]() { handleArithmetic(ADD); }},

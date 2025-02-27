@@ -1,0 +1,2 @@
+#! /usr/bin/bash
+./parser && printf "\n----------------- NOW RUNNING VM -----------------\n\n" && ./VM assembly.txt

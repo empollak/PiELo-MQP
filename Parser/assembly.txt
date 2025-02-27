@@ -1,0 +1,12 @@
+push_nil
+pop
+define_closure __lambda_0 0 0 
+push i 20
+push i 1
+ret_from_closure
+store tagged x
+push_nil
+pop
+load x
+print
+end

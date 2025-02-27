@@ -23,10 +23,13 @@ namespace PiELo {
 
                 // Push a new token for the next character, if necessary
                 if (*pos == '(') tokens.push_back("");
-            } else if (*pos == ' ') {
-                // If it's a space, that means we're at a new token. 
-                std::cout << "pushed new token" << std::endl;
-                tokens.push_back("");
+            } else if (*pos == ' ' || *pos == '\n' || *pos == '\t') {
+                // If it's a space, that means we're at a new token.
+                // If the previous token was empty, it's an instance of more than one whitespace character and this should be ignored
+                if (tokens.size() != 0 && (--tokens.end())->length() != 0) {
+                    std::cout << "pushed new token" << std::endl;
+                    tokens.push_back("");
+                }
             } else {
                 // Continuing in the previous token
                 // (appends 1 copy of character *pos)

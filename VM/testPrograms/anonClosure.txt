@@ -16,3 +16,9 @@ add
 push i 1 # has return value
 ret_from_closure # consumes 1 and result of add
 store local x # store the closure index in x
+
+
+
+(fun inc x (+ x 1))
+(set a 2)
+(set y (inc a))

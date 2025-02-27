@@ -20,8 +20,9 @@ namespace PiELo {
                     // Push the open or close paren
                     tokens.push_back(std::string(1, *pos));
                 }
-                // Push a new token for the next character
-                tokens.push_back("");
+
+                // Push a new token for the next character, if necessary
+                if (*pos == '(') tokens.push_back("");
             } else if (*pos == ' ') {
                 // If it's a space, that means we're at a new token. 
                 std::cout << "pushed new token" << std::endl;
@@ -36,5 +37,15 @@ namespace PiELo {
         }
         if (*--tokens.end() == "") tokens.erase(--tokens.end());
         return tokens;
+    }
+
+    std::string tokensToString(std::vector<std::string> tokens) {
+        std::string retVal = "";
+        retVal += "[";
+        for (std::vector<std::string>::iterator tokenIter = tokens.begin(); tokenIter != tokens.end(); tokenIter++) {
+            retVal += "'" + *tokenIter + "', ";
+        }
+        retVal += "]";
+        return retVal;
     }
 }

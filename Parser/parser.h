@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <stdexcept>
+#include <iostream>
 
 namespace PiELo {   
     enum tokenType {
@@ -11,44 +13,48 @@ namespace PiELo {
     };
 
     enum ExpressionType {
-        LIST, ATOM, NIL
+        LIST, INT, FLOAT, SYMBOL, NIL
     };
 
     class Expression {
         public:
+        ExpressionType type;
+        std::vector<Expression> listValue;  
+        union {
+            int intValue;
+            float floatValue;
+        };  
+        std::string symbolValue;
+
+        std::string typeToString() {
+            switch (type) {
+                case LIST:
+                return "LIST";
+                case INT:
+                return "INT";
+                case FLOAT:
+                return "FLOAT";
+                case SYMBOL:
+                return "SYMBOL";
+                case NIL:
+                return "NIL";
+                default:
+                std::cout << "Unimplemented type to string for type " << type << std::endl;
+                return "NIL";
+            }
+        }
+
+        void push_back(Expression e) {
+            if (type != LIST) throw std::runtime_error(std::string("Attempted to push_back to expression of type ") + typeToString());
+            listValue.push_back(e);
+        }
+
+        std::string toString();
         
         Expression(){}
-        virtual ~Expression(){}
-        virtual ExpressionType getType() = 0;
+        ~Expression(){}
     };
 
-    class List : public Expression {
-        public:
-        std::vector<Expression> value;
-
-        List(){
-            value = {};
-        }
-    };
-
-    class Atom : public Expression{
-        private:
-
-
-        public:
-        enum {NUMBER, SYMBOL} type;
-    };
-
-    class Number : public Atom {
-        enum {INT, FLOAT, NIL} type;
-        union {
-            int ivalue;
-            float fvalue;
-        };
-    };
-
-    class Symbol : public Atom {
-        std::string value;
-
-    };
+    Expression parse(std::string program);
+    Expression atomize(std::string token);
 }

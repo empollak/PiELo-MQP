@@ -1,14 +1,13 @@
 #include "tokenizer.h"
+#include "parser.h"
+#include "codegen.h"
 #include <iostream>
 #include <string>
 #include <vector>
 
 int main() {
-    std::string input = "(set x (+ a b))";
-    std::vector<std::string> tokens = PiELo::tokenize(input);
-    std::cout << "[";
-    for (std::vector<std::string>::iterator tokenIter = tokens.begin(); tokenIter != tokens.end(); tokenIter++) {
-        std::cout << "'" << *tokenIter << "', ";
-    }
-    std::cout << "]" << std::endl;
+    std::string input = "(+ x (+ (+ 2 3) 4.2))";
+    PiELo::Expression program = PiELo::parse(input);
+    std::cout << program.toString() << std::endl;
+    PiELo::codegenProgram(program, "code.txt");
 }

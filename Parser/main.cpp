@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-int main() {
-    std::string input = "(+ -5.6 (+ (+ 2 3) 4.2))";
+int main(int argc, char** argv) {
+    std::string input = "(if (+ -1 1) (if 0 1 -1) 3)";
     PiELo::Expression program = PiELo::parse(input);
     std::cout << program.toString() << std::endl;
     PiELo::codegenProgram(program, "code.txt");

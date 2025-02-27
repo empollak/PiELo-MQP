@@ -25,6 +25,9 @@ namespace PiELo {
                 E.push_back(readFromTokens(tokens));
             }
             // Erase the leftover )
+            if (tokens.size() == 0 || *tokens.begin() != ")") {
+                throw std::runtime_error("Missing ')'. Rest of tokens: " + tokensToString(tokens));
+            }
             tokens.erase(tokens.begin());
             return E;
         } else if (token == ")") {

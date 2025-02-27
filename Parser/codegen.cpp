@@ -34,6 +34,7 @@ namespace PiELo {
     }
 
 
+    int ifCounter = 0;
 
     // For use when the expression is known to be of type LIST
     void codegenList(Expression e) {
@@ -42,6 +43,21 @@ namespace PiELo {
         }
         if (e.listValue[0].symbolValue == "if") {
             // if special case would go here
+            if (e.listValue.size() != 4) {
+                throw std::invalid_argument("Incorrect number of arguments to 'if'. Expected 4, got " + std::to_string(e.listValue.size()));
+            }
+            int localIfCounter = ifCounter++;
+            // Conditional
+            codegen(e.listValue[1]);
+            file << "jmp_if_zero else_" << localIfCounter << std::endl;
+            // Then
+            codegen(e.listValue[2]);
+            file << "jmp endif_" << localIfCounter << std::endl;
+            // Else
+            file << "label else_" << localIfCounter << std::endl;
+            codegen(e.listValue[3]);
+            // End
+            file << "label endif_" << localIfCounter << std::endl;
         } else {
             // Codegen each arg in the list one by one (skip the procedure name)
             for (std::vector<Expression>::iterator it = e.listValue.begin() + 1; it != e.listValue.end(); it++) {

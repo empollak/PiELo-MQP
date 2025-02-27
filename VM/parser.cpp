@@ -41,7 +41,7 @@ void Parser::initHandlers() {
         {"label", [&]() { handleFunctionOrLabel("label"); }},
         {"end", [&]() {debugPrint("Parsing: end" << std::endl); handleSimple(END); }},
         {"define_closure", [&]() {debugPrint("Parsing: define_closure" << std::endl); handleDefineClosure(); }},
-        {"call_closure", [&]() {debugPrint("parsing: call_closure" << std::endl); handleCallClosure(); }},
+        {"call_closure", [&]() {debugPrint("parsing: call_closure" << std::endl); handleSimple(CALL_CLOSURE);}},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"call_c_closure", [&]() {Parser::handleCallC();}},
         {"push_next_in_stig", [&]() {bytecode.push_back(PUSH_NEXT_IN_STIG);
@@ -249,20 +249,6 @@ void Parser::handleDefineClosure() {
     // bytecode.push_back(closure);
     defineClosure(name, closure);
     debugPrint("Done with defineClosure" << std::endl);
-}
-
-void Parser::handleCallClosure() {
-    std::string type;
-    file >> type;
-
-    if (type == "store") {
-        bytecode.push_back(CALL_CLOSURE_STORE);
-        bytecode.push_back(parseNextString());
-    } else if (type == "nostore") {
-        bytecode.push_back(CALL_CLOSURE_NO_STORE);
-    } else {
-        throwInvalidInstruction("call_closure " + type);
-    }
 }
 
 void Parser::handleCallC() {

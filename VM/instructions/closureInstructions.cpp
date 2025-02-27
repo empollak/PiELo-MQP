@@ -136,8 +136,9 @@ namespace PiELo{
 
         
             stack.pop();
-
         }
+        
+        stack.push(currentClosureIndex);
 
         programCounter = returnAddrStack.top().codePointer;
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;

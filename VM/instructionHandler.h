@@ -50,8 +50,7 @@ namespace PiELo {
         STIG_SIZE,
 
         DEFINE_CLOSURE,
-        CALL_CLOSURE_STORE,
-        CALL_CLOSURE_NO_STORE,
+        CALL_CLOSURE,
         RET_FROM_CLOSURE,
         RERUN_CLOSURE,
         CALL_C_CLOSURE,

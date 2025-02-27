@@ -37,12 +37,8 @@ namespace PiELo{
                 debugPrint(" got closure " << std::endl);
                 defineClosure(name, closure);
                 break;
-            case CALL_CLOSURE_NO_STORE:
-                callClosureNoStore();
-                break;
-
-            case CALL_CLOSURE_STORE:
-                callClosureAndStore(*bytecode[++programCounter].asString);
+            case CALL_CLOSURE:
+                callClosure();
                 break;
             
             case RET_FROM_CLOSURE:

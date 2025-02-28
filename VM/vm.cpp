@@ -64,10 +64,17 @@ namespace PiELo {
     Variable* findVariable(std::string name) {
         try {
             return &currentSymbolTable->at(name);
-        } catch (...) {
-            std::cout << "  findVariable: finding " << name << std::endl;
+        } catch (...) {}
+
+        try {
+            return &globalSymbolTable.at(name);
+        } catch (...) {}
+
+        try {
             return &taggedTable.at(name);
-        }
+        } catch (...) {}
+
+        throw std::runtime_error("Could not find variable " + name);
     }
 
     // For now, c closures are limited to no arguments, no calling pielo closures, nothing!

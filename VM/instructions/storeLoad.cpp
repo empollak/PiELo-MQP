@@ -15,11 +15,21 @@ namespace PiELo {
             throw std::runtime_error("Stack underflow: storeLocal");
         }
 
-        Variable var = stack.top();
+        try {
+            // This will throw an error if varName is not found
+            Variable* var = &currentSymbolTable->at(varName);
+
+            var->mutateValue(stack.top());
+
+            handleDependants(*var);
+        } catch (...) {
+            (*currentSymbolTable)[varName] = stack.top();
+        }
+
         stack.pop();
 
         // std::string varName = *(var.getNameValue());
-        (*currentSymbolTable)[varName] = var;
+        debugPrint("Stored local to " << varName << std::endl);
     }
 
     void loadToStack(const std::string& varName){

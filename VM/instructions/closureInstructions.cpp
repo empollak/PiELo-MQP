@@ -74,39 +74,12 @@ namespace PiELo{
                 if (dependency->getType() == PIELO_CLOSURE) {
                     closureList[dependency->getClosureIndex()].dependants.push_back(closureIndex);
                 }
+                debugPrint(" added closure to dependencies of variable " << name << std::endl);
             }
         }
 
         programCounter = closureData.codePointer;
         debugPrint(" updated pc: " << programCounter << " state: " << state << std::endl);
-    }
-
-    // Expects the stack to have format:
-    // Bottom
-    // arg1 
-    // arg2 
-    // number of args : int
-    // ClosureData
-    // top
-    void callClosureAndStore(std::string resultVarName) {
-        // Call the closure
-        callClosure();
-
-        // Store the closure's index in the given variable name
-        // callClosure updates currentClosureIndex
-        stack.push(currentClosureIndex);
-        storeTagged(resultVarName);
-    }
-
-    // Expects the stack to have format:
-    // Bottom
-    // arg1 
-    // arg2 
-    // number of args : int
-    // ClosureData
-    // top
-    void callClosureNoStore() {
-        callClosure();
     }
 
     void retFromClosure() {
@@ -137,7 +110,7 @@ namespace PiELo{
         
             stack.pop();
         }
-        
+
         stack.push(currentClosureIndex);
 
         programCounter = returnAddrStack.top().codePointer;

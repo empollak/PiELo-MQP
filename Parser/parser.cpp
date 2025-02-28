@@ -10,18 +10,13 @@ namespace PiELo {
             throw std::runtime_error("Tokens had size 0");
         }
         // Pop off the front of the list
-        std::cout << "readFromTokens got tokens: " << tokensToString(tokens) << std::endl;
         std::string token = *tokens.begin();
         tokens.erase(tokens.begin());
-        std::cout << "after erase, readFromTokens got tokens: " << tokensToString(tokens) << std::endl;
-        std::cout << "readFromTokens got token " << token << std::endl;
         if (token == "(") {
             Expression E;
             E.type = Expression::LIST;
-            std::cout << "Got token (" << std::endl;
             // Add all tokens in this () pair, while nesting any nested () pairs
             while(*tokens.begin() != ")") {
-                std::cout << "pushed to list: ";
                 E.push_back(readFromTokens(tokens));
             }
             // Erase the leftover )

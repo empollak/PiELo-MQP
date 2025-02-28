@@ -49,8 +49,6 @@ namespace PiELo{
         for (int i = 0; i < numArgs; i++) {
             // Copy the arguments to the local symbol table
             std::string argName = closureData.argNames[i];
-            Type argType = closureData.argTypes[i];
-            if (stack.top().getType() != argType) throw std::runtime_error("Mismatched argument types for call_closure");
             closureData.localSymbolTable[argName] = stack.top();
             debugPrint(" added arg name " << argName << " value ");
             closureData.localSymbolTable[argName].print();

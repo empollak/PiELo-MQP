@@ -1,5 +1,7 @@
 (begin 
-(var tagged reactive x)
-(set x 20)
-(print x)
+(var global inert a)
+(fun reactive double (x) (+ x a))
+(set a 2)
+(var global inert x)
+(print (double 2))
 )

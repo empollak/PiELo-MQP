@@ -93,7 +93,6 @@ namespace PiELo {
         codePtr codePointer;
         symbolTable localSymbolTable; // Should this be a pointer? Probably
         std::vector<std::string> argNames;
-        std::vector<Type> argTypes;
         std::vector<std::string> dependencies;
         std::vector<size_t> dependants;
         VariableData cachedValue;
@@ -131,7 +130,6 @@ namespace PiELo {
             asClosure = (ClosureData*) malloc(sizeof(ClosureData));
             asClosure->codePointer = codePointer;
             asClosure->argNames = args;
-            asClosure->argTypes = argTypes;
         }
 
         opCodeInstructionOrArgument(ClosureData closureData) {

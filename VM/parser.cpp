@@ -231,7 +231,6 @@ void Parser::handleDefineClosure() {
     debugPrint("Defineclosure: num args: " << numArgs << std::endl);
     
     for (int i = 0; i < numArgs; i++) {
-        closure.argTypes.push_back(stringToType(parseNextString()));
         closure.argNames.push_back(parseNextString());
     }
 

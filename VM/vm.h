@@ -39,6 +39,7 @@ namespace PiELo {
 
     extern int robotID;
     typedef timeval timestamp_t;
+    class VariableData;
 
     class VariableData {
         public:
@@ -74,18 +75,7 @@ namespace PiELo {
             }
         }
 
-        void print() {
-            if(getType() == NIL){
-                std::cout << "nil";
-            } else if(getType() == INT){
-                std::cout << "int " << asInt;
-            } else if(getType() == FLOAT){
-                std::cout << "float " << asFloat;
-            } else if (getType() == PIELO_CLOSURE) {
-                std::cout << "closure index: ";
-                std::cout << asClosureIndex;
-            }
-        }
+        void print();
     };
 
     struct ClosureData {
@@ -97,6 +87,9 @@ namespace PiELo {
         std::vector<size_t> dependants;
         VariableData cachedValue;
     };
+
+    extern std::vector<ClosureData> closureList;
+    extern std::vector<ClosureData> closureTemplates;
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
         enum {
@@ -374,8 +367,6 @@ namespace PiELo {
     extern symbolTable taggedTable;
     // Variables which are at the top level but not tagged
     extern symbolTable globalSymbolTable;
-    extern std::vector<ClosureData> closureList;
-    extern std::vector<ClosureData> closureTemplates;
     extern std::stack<Variable> stack;
 
 

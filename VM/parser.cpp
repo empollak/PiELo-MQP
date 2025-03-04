@@ -24,6 +24,7 @@ void Parser::initHandlers() {
         {"sub", [&]() { handleArithmetic(SUB); }},
         {"mul", [&]() { handleArithmetic(MUL); }},
         {"div", [&]() { handleArithmetic(DIV); }},
+        {"mod", [&]() { handleSimple(MOD); }},
         {"print", [&]() {debugPrint("Parsing: print" << std::endl); handleSimple(PRINT); }},
         {"eql", [&]() { handleSimple(EQL); }},
         {"neql", [&]() { handleSimple(NEQL); }},
@@ -44,6 +45,7 @@ void Parser::initHandlers() {
         {"call_closure", [&]() {debugPrint("parsing: call_closure" << std::endl); handleSimple(CALL_CLOSURE);}},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"call_c_closure", [&]() {Parser::handleCallC();}},
+        {"uncache", [&]() {handleSimple(UNCACHE);}},
         {"push_next_in_stig", [&]() {bytecode.push_back(PUSH_NEXT_IN_STIG);
                                         bytecode.push_back(parseNextString());}},
         {"is_iter_at_end", [&]() {bytecode.push_back(IS_ITER_AT_END);
@@ -133,8 +135,10 @@ void Parser::handleStore() {
     if (type == "local") {
         bytecode.push_back(STORE_LOCAL);
         bytecode.push_back(parseNextString()); // var name
-    } 
-    else if (type == "tagged") {
+    } else if (type == "global") {
+        bytecode.push_back(STORE_GLOBAL);
+        bytecode.push_back(parseNextString()); // var name
+    } else if (type == "tagged") {
         bytecode.push_back(STORE_TAGGED);
         std::string name = parseNextString();
         debugPrint(" parsed: store tag name " << name << std::endl);

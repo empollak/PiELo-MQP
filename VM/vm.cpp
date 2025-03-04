@@ -82,6 +82,21 @@ namespace PiELo {
         taggedTable[name] = f;
     }
 
+    void VariableData::print() { 
+        if(getType() == NIL){
+            std::cout << "nil";
+        } else if(getType() == INT){
+            std::cout << "int " << asInt;
+        } else if(getType() == FLOAT){
+            std::cout << "float " << asFloat;
+        } else if (getType() == PIELO_CLOSURE) {
+            std::cout << "closure index: ";
+            std::cout << asClosureIndex;
+            std::cout << " cached value: ";
+            closureList[asClosureIndex].cachedValue.print();
+        }
+    }
+
     VariableData Variable::nextIterValue() {
         ensureStig();
         VariableData data;

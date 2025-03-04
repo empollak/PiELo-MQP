@@ -1,17 +1,26 @@
 push_nil
 pop
+push i 0
+uncache
+store local x
 push_nil
 pop
-push i 2
-push i 1
-load double
-call_closure
+label while_0
+load x
+push i 10
+gt
+jmp_if_zero while_end_0
+load x
 print
+pop
+push i 1
+load x
+add
+uncache
+store local x
+push_nil
+pop
+jmp while_0
+label while_end_0
 end
 
-define_closure double 1 x 1 a 
-load x
-load a
-add
-push i 1
-ret_from_closure

@@ -17,7 +17,7 @@ namespace PiELo {
         enum ExpressionType {
             LIST, INT, FLOAT, SYMBOL, NIL
         };
-        ExpressionType type;
+        ExpressionType type = NIL;
         std::vector<Expression> listValue;  
         union {
             int intValue;
@@ -49,6 +49,11 @@ namespace PiELo {
         }
 
         std::string toString();
+
+        Expression(std::string value) {
+            type = SYMBOL;
+            symbolValue = value;
+        }
         
         Expression(){}
         ~Expression(){}

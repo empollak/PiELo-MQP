@@ -39,6 +39,7 @@ namespace PiELo {
 
         STORE_LOCAL,
         STORE_TAGGED,
+        STORE_GLOBAL,
         STORE_STIG,
         TAG_VARIABLE,
         TAG_ROBOT,
@@ -54,6 +55,7 @@ namespace PiELo {
         RET_FROM_CLOSURE,
         RERUN_CLOSURE,
         CALL_C_CLOSURE,
+        UNCACHE,
 
         PRINT,
         DEBUG_PRINT,

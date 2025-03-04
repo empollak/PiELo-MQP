@@ -97,11 +97,11 @@ namespace PiELo{
                     break;
                 case FLOAT: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getFloatValue(); 
-                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
+                    debugPrint(" placed " << stack.top().getFloatValue() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
                 case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getClosureIndex(); 
-                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
+                    debugPrint(" placed " << stack.top().getClosureIndex() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
             }
 
@@ -124,6 +124,16 @@ namespace PiELo{
         currentClosureIndex = closureIndex;
         programCounter = closureList[closureIndex].codePointer;
         debugPrint(" pc now " << programCounter << std::endl);
+    }
+
+    void uncache() {
+        if (stack.size() < 1) throw ShortOnElementsOnStackException("uncache");
+        // Uncaching a non-cached value is fine.
+        if (stack.top().getType() != Type::PIELO_CLOSURE) return;
+        
+        Variable var = stack.top();
+        stack.pop();
+        stack.push(closureList[var.getClosureIndex()].cachedValue);
     }
 
 }

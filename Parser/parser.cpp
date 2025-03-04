@@ -58,28 +58,30 @@ namespace PiELo {
         std::string retVal = "";
         switch (type) {
             case Expression::LIST:
-                retVal += "[";
+                retVal += "(";
                 for (Expression listExpression : listValue) {
                     retVal += listExpression.toString();
                 }
-                retVal += "]";
+                // Erase the trailing space
+                retVal.erase(retVal.end() - 1);
+                retVal += ")";
                 break;
             case Expression::INT:
                 retVal += std::to_string(intValue);
+                retVal += " ";
                 break;
             case Expression::FLOAT:
                 retVal += std::to_string(floatValue);
+                retVal += " ";
                 break;
             case Expression::SYMBOL:
-                retVal += "'";
                 retVal += symbolValue;
-                retVal += "'";
+                retVal += " ";
                 break;
             case Expression::NIL:
                 retVal += "NIL";
                 break;
         }
-        retVal += ", ";
         return retVal;
     }
 

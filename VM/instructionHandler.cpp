@@ -58,6 +58,9 @@ namespace PiELo{
             case STORE_LOCAL:
                 storeLocal(*bytecode[++programCounter].asString);
                 break;
+            case STORE_GLOBAL:
+                storeGlobal(*bytecode[++programCounter].asString);
+                break;
             case STORE_TAGGED:
                 name = *bytecode[++programCounter].asString;
                 debugPrint("instructionHandler: store name: " << name << std::endl);
@@ -148,9 +151,8 @@ namespace PiELo{
             case PUSHF:
                 pushFloat();
                 break;
-            case PUSHS:
-                
-
+            case UNCACHE:
+                uncache();
                 break;
             case POP:
                 pop();

@@ -1,5 +1,7 @@
 .vscode/
+# Symlinks
 Parser/VM
+Parser/router
 
 # Prerequisites
 *.d

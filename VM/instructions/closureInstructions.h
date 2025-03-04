@@ -9,4 +9,5 @@ namespace PiELo {
     void callClosure();
     void retFromClosure();
     void rerunClosure(size_t closureIndex);
+    void uncache();
 }

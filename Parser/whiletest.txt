@@ -1,0 +1,5 @@
+(begin 
+(var local inert x)
+(set x 0)
+(while (< x 10) (begin (print x) (set x (+ 1 x))))
+)

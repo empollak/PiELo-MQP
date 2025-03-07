@@ -1,26 +1,70 @@
 push_nil
 pop
-push i 0
-uncache
-store local x
 push_nil
 pop
-label while_0
-load x
-push i 10
-gt
-jmp_if_zero while_end_0
-load x
+push i 2
+uncache
+store global a
+push_nil
+pop
+push_nil
+pop
+push_nil
+pop
+push i 3
+push i 1
+load plusa
+call_closure
+uncache
+store global y
+push_nil
+pop
+debug_print "initial y:"  
+push_nil
+pop
+load y
 print
 pop
-push i 1
-load x
-add
-uncache
-store local x
+push i 0
+load __lambda_2
+call_closure
+store global z
 push_nil
 pop
-jmp while_0
-label while_end_0
+debug_print "initial z:"  
+push_nil
+pop
+load z
+print
+pop
+push i 3
+uncache
+store global a
+push_nil
+pop
+debug_print "final y:"  
+push_nil
+pop
+load y
+print
+pop
+debug_print "final z:"  
+push_nil
+pop
+load z
+print
 end
 
+define_closure plusa 1 x 1 a 
+load x
+load a
+add
+push i 1
+ret_from_closure
+define_closure __lambda_2 0 1 a 
+push i 3
+push i 1
+load plusa
+call_closure
+push i 1
+ret_from_closure

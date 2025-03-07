@@ -74,26 +74,74 @@ namespace PiELo {
         // e.listValue[0] was confirmed to have type SYMBOL by codegenList().
         std::string procedureName = e.listValue[0].symbolValue;
         std::string assemblyInstruction = "";
+        int expectedArguments;
         if (procedureName == "+") {
+            expectedArguments = 2;
             assemblyInstruction = "add";
-        } else if (procedureName == "-") assemblyInstruction = "sub";
-        else if (procedureName == "*") assemblyInstruction = "mul";
-        else if (procedureName == "/") assemblyInstruction = "div";
-        else if (procedureName == "%") assemblyInstruction = "mod";
-        else if (procedureName == "&&") assemblyInstruction = "land";
-        else if (procedureName == "||") assemblyInstruction = "lor";
-        else if (procedureName == "!") assemblyInstruction = "lnot";
-        else if (procedureName == "==") assemblyInstruction = "eql";
-        else if (procedureName == "!=") assemblyInstruction = "neql";
+        } else if (procedureName == "-") {
+            expectedArguments = 2;
+            assemblyInstruction = "sub";
+        }
+        else if (procedureName == "*") {
+            expectedArguments = 2;
+            assemblyInstruction = "mul";}
+        else if (procedureName == "/") {
+            expectedArguments = 2;
+            assemblyInstruction = "div";
+        }
+        else if (procedureName == "%") {
+            expectedArguments = 1;
+            assemblyInstruction = "mod";
+        }
+        else if (procedureName == "&&") {
+            expectedArguments = 2;
+            assemblyInstruction = "land";
+        }
+        else if (procedureName == "||") {
+            expectedArguments = 2;
+            assemblyInstruction = "lor";
+        }
+        else if (procedureName == "!") {
+            expectedArguments = 1;
+            assemblyInstruction = "lnot";
+        }
+        else if (procedureName == "==") {
+            expectedArguments = 2;
+            assemblyInstruction = "eql";
+        }
+        else if (procedureName == "!=") {
+            expectedArguments = 2;
+            assemblyInstruction = "neql";
+        }
         // These are backwards because the arguments are pushed to the stack in opposite order
-        else if (procedureName == ">") assemblyInstruction = "lt";
-        else if (procedureName == "<") assemblyInstruction = "gt";
-        else if (procedureName == ">=") assemblyInstruction = "lte";
-        else if (procedureName == "<=") assemblyInstruction = "gte";
+        else if (procedureName == ">") {
+            expectedArguments = 2;
+            assemblyInstruction = "lt";
+        }
+        else if (procedureName == "<") {
+            expectedArguments = 2;
+            assemblyInstruction = "gt";
+        }
+        else if (procedureName == ">=") {
+            expectedArguments = 2;
+            assemblyInstruction = "lte";
+        }
+        else if (procedureName == "<=") {
+            expectedArguments = 2;
+            assemblyInstruction = "gte";
+        }
         else if (procedureName == "print") {
+            expectedArguments = 1;
             assemblyInstruction = "print";
         } else if (procedureName == "spin") {
+            expectedArguments = 0;
             assemblyInstruction = "spin";
+        }
+
+        // Plus one for the procedure name itself
+        if (e.listValue.size() != expectedArguments + 1) {
+            throw std::invalid_argument("Expected " + std::to_string(expectedArguments) + " for operation '" + procedureName + 
+                                        "'. Instead, got " + std::to_string(e.listValue.size() - 1) + " arguments. Expression: " + e.toString()); 
         }
 
         // Codegen each arg in the list one by one (skipping the procedure name)

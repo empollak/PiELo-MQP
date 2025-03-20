@@ -3,6 +3,7 @@
 #include "robotFunctions.h"
 #include "vm.h"
 #include "instructions/storeLoad.h"
+#include "gc.h"
 
 #define ROUTER_HOST "localhost"
 #define ROUTER_PORT "5005"
@@ -185,6 +186,7 @@ namespace PiELo {
         // }
         try {
             Variable *var = &taggedTable.at(msg.variableName);
+            GarbageCollector::regVar(var);
             if (!var->isStigmergy) {
                 // If the message has a newer timestamp than the variable
                 if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||

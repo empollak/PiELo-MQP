@@ -1,6 +1,7 @@
 #include "closureInstructions.h"
 #include "../vm.h"
 #include "storeLoad.h"
+#include "../gc.h"
 
 #ifdef __DEBUG_INSTRUCTIONS__
 #define debugPrint(e) std::cout << e;
@@ -19,6 +20,13 @@ namespace PiELo{
         stack.push((size_t) (closureTemplates.size() - 1));
         debugPrint(" at closureTemplates index " << closureTemplates.size() - 1 << std::endl);
         storeLocal(closureName);
+
+        // Register all the dependencies of a closure
+        // for (const std::string& dep : closureData.dependencies) {
+        //     Variable* depVar = findVariable(dep);
+        //     GarbageCollector::regVar(depVar);
+        // }
+
     }
 
     // Expects the stack to have format:
@@ -68,6 +76,7 @@ namespace PiELo{
         if (closureData.dependencies.size() > 0) {
             for (std::string name : closureData.dependencies) {
                 Variable* dependency = findVariable(name);
+                GarbageCollector::regVar(dependency);
                 dependency->dependants.push_back(closureIndex);
                 if (dependency->getType() == PIELO_CLOSURE) {
                     closureList[dependency->getClosureIndex()].dependants.push_back(closureIndex);

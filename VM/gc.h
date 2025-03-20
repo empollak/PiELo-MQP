@@ -1,3 +1,5 @@
+#ifndef GC_H
+#define GC_H
 #pragma once
 #include "vm.h"
 #include <vector>
@@ -39,3 +41,5 @@ namespace PiELo {
     };
 
 }
+
+#endif // GC_H

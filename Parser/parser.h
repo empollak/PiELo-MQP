@@ -59,6 +59,7 @@ namespace PiELo {
         ~Expression(){}
     };
 
-    Expression parse(std::string program);
+    Expression parseString(std::string program);
     Expression atomize(std::string token);
+    void parseFile(std::string filename);
 }

@@ -1,6 +1,10 @@
 #include "parser.h"
 #include "tokenizer.h"
+#include "codegen.h"
 #include <stdexcept>
+#include <sstream>
+#include <vector>
+#include <fstream>
 
 namespace PiELo {
 
@@ -85,9 +89,23 @@ namespace PiELo {
         return retVal;
     }
 
-    Expression parse(std::string program) {
+    Expression parseString(std::string program) {
         std::vector<std::string> tokens = tokenize(program);
         std::cout << "TOKENIZER OUTPUT:" << tokensToString(tokens) << std::endl;
         return readFromTokens(tokens);
+    }
+
+    // Parse a file and codegen the contents
+    void parseFile(std::string filename) {
+        std::ifstream code;
+        code.exceptions(std::ifstream::failbit);
+        code.open(filename, std::fstream::in);
+        std::stringstream buffer;
+        buffer << code.rdbuf();
+        std::string input = buffer.str();
+        std::cout << "program " << input << std::endl;
+        PiELo::Expression program = PiELo::parseString(input);
+        std::cout << program.toString() << std::endl;
+        PiELo::codegenProgram(program, "assembly.txt");
     }
 }

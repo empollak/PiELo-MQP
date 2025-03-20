@@ -17,12 +17,18 @@ namespace PiELo {
     std::vector<std::fstream*> functionDefinitions;
     // Index of -1 indicates codeFile
     long functionDefinitionsIndex = -1;
-
+    enum FunctionType {
+        NIL,
+        C_CLOSURE,
+        PIELO_CLOSURE
+    };
+    
     void codegen(Expression e); 
     struct VariableInfo {
         std::string scope;
         std::string reactivity;
         std::vector<std::string> dependencies;
+        FunctionType functionType = NIL;
     };
     // Name, info of variables. 
     // Scope is local, global, shared, or map
@@ -48,6 +54,7 @@ namespace PiELo {
 
     // Top-level codegen function. Performs initialization and will write to the filename given
     void codegenProgram(Expression e, std::string filename) {
+        codeFile.exceptions(std::fstream::failbit);
         // Open the file for input/output, and discard all current contents
         codeFile.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
         file = &codeFile;
@@ -138,27 +145,29 @@ namespace PiELo {
             assemblyInstruction = "spin";
         }
 
-        // Plus one for the procedure name itself
-        if (e.listValue.size() != expectedArguments + 1) {
-            throw std::invalid_argument("Expected " + std::to_string(expectedArguments) + " for operation '" + procedureName + 
-                                        "'. Instead, got " + std::to_string(e.listValue.size() - 1) + " arguments. Expression: " + e.toString()); 
-        }
-
         // Codegen each arg in the list one by one (skipping the procedure name)
         for (std::vector<Expression>::iterator it = e.listValue.begin() + 1; it != e.listValue.end(); it++) {
             codegen(*it);
         }
 
         if (assemblyInstruction != "") {
+            // Plus one for the procedure name itself
+            if (e.listValue.size() != expectedArguments + 1) {
+                throw std::invalid_argument("Expected " + std::to_string(expectedArguments) + " for operation '" + procedureName + 
+                                            "'. Instead, got " + std::to_string(e.listValue.size() - 1) + " arguments. Expression: " + e.toString()); 
+            }
             // Built in procedure
             *file << assemblyInstruction << std::endl;
         } else {
             if(env.count(procedureName)) {
-                // Closure call
-                *file << "push i " << e.listValue.size() - 1 << std::endl; // Number of arguments = number of expressions - 1 (for the procedure itself)
-                *file << "load " << procedureName << std::endl;
-                *file << "call_closure" << std::endl;
-                
+                if (env[procedureName].functionType == PIELO_CLOSURE) {
+                    // Closure call
+                    *file << "push i " << e.listValue.size() - 1 << std::endl; // Number of arguments = number of expressions - 1 (for the procedure itself)
+                    *file << "load " << procedureName << std::endl;
+                    *file << "call_closure" << std::endl;
+                } else if (env[procedureName].functionType == C_CLOSURE) {
+                    *file << "call_c_closure " << procedureName << std::endl;
+                }   
             } else {
                 throw std::invalid_argument("Function " + procedureName + " must be defined before it can be used.");
             }
@@ -245,10 +254,12 @@ namespace PiELo {
 
     void defineFunction(std::string name, std::vector<std::string> arguments, std::vector<std::string> dependencies, Expression body) {
         env[name].dependencies = dependencies;
+        env[name].functionType = PIELO_CLOSURE;
         // Create new file and adjust file pointer as necessary
         size_t oldIndex = functionDefinitionsIndex;
         size_t functionDefinitionsIndex = functionDefinitions.size();
         std::fstream* funcFile = new std::fstream();
+        funcFile->exceptions(std::fstream::failbit);
         funcFile->open("tmp_" + std::to_string(functionDefinitionsIndex), std::ios_base::trunc | std::ios_base::out | std::ios_base::in);
         functionDefinitions.push_back(funcFile);
         file = funcFile;
@@ -494,6 +505,7 @@ namespace PiELo {
                 *file << "call_closure" << std::endl;
                 
                 env[funcName].dependencies = dependencies;
+                env[funcName].functionType = PIELO_CLOSURE;
                 // Create new file and adjust file pointer as necessary
                 size_t oldIndex = functionDefinitionsIndex;
                 size_t functionDefinitionsIndex = functionDefinitions.size();
@@ -549,6 +561,22 @@ namespace PiELo {
             *file << "pop" << std::endl;
             *file << "jmp while_" << localWhileCounter << std::endl;
             *file << "label while_end_" << localWhileCounter << std::endl;
+        }
+        else if (e.listValue[0].symbolValue == "include") {
+            if (e.listValue.size() != 2) 
+                throw std::invalid_argument("Expected one argument to 'include'. Got " + std::to_string(e.listValue.size() - 1) + ". Expression: " + e.toString());
+            
+            if (e.listValue[1].type != Expression::SYMBOL)
+                throw std::invalid_argument("Expected a symbol as the argument to 'include'. Instead, got a " + e.listValue[1].typeToString() + ". Expression: "  + e.toString());
+            
+            std::ifstream includeFile;
+            includeFile.exceptions(std::ifstream::failbit);
+            includeFile.open(e.listValue[1].symbolValue);
+            std::string closureName;
+            includeFile >> closureName;
+            env[closureName].reactivity = "inert";
+            env[closureName].functionType = C_CLOSURE;
+            *file << "push_nil" << std::endl; // Must push something!
         }
         else {
             // All builtin procedures and closure calls

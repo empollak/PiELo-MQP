@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "networking.h"
 #include "robotFunctions.h"
+#include "gc.h"
 
 
 namespace PiELo {
@@ -57,6 +58,15 @@ namespace PiELo {
         handleInstruction(bytecode[programCounter]);
         checkForMessage();
         programCounter++;
+
+        // run gc every 100 steps
+        static int stepsSinceGC = 0;
+        stepsSinceGC++;
+        if (stepsSinceGC >= 100) {
+            GarbageCollector::collectGarbage();
+            stepsSinceGC = 0;
+        }
+
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
         return VMState::READY;
     }

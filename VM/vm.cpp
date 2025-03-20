@@ -64,15 +64,37 @@ namespace PiELo {
     Variable* findVariable(std::string name) {
         try {
             return &currentSymbolTable->at(name);
-        } catch (...) {
-            std::cout << "  findVariable: finding " << name << std::endl;
+        } catch (...) {}
+
+        try {
+            return &globalSymbolTable.at(name);
+        } catch (...) {}
+
+        try {
             return &taggedTable.at(name);
-        }
+        } catch (...) {}
+
+        throw std::runtime_error("Could not find variable " + name);
     }
 
     // For now, c closures are limited to no arguments, no calling pielo closures, nothing!
     void registerFunction(std::string name, funp f) {
         taggedTable[name] = f;
+    }
+
+    void VariableData::print() { 
+        if(getType() == NIL){
+            std::cout << "nil";
+        } else if(getType() == INT){
+            std::cout << "int " << asInt;
+        } else if(getType() == FLOAT){
+            std::cout << "float " << asFloat;
+        } else if (getType() == PIELO_CLOSURE) {
+            std::cout << "closure index: ";
+            std::cout << asClosureIndex;
+            std::cout << " cached value: ";
+            closureList[asClosureIndex].cachedValue.print();
+        }
     }
 
     VariableData Variable::nextIterValue() {

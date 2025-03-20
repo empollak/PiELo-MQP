@@ -6,8 +6,8 @@ namespace PiELo {
     struct ClosureData;
 
     void defineClosure(std::string closureName, ClosureData closureData); 
-    void callClosureNoStore();
-    void callClosureAndStore(std::string resultVarName);
+    void callClosure();
     void retFromClosure();
     void rerunClosure(size_t closureIndex);
+    void uncache();
 }

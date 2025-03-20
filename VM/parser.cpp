@@ -17,12 +17,14 @@ void Parser::initHandlers() {
         {"tag", [&]() {Parser::handleTag();}},
         {"load", [&]() {Parser::handleLoad();}},
         {"push", [&]() {Parser::handlePush();}},
+        {"push_nil", [&]() { handleSimple(PUSH_NIL); }},
         {"pop", [&]() {handlePop();}},
         {"is_nil", [&]() { handleJump(IS_NIL); }},
         {"add", [&]() { handleArithmetic(ADD); }},
         {"sub", [&]() { handleArithmetic(SUB); }},
         {"mul", [&]() { handleArithmetic(MUL); }},
         {"div", [&]() { handleArithmetic(DIV); }},
+        {"mod", [&]() { handleSimple(MOD); }},
         {"print", [&]() {debugPrint("Parsing: print" << std::endl); handleSimple(PRINT); }},
         {"eql", [&]() { handleSimple(EQL); }},
         {"neql", [&]() { handleSimple(NEQL); }},
@@ -40,9 +42,10 @@ void Parser::initHandlers() {
         {"label", [&]() { handleFunctionOrLabel("label"); }},
         {"end", [&]() {debugPrint("Parsing: end" << std::endl); handleSimple(END); }},
         {"define_closure", [&]() {debugPrint("Parsing: define_closure" << std::endl); handleDefineClosure(); }},
-        {"call_closure", [&]() {debugPrint("parsing: call_closure" << std::endl); handleCallClosure(); }},
+        {"call_closure", [&]() {debugPrint("parsing: call_closure" << std::endl); handleSimple(CALL_CLOSURE);}},
         {"ret_from_closure", [&]() {handleSimple(RET_FROM_CLOSURE);}},
         {"call_c_closure", [&]() {Parser::handleCallC();}},
+        {"uncache", [&]() {handleSimple(UNCACHE);}},
         {"push_next_in_stig", [&]() {bytecode.push_back(PUSH_NEXT_IN_STIG);
                                         bytecode.push_back(parseNextString());}},
         {"is_iter_at_end", [&]() {bytecode.push_back(IS_ITER_AT_END);
@@ -132,8 +135,10 @@ void Parser::handleStore() {
     if (type == "local") {
         bytecode.push_back(STORE_LOCAL);
         bytecode.push_back(parseNextString()); // var name
-    } 
-    else if (type == "tagged") {
+    } else if (type == "global") {
+        bytecode.push_back(STORE_GLOBAL);
+        bytecode.push_back(parseNextString()); // var name
+    } else if (type == "tagged") {
         bytecode.push_back(STORE_TAGGED);
         std::string name = parseNextString();
         debugPrint(" parsed: store tag name " << name << std::endl);
@@ -230,7 +235,6 @@ void Parser::handleDefineClosure() {
     debugPrint("Defineclosure: num args: " << numArgs << std::endl);
     
     for (int i = 0; i < numArgs; i++) {
-        closure.argTypes.push_back(stringToType(parseNextString()));
         closure.argNames.push_back(parseNextString());
     }
 
@@ -248,20 +252,6 @@ void Parser::handleDefineClosure() {
     // bytecode.push_back(closure);
     defineClosure(name, closure);
     debugPrint("Done with defineClosure" << std::endl);
-}
-
-void Parser::handleCallClosure() {
-    std::string type;
-    file >> type;
-
-    if (type == "store") {
-        bytecode.push_back(CALL_CLOSURE_STORE);
-        bytecode.push_back(parseNextString());
-    } else if (type == "nostore") {
-        bytecode.push_back(CALL_CLOSURE_NO_STORE);
-    } else {
-        throwInvalidInstruction("call_closure " + type);
-    }
 }
 
 void Parser::handleCallC() {

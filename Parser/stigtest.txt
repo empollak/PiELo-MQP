@@ -1,0 +1,8 @@
+(begin
+(var map inert a)
+(set a 3)
+(var global inert sum)
+(set sum 0)
+(foreach reactive (in x a) (begin (set sum (+ x sum)) (print sum)))
+(spin)
+)

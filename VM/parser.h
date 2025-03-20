@@ -34,7 +34,6 @@ namespace PiELo {
             void handleFunctionOrLabel(const std::string &type);
             void handleJump(const Instruction opcode);
             void handleDefineClosure();
-            void handleCallClosure();
             void handleCallC();
 
             void handleStigSize();

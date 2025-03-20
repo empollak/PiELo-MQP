@@ -1,14 +1,17 @@
 #include "tokenizer.h"
+#include "parser.h"
+#include "codegen.h"
+#include "../VM/vm.h"
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
+#include <fstream>
 
-int main() {
-    std::string input = "(set x (+ a b))";
-    std::vector<std::string> tokens = PiELo::tokenize(input);
-    std::cout << "[";
-    for (std::vector<std::string>::iterator tokenIter = tokens.begin(); tokenIter != tokens.end(); tokenIter++) {
-        std::cout << "'" << *tokenIter << "', ";
-    }
-    std::cout << "]" << std::endl;
+std::ifstream code;
+
+int main(int argc, char** argv) {
+    std::string programName = "program.txt";
+    if (argc > 1) programName = argv[1];
+    PiELo::parseFile(programName);
 }

@@ -37,12 +37,8 @@ namespace PiELo{
                 debugPrint(" got closure " << std::endl);
                 defineClosure(name, closure);
                 break;
-            case CALL_CLOSURE_NO_STORE:
-                callClosureNoStore();
-                break;
-
-            case CALL_CLOSURE_STORE:
-                callClosureAndStore(*bytecode[++programCounter].asString);
+            case CALL_CLOSURE:
+                callClosure();
                 break;
             
             case RET_FROM_CLOSURE:
@@ -61,6 +57,9 @@ namespace PiELo{
             
             case STORE_LOCAL:
                 storeLocal(*bytecode[++programCounter].asString);
+                break;
+            case STORE_GLOBAL:
+                storeGlobal(*bytecode[++programCounter].asString);
                 break;
             case STORE_TAGGED:
                 name = *bytecode[++programCounter].asString;
@@ -152,9 +151,8 @@ namespace PiELo{
             case PUSHF:
                 pushFloat();
                 break;
-            case PUSHS:
-                
-
+            case UNCACHE:
+                uncache();
                 break;
             case POP:
                 pop();

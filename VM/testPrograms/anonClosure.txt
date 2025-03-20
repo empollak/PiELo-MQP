@@ -1,0 +1,24 @@
+# (var local reactive x)
+# (set x (+ a b))
+
+define_closure __lambda_0 0 2 a b
+... // codegen the expression
+push i 1
+ret_from_closure
+store local x
+
+
+# has dependencies a and b
+lambda 2 a b # pushes the closure index to the stack
+load a
+load b
+add
+push i 1 # has return value
+ret_from_closure # consumes 1 and result of add
+store local x # store the closure index in x
+
+
+
+(fun inc x (+ x 1))
+(set a 2)
+(set y (inc a))

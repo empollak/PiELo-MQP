@@ -49,8 +49,6 @@ namespace PiELo{
         for (int i = 0; i < numArgs; i++) {
             // Copy the arguments to the local symbol table
             std::string argName = closureData.argNames[i];
-            Type argType = closureData.argTypes[i];
-            if (stack.top().getType() != argType) throw std::runtime_error("Mismatched argument types for call_closure");
             closureData.localSymbolTable[argName] = stack.top();
             debugPrint(" added arg name " << argName << " value ");
             closureData.localSymbolTable[argName].print();
@@ -74,39 +72,12 @@ namespace PiELo{
                 if (dependency->getType() == PIELO_CLOSURE) {
                     closureList[dependency->getClosureIndex()].dependants.push_back(closureIndex);
                 }
+                debugPrint(" added closure to dependencies of variable " << name << std::endl);
             }
         }
 
         programCounter = closureData.codePointer;
         debugPrint(" updated pc: " << programCounter << " state: " << state << std::endl);
-    }
-
-    // Expects the stack to have format:
-    // Bottom
-    // arg1 
-    // arg2 
-    // number of args : int
-    // ClosureData
-    // top
-    void callClosureAndStore(std::string resultVarName) {
-        // Call the closure
-        callClosure();
-
-        // Store the closure's index in the given variable name
-        // callClosure updates currentClosureIndex
-        stack.push(currentClosureIndex);
-        storeTagged(resultVarName);
-    }
-
-    // Expects the stack to have format:
-    // Bottom
-    // arg1 
-    // arg2 
-    // number of args : int
-    // ClosureData
-    // top
-    void callClosureNoStore() {
-        callClosure();
     }
 
     void retFromClosure() {
@@ -126,18 +97,19 @@ namespace PiELo{
                     break;
                 case FLOAT: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getFloatValue(); 
-                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
+                    debugPrint(" placed " << stack.top().getFloatValue() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
                 case PIELO_CLOSURE: closureList[currentClosureIndex].cachedValue = 
                     stack.top().getClosureIndex(); 
-                    debugPrint(" placed " << stack.top().getIntValue() << " in cache for closure index " << currentClosureIndex << std::endl);
+                    debugPrint(" placed " << stack.top().getClosureIndex() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
             }
 
         
             stack.pop();
-
         }
+
+        stack.push(currentClosureIndex);
 
         programCounter = returnAddrStack.top().codePointer;
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
@@ -152,6 +124,16 @@ namespace PiELo{
         currentClosureIndex = closureIndex;
         programCounter = closureList[closureIndex].codePointer;
         debugPrint(" pc now " << programCounter << std::endl);
+    }
+
+    void uncache() {
+        if (stack.size() < 1) throw ShortOnElementsOnStackException("uncache");
+        // Uncaching a non-cached value is fine.
+        if (stack.top().getType() != Type::PIELO_CLOSURE) return;
+        
+        Variable var = stack.top();
+        stack.pop();
+        stack.push(closureList[var.getClosureIndex()].cachedValue);
     }
 
 }

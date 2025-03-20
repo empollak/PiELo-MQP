@@ -1,0 +1,7 @@
+#! /usr/bin/bash
+if [ $# -gt 0 ]   
+then
+./parser $1 && printf "\n----------------- NOW RUNNING VM -----------------\n\n" && ./VM assembly.txt
+else
+./parser && printf "\n----------------- NOW RUNNING VM -----------------\n\n" && ./VM assembly.txt
+fi

@@ -36,7 +36,7 @@ $(OBJECTS): $(BUILDDIR)/%.o : %.cpp %.h vm.h
 	g++ -c $< -o $@ $(DEFINES)
 
 $(BUILDDIR)/main.o: main.cpp robotFunctions.cpp robotFunctions.h
-	g++ -c main.cpp -o $(BUILDDIR)/main.o 
+	g++ -c main.cpp -o $(BUILDDIR)/main.o
 
 router: router.cpp vm.h networking.h
 	g++ router.cpp -o router

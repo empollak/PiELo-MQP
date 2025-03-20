@@ -3,7 +3,7 @@ push i 1
 store stig barrier
 push i 0 # no arguments
 load wait
-call_closure nostore
+call_closure
 spin
 
 

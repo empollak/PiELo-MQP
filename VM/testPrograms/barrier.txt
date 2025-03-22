@@ -1,4 +1,5 @@
 # Wait for 5 robots, then go
+call_c_closure random_sleep
 push i 1
 store stig barrier
 push i 0 # no arguments

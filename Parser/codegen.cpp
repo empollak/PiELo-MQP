@@ -143,6 +143,9 @@ namespace PiELo {
         } else if (procedureName == "spin") {
             expectedArguments = 0;
             assemblyInstruction = "spin";
+        } else if (procedureName == "end") {
+            expectedArguments = 0;
+            assemblyInstruction = "end";
         }
 
         // Codegen each arg in the list one by one (skipping the procedure name)
@@ -233,6 +236,7 @@ namespace PiELo {
                     // For 'in', which is a special case for foreach blocks, ignore the first argument
                     // It is a local variable.
                     if (e.listValue[0].symbolValue == "in") i = 2;
+                    if (e.listValue[0].symbolValue == "foreach") i = 3;
 
                     for (; i < e.listValue.size(); i++) {
                         std::vector<std::string> subVariables = findVariables(e.listValue[i]);

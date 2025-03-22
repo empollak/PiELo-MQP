@@ -1,5 +1,63 @@
 push_nil
 pop
-call_c_closure sleepRandom
+call_c_closure random_sleep
+pop
+push_nil
+pop
+push_nil
+pop
+pop
+load sum
+push i 4
+lt
+jmp_if_zero else_0
+end
+jmp endif_0
+label else_0
+push i 0
+label endif_0
+push i 1
+ret_from_closure
+push_nil
+pop
+push_nil
+pop
+push i 0
+load __lambda_2
+call_closure
+store global result
+push_nil
+pop
+spin
 end
 
+define_closure barrierTest 0 1 sum 
+push i 0
+uncache
+store global sum
+push_nil
+pop
+push i 0
+load __lambda_1
+call_closure
+define_closure __lambda_1 0 2 sum barrier 
+label iter_start_0
+is_iter_at_end barrier
+jmp_if_not_zero iter_end_0
+push_next_in_stig barrier
+store local i
+load sum
+push i 1
+add
+pop
+jmp iter_start_0
+label iter_end_0
+push_nil
+push i 1
+ret_from_closure
+define_closure __lambda_2 0 0 
+push i 0
+load barrierTest
+call_closure
+push i 1
+ret_from_closure

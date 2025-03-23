@@ -12,7 +12,6 @@
 namespace PiELo {
     void stigSize(std::string varName) {
         Variable* var = nullptr;
-        GarbageCollector::regVar(var);
         auto tag = taggedTable.find(varName);
         if (tag != taggedTable.end()) {
             var = &(tag -> second);

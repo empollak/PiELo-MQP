@@ -19,7 +19,6 @@ namespace PiELo {
         try {
             // This will throw an error if varName is not found
             Variable* var = &currentSymbolTable->at(varName);
-            GarbageCollector::regVar(var);
 
             var->mutateValue(stack.top());
 
@@ -42,7 +41,7 @@ namespace PiELo {
         try {
             // This will throw an error if varName is not found
             Variable* var = &globalSymbolTable.at(varName);
-            GarbageCollector::regVar(var);
+            
 
             var->mutateValue(stack.top());
 
@@ -60,7 +59,7 @@ namespace PiELo {
     void loadToStack(const std::string& varName){
         debugPrint("Beginning loadToStack " << std::endl);
         Variable* var = nullptr;
-        GarbageCollector::regVar(var);
+        
 
         // search local sym table
         #ifdef __DEBUG_INSTRUCTIONS__
@@ -107,7 +106,7 @@ namespace PiELo {
 
     void tagVariable(const std::string& varName, const std::string& tagName) {
         Variable* var = nullptr;
-        GarbageCollector::regVar(var);
+        
         debugPrint("Tagging variable " << varName << " with tag " << tagName << std::endl);
         // search local sym table
         auto local = currentSymbolTable -> find(varName);
@@ -193,7 +192,7 @@ namespace PiELo {
         try {
             // This will throw an error if varName is not found
             Variable* var = &taggedTable.at(varName);
-            GarbageCollector::regVar(var);
+            
 
             var->mutateValue(stack.top());
             gettimeofday(&(var->lastUpdated), NULL);
@@ -218,7 +217,7 @@ namespace PiELo {
         if (it != taggedTable.end()) {
             // Variable was found in the taggedTable
             Variable* var = &(*it).second;
-            GarbageCollector::regVar(var);
+            
             var->updateStigValue(robotID, stack.top());
             var->resetIter();
             gettimeofday(&(var->lastUpdated), NULL);
@@ -248,7 +247,7 @@ namespace PiELo {
             throw std::runtime_error("Attempted to push next element of non-existent stig variable " + varName);
         }
         Variable* var = &(*it).second;
-        GarbageCollector::regVar(var);
+        
         var->ensureStig();
         VariableData data = var->nextIterValue();
         debugPrint("pushNextElement of stig got type " << data.getTypeAsString() << " int value " << data.asInt << std::endl)
@@ -261,7 +260,7 @@ namespace PiELo {
             throw std::runtime_error("Attempted to check iter status of non-stig variable " + varName);
         }
         Variable* var = &(*it).second;
-        GarbageCollector::regVar(var);
+        
         var->ensureStig();
         bool retVal = var->isIterAtEnd();
         debugPrint("isIterAtEnd returned " << retVal << std::endl);
@@ -274,7 +273,6 @@ namespace PiELo {
             throw std::runtime_error("Attempted to check iter status of non-stig variable " + varName);
         }
         Variable* var = &(*it).second;
-        GarbageCollector::regVar(var);
         var->ensureStig();
         var->resetIter();
     }

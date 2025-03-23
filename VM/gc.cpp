@@ -4,103 +4,99 @@
 #include <algorithm>
 
 namespace PiELo {
-    
-    std::vector<GCElement*> GarbageCollector::gcHeap;
-
-    void GarbageCollector::regVar(Variable* var){
-       GCElement* element = new GCElement;
-       element->var = var;
-       element->marked = false;
-       gcHeap.push_back(element);
-    }
-
     // mark one var
-    void GarbageCollector::markVar(Variable* var){
+    void GarbageCollector::markVar(size_t closureIndex){
         // look for entry in gcelement and mark it
-        for (auto entry : gcHeap) {
-            if (entry->var == var) {
-                if (!entry->marked){
-                    entry->marked = true;
-                    // if closure, mark recursively local vars
-                    if (var->getType() == PIELO_CLOSURE) {
-                        // symbol table
-                        ClosureData& closure = closureList[var->getClosureIndex()];
-                        for (auto &pair: closure.localSymbolTable){
-                            markVar(&pair.second);
-                        }
-                    }
-                }
-                break;
+        ClosureData* closure = &closureList.at(closureIndex);
+        closure->marked = true;
+        // symbol table
+        for (auto &pair: closure->localSymbolTable){
+            if (pair.second.getType() == PIELO_CLOSURE) {
+                markVar(pair.second.getClosureIndex());
             }
         }
+
+        // Mark all dependencies
+        for (auto varName : closure->dependencies) {
+            Variable* var = findVariable(varName);
+            if (var->getType() == PIELO_CLOSURE) markVar(var->getClosureIndex());
+        }
+        
+        if (closure->cachedValue.getType() == PIELO_CLOSURE) markVar(closure->cachedValue.asClosureIndex);
     }
 
     // mark all roots
     void GarbageCollector::markRoots(){
+        // Mark the closure we're currently in
+        markVar(currentClosureIndex);
+
         // global symbol table
         for (auto &pair : globalSymbolTable){
-            markVar(&pair.second);
+            if (pair.second.getType() == PIELO_CLOSURE)
+                markVar(pair.second.getClosureIndex());
         }
 
         // tagged table
         for (auto &pair : taggedTable){
-            markVar(&pair.second);
+            if (pair.second.getType() == PIELO_CLOSURE)
+                markVar(pair.second.getClosureIndex());
         }
 
         // call stack
         std::stack<Variable> tempStack = stack;
         while (!tempStack.empty()) {
-            markVar(&tempStack.top());
+            if (tempStack.top().getType() == PIELO_CLOSURE) 
+                markVar(tempStack.top().getClosureIndex());
             tempStack.pop();
         }
 
         // local sym tables
-        for (auto &closure : closureList) {
-            for (auto &symPair : closure.localSymbolTable) {
-                markVar(&symPair.second);
-            }
-        }
-
-        // reactivity
-        for (auto &op : reactivityBytecodes) {
-            if (op.type == NAME) {
-                Variable* var = findVariable(*op.asString);
-                if (var) {
-                    markVar(var);
+        for (auto &closurePair : closureList) {
+            if (closurePair.second.marked) {
+                for (auto &localPair : closurePair.second.localSymbolTable) {
+                    if (localPair.second.getType() == PIELO_CLOSURE)
+                        markVar(localPair.second.getClosureIndex());
                 }
             }
-            // other types go here
+            
         }
 
+        // Mark all closures in the return address stack
+        std::stack<scopeData> tempReturnStack = returnAddrStack;
+        while (!tempReturnStack.empty()) {
+            markVar(tempReturnStack.top().closureIndex);
+            tempReturnStack.pop();
+        }
     }
 
     // sweep through gc heap and free unmarked
     void GarbageCollector::sweep() {
-        auto it = gcHeap.begin();
-        while (it != gcHeap.end()) {
-            if (!(*it)->marked) {
-                // free var 
-                delete (*it)->var;
-                delete *it;
-                it = gcHeap.erase(it);
-            } else {
-                // reset mark for next cycle
-                (*it)->marked = false;
-                ++it;
+
+        // std::cout << "sweeping" << std::endl;
+        for (std::map<size_t, ClosureData>::iterator it = closureList.begin(); it != closureList.end();) {
+            // std::cout << "Looking at closure index " << it->first << std::endl;
+            // Erase if not marked and move to the next item (erase does ++ for you)
+            if (!it->second.marked) {
+                // std::cout << "erasing closure index" << it->first << std::endl;
+                it = closureList.erase(it);
+            }
+            else {
+                it->second.marked = false;
+                it++;
             }
         }
     }
 
     // run full gc cycle
     void GarbageCollector::collectGarbage() {
-        std::cout << "GC: Starting Collection. Heap size = " << gcHeap.size() << std::endl;
+        std::cout << "GC: Starting Collection. closureList size = " << closureList.size() << std::endl;
         markRoots();
         sweep();
-        std::cout << "GC  Collection complete. Heap size = " << gcHeap.size() << std::endl;
+        std::cout << "GC  Collection complete. closureList size = " << closureList.size() << std::endl;
     }
 
     size_t GarbageCollector::heapSize(){
-        return gcHeap.size();
+        return closureList.size();
     }
 
 }

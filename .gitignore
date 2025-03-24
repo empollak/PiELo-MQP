@@ -38,3 +38,4 @@ Parser/router
 VM/VM
 VM/router
 *.DS_Store
+tmp_*

@@ -1,0 +1,35 @@
+# call some functions which have some local variables
+# maybe have some reactivity to show that the things don't break
+
+push i 0
+load add
+call_closure
+print
+pop
+push_nil
+pop
+end
+
+
+define_closure add 0 0
+push i 3
+store local var1
+push i 4
+store local var2
+load var1
+load var2
+push i 2
+load add_helper
+debug_print calling add_helper
+call_closure
+push i 1
+ret_from_closure
+
+define_closure add_helper 2 a b 0
+load a
+load b
+add
+debug_print adding! result:
+print
+push i 1
+ret_from_closure

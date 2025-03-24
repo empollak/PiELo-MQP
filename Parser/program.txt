@@ -1,4 +1,12 @@
 (begin
 (include functions.txt)
-(sleepRandom)
+(var global reactive sum)
+(fun reactive sumBarrier () (sum) (begin 
+    (set sum 0)
+    (foreach inert (in a barrier) (set sum (+ sum 1)))
+    (if (> sum 4) (end) 0)
+))
+(var global reactive c)
+(set c (sumBarrier))
+(spin)
 )

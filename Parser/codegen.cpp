@@ -390,6 +390,7 @@ namespace PiELo {
 
         // Function Definitions
         else if (e.listValue[0].symbolValue == "fun") {
+            // TODO: Update to make the programmer explicitly define arguments
             if (e.listValue.size() != 5) throw std::invalid_argument("fun expects 5 expressions, got " + std::to_string(e.listValue.size()) + ". Expression: " + e.toString());
             Expression reactivity = e.listValue[1];
             Expression name = e.listValue[2];

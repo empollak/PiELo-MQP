@@ -23,6 +23,7 @@ namespace PiELo {
             while(*tokens.begin() != ")") {
                 E.push_back(readFromTokens(tokens));
             }
+            if (E.listValue.size() == 0) std::cout << "Got an empty list" << std::endl;
             // Erase the leftover )
             if (tokens.size() == 0 || *tokens.begin() != ")") {
                 throw std::runtime_error("Missing ')'. Rest of tokens: " + tokensToString(tokens));
@@ -66,8 +67,10 @@ namespace PiELo {
                 for (Expression listExpression : listValue) {
                     retVal += listExpression.toString();
                 }
-                // Erase the trailing space
-                retVal.erase(retVal.end() - 1);
+                // Erase the trailing space if the list is not empty
+                // if (retVal.size() > 1) {
+                //     retVal.erase(retVal.end() - 1);
+                // }
                 retVal += ")";
                 break;
             case Expression::INT:
@@ -98,8 +101,8 @@ namespace PiELo {
     // Parse a file and codegen the contents
     void parseFile(std::string filename) {
         std::ifstream code;
-        code.exceptions(std::ifstream::failbit);
         code.open(filename, std::fstream::in);
+        if (code.fail()) throw std::runtime_error("Failed to open file " + filename);
         std::stringstream buffer;
         buffer << code.rdbuf();
         std::string input = buffer.str();

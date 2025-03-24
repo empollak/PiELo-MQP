@@ -4,7 +4,7 @@
 #include "vm.h"
 #include "instructions/storeLoad.h"
 
-#define ROUTER_HOST "130.215.209.101"
+#define ROUTER_HOST "localhost"
 #define ROUTER_PORT "5005"
 namespace PiELo {
     static const int MAXBUFLEN = 512;

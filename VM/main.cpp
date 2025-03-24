@@ -5,24 +5,24 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-int doNothingButTalkAboutIt() {
+PiELo::Variable doNothingButTalkAboutIt() {
     std::cout << "doing nothing!!" << std::endl;
     
     return 0;
 }
 
-int goForward() {
+PiELo::Variable goForward() {
     robot.setRobotVel({1, 0, 0});
     return 0;
 }
 
-int printRobotPos() {
+PiELo::Variable printRobotPos() {
     vec pos = robot.getRobotPos();
     std::cout << "Robot pos: x = " << pos.x << " y = " << pos.y << " z = " << pos.z << std::endl;
     return 0;
 }
 
-int randomSleep() {
+PiELo::Variable randomSleep() {
     int maxSleepUs = 3000000;
     int sleepTime = rand() % maxSleepUs;
     std::cout << "Sleeping for " << sleepTime / 1000.0 << "ms " << std::endl;

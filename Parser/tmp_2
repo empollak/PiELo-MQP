@@ -1,0 +1,6 @@
+define_closure __lambda_3 0 0 
+push i 0
+load barrierTest
+call_closure
+push i 1
+ret_from_closure

@@ -22,12 +22,14 @@ int main(int argc, char** argv) {
                 std::cout << "output filename: " << programName;
                 break;
             case '?':
-                if (optopt == 'o') {
-                    std::cout << "Option -o requires an argument." << std::endl;
-                } else {
-                    std::cout << "Unknown option " << optopt << std::endl;
-                }
                 exit(1);
+                // getopt prints the error message for us
+                // if (optopt == 'o') {
+                //     std::cout << "Option -o requires an argument." << std::endl;
+                // } else {
+                //     std::cout << "Unknown option " << optopt << std::endl;
+                // }
+                // exit(1);
             default:
                 exit(1);
         }

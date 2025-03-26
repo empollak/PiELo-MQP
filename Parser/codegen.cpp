@@ -54,12 +54,13 @@ namespace PiELo {
 
     // Top-level codegen function. Performs initialization and will write to the filename given
     void codegenProgram(Expression e, std::string filename) {
-        codeFile.exceptions(std::fstream::failbit);
         // Open the file for input/output, and discard all current contents
         codeFile.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        if(codeFile.fail()) throw std::runtime_error("Failed to open " + filename);
         file = &codeFile;
         codegen(e);
         *file << "end\n" << std::endl;
+        std::cout << "here2" << std::endl;
         // Append all of the function definitions
         for (std::vector<std::fstream*>::iterator funcFile = functionDefinitions.begin(); funcFile != functionDefinitions.end(); funcFile++) {
             (*funcFile)->seekg(0, std::ios_base::beg);
@@ -67,11 +68,13 @@ namespace PiELo {
             (*funcFile)->close();
             delete *funcFile;
         }
+        // Delete the temporary files
         for (size_t i = 0; i < functionDefinitions.size(); i++) {
             std::string tmpFilename = "tmp_" + std::to_string(i);
             int result = remove(tmpFilename.c_str());
             if (result != 0) perror(("remove " + tmpFilename).c_str());
         }
+        std::cout << "here1" << std::endl;
         file->close();
     }
 
@@ -143,6 +146,9 @@ namespace PiELo {
         } else if (procedureName == "spin") {
             expectedArguments = 0;
             assemblyInstruction = "spin";
+        } else if (procedureName == "end") {
+            expectedArguments = 0;
+            assemblyInstruction = "end";
         }
 
         // Codegen each arg in the list one by one (skipping the procedure name)
@@ -233,6 +239,7 @@ namespace PiELo {
                     // For 'in', which is a special case for foreach blocks, ignore the first argument
                     // It is a local variable.
                     if (e.listValue[0].symbolValue == "in") i = 2;
+                    if (e.listValue[0].symbolValue == "foreach") i = 3;
 
                     for (; i < e.listValue.size(); i++) {
                         std::vector<std::string> subVariables = findVariables(e.listValue[i]);
@@ -256,11 +263,12 @@ namespace PiELo {
         env[name].dependencies = dependencies;
         env[name].functionType = PIELO_CLOSURE;
         // Create new file and adjust file pointer as necessary
-        size_t oldIndex = functionDefinitionsIndex;
-        size_t functionDefinitionsIndex = functionDefinitions.size();
+        long oldIndex = functionDefinitionsIndex;
+        functionDefinitionsIndex = functionDefinitions.size();
+        std::cout << "Function " << name << ": oldIndex " << oldIndex << " functionDefinitionsIndex " << functionDefinitionsIndex << std::endl;
         std::fstream* funcFile = new std::fstream();
-        funcFile->exceptions(std::fstream::failbit);
         funcFile->open("tmp_" + std::to_string(functionDefinitionsIndex), std::ios_base::trunc | std::ios_base::out | std::ios_base::in);
+        if(funcFile->fail()) throw std::runtime_error("Failed to open file tmp_" + std::to_string(functionDefinitionsIndex));
         functionDefinitions.push_back(funcFile);
         file = funcFile;
         
@@ -291,6 +299,7 @@ namespace PiELo {
 
         // Set the file back to how it was before
         functionDefinitionsIndex = oldIndex;
+        std::cout << "Function " << name << " set functionDefinitionsIndex back to " << functionDefinitionsIndex << std::endl;
         if (functionDefinitionsIndex == -1) file = &codeFile;
         else file = functionDefinitions[functionDefinitionsIndex];
     }
@@ -506,11 +515,14 @@ namespace PiELo {
                 
                 env[funcName].dependencies = dependencies;
                 env[funcName].functionType = PIELO_CLOSURE;
+                std::cout << "foreach before. functionDefinitionsIndex: " << functionDefinitionsIndex << std::endl;
                 // Create new file and adjust file pointer as necessary
-                size_t oldIndex = functionDefinitionsIndex;
-                size_t functionDefinitionsIndex = functionDefinitions.size();
+                long oldIndex = functionDefinitionsIndex;
+                functionDefinitionsIndex = functionDefinitions.size();
+                std::cout << "foreach" << ": oldIndex " << oldIndex << " functionDefinitionsIndex " << functionDefinitionsIndex << std::endl;
                 std::fstream* funcFile = new std::fstream();
                 funcFile->open("tmp_" + std::to_string(functionDefinitionsIndex), std::ios_base::trunc | std::ios_base::out | std::ios_base::in);
+                if(funcFile->fail()) throw std::runtime_error("Failed to open file tmp_" + std::to_string(functionDefinitionsIndex));
                 functionDefinitions.push_back(funcFile);
                 file = funcFile;
                 
@@ -570,8 +582,8 @@ namespace PiELo {
                 throw std::invalid_argument("Expected a symbol as the argument to 'include'. Instead, got a " + e.listValue[1].typeToString() + ". Expression: "  + e.toString());
             
             std::ifstream includeFile;
-            includeFile.exceptions(std::ifstream::failbit);
             includeFile.open(e.listValue[1].symbolValue);
+            if (includeFile.fail()) throw std::runtime_error("Failed to open file " + e.listValue[1].symbolValue);
             std::string closureName;
             includeFile >> closureName;
             env[closureName].reactivity = "inert";

@@ -51,7 +51,7 @@ namespace PiELo {
         stack.pop();
 
         // std::string varName = *(var.getNameValue());
-        debugPrint("Stored local to " << varName << std::endl);
+        debugPrint("Stored global to " << varName << std::endl);
     }
 
     void loadToStack(const std::string& varName){

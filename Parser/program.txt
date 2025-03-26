@@ -1,4 +1,31 @@
 (begin
 (include functions.txt)
-(sleepRandom)
+(random_sleep)
+(var map inert barrier)
+(set barrier 0)
+(var global inert sum)
+(fun reactive barrierTest ()
+    (begin 
+        (set sum 0)
+        (foreach reactive (in i barrier) (+ sum 1))
+        (if (> sum 1) (end) 0)
+    )
 )
+(var global reactive result)
+(set result (barrierTest))
+(spin)
+)
+
+(begin 
+(include functions.txt )
+(random_sleep )
+(var map inert barrier )
+(var global inert sum )
+(fun reactive barrierTest ()
+    (begin 
+    (set sum 0 )
+    (foreach reactive (in i barrier ) (+ sum 1 ))
+    (if (> sum 4 ) (end ) 0 )))
+(var global reactive result )
+(set result (barrierTest ))
+(spin ))

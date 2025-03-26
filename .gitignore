@@ -3,6 +3,9 @@
 Parser/VM
 Parser/router
 
+tmp_*
+assembly.txt
+
 # Prerequisites
 *.d
 

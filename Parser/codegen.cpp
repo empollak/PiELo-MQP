@@ -71,8 +71,8 @@ namespace PiELo {
         // Delete the temporary files
         for (size_t i = 0; i < functionDefinitions.size(); i++) {
             std::string tmpFilename = "tmp_" + std::to_string(i);
-            // int result = remove(tmpFilename.c_str());
-            // if (result != 0) perror(("remove " + tmpFilename).c_str());
+            int result = remove(tmpFilename.c_str());
+            if (result != 0) perror(("remove " + tmpFilename).c_str());
         }
         std::cout << "here1" << std::endl;
         file->close();

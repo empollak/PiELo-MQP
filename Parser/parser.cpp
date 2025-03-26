@@ -99,16 +99,20 @@ namespace PiELo {
     }
 
     // Parse a file and codegen the contents
-    void parseFile(std::string filename) {
+    void parseFile(std::string inputFilename, std::string outputFilename) {
         std::ifstream code;
-        code.open(filename, std::fstream::in);
-        if (code.fail()) throw std::runtime_error("Failed to open file " + filename);
+        code.open(inputFilename, std::fstream::in);
+        if (code.fail()) throw std::runtime_error("Failed to open file " + inputFilename);
+        
+        // Read the entire file into input string
         std::stringstream buffer;
         buffer << code.rdbuf();
         std::string input = buffer.str();
         std::cout << "program " << input << std::endl;
+
+        // Parse the program into an expression and then codegen it
         PiELo::Expression program = PiELo::parseString(input);
         std::cout << program.toString() << std::endl;
-        PiELo::codegenProgram(program, "assembly.txt");
+        PiELo::codegenProgram(program, outputFilename);
     }
 }

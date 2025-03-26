@@ -203,8 +203,36 @@ namespace PiELo {
     std::vector<std::string> findVariables(Expression e) {
         std::vector<std::string> variables;
         if (e.type == Expression::SYMBOL) {
-            // Just the one variable
-            variables.push_back(e.symbolValue);
+            // Make sure variable was defined as reactive if it has an apostrophe
+            if(e.symbolValue.find('\'') != std::string::npos){
+                // Save variable name and delete
+                std::string key = e.symbolValue.substr(0, e.symbolValue.size() - 1);
+                try {
+                    if (env.find(key) != env.end()) {
+                        // Variable was defined
+                        VariableInfo value = env.at(key);
+                
+                        if (value.reactivity == "reactive" && !value.dependencies.empty()) { // should this be AND or OR?
+                            if (value.scope == "local") {
+                                throw std::runtime_error("Error: Reactive variable '" + key + "' cannot be defined in the local scope.");
+                            } else {
+                                variables.push_back(e.symbolValue);
+                            }
+                        } else {
+                            throw std::runtime_error("Error: Variable '" + key + "' is referred to as reactive when it was defined as inert.");
+                        }
+                    } else {
+                        throw std::runtime_error("Error: Variable '" + key + "' is not defined.");
+                    }
+                } catch (const std::runtime_error& e) {
+                    std::cerr << e.what() << std::endl;  // Print error message
+                }
+                
+            } else{
+                //NON REACTIVE
+                variables.push_back(e.symbolValue);
+            }
+        
         } else if (e.type == Expression::LIST) {
             if (e.listValue.size() > 1) {
                 if (e.listValue[0].type != Expression::SYMBOL) throw std::invalid_argument("Expected a SYMBOL at the start of a list. Expression: " + e.toString());

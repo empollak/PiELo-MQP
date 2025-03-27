@@ -5,7 +5,7 @@
 
 namespace PiELo {
     // The file stream which contains the final code
-    std::fstream codeFile;
+    std::fstream tmpCodeFile;
     // Pointer to the file that assembly is currently being written to
     std::fstream* file;
     // Each function definition gets a temporary file
@@ -15,7 +15,7 @@ namespace PiELo {
     // Then, the code must set the index back to what it was before when it is finished defining the function
     // That way, if functions are defined inside of each other, the original code will continue to define the higher-level function
     std::vector<std::fstream*> functionDefinitions;
-    // Index of -1 indicates codeFile
+    // Index of -1 indicates tmpCodeFile
     long functionDefinitionsIndex = -1;
     enum FunctionType {
         NIL,
@@ -55,12 +55,13 @@ namespace PiELo {
     // Top-level codegen function. Performs initialization and will write to the filename given
     void codegenProgram(Expression e, std::string filename) {
         // Open the file for input/output, and discard all current contents
-        codeFile.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
-        if(codeFile.fail()) throw std::runtime_error("Failed to open " + filename);
-        file = &codeFile;
+        std::string tmpCodeFilename = "tmp_assembly";
+        tmpCodeFile.open(tmpCodeFilename, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        if(tmpCodeFile.fail()) throw std::runtime_error("Failed to open " + tmpCodeFilename);
+        file = &tmpCodeFile;
         codegen(e);
         *file << "end\n" << std::endl;
-        std::cout << "here2" << std::endl;
+
         // Append all of the function definitions
         for (std::vector<std::fstream*>::iterator funcFile = functionDefinitions.begin(); funcFile != functionDefinitions.end(); funcFile++) {
             (*funcFile)->seekg(0, std::ios_base::beg);
@@ -68,14 +69,49 @@ namespace PiELo {
             (*funcFile)->close();
             delete *funcFile;
         }
+
         // Delete the temporary files
         for (size_t i = 0; i < functionDefinitions.size(); i++) {
             std::string tmpFilename = "tmp_" + std::to_string(i);
             int result = remove(tmpFilename.c_str());
             if (result != 0) perror(("remove " + tmpFilename).c_str());
         }
-        std::cout << "here1" << std::endl;
+        std::fstream codefile;
+        std::cout << "Creating final codefile " << filename << std::endl;
+        codefile.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
+        if (codefile.fail()) throw std::runtime_error("Failed to open " + filename);
+        tmpCodeFile.seekg(0);
+        std::string line;
+        bool lastWasPushNil = false;
+        while(!std::getline(tmpCodeFile, line).eof()) {
+            std::cout << "Got line " << line;
+            if (line == "push_nil") {
+                lastWasPushNil = true;
+                std::cout << ", was push_nil." << std::endl;
+            } else {
+                // Ignore all push_nil\n pop
+                if (lastWasPushNil) {
+                    if (line == "pop") {
+                        std::cout << ", was pop following push_nil";
+                        lastWasPushNil = false;
+                        continue;
+                    }
+                    else {
+                        std::cout << ", was not pop, but did follow push_nil";
+                        // push_nil not followed by pop should still be added
+                        codefile << "push_nil" << std::endl;
+                    }
+                }
+                std::cout << ", lastWasPushNil = false, added line." << std::endl;
+                lastWasPushNil = false;
+                codefile << line << std::endl;
+            }
+        }
+        codefile.close();
         file->close();
+        // Delete tmp_assembly
+        int result = remove(tmpCodeFilename.c_str());
+        if (result != 0) perror(("remove " + tmpCodeFilename).c_str());
     }
 
     // Handles all regular procedures. Expects to be handed a LIST.
@@ -311,7 +347,7 @@ namespace PiELo {
         // Set the file back to how it was before
         functionDefinitionsIndex = oldIndex;
         std::cout << "Function " << name << " set functionDefinitionsIndex back to " << functionDefinitionsIndex << std::endl;
-        if (functionDefinitionsIndex == -1) file = &codeFile;
+        if (functionDefinitionsIndex == -1) file = &tmpCodeFile;
         else file = functionDefinitions[functionDefinitionsIndex];
     }
 
@@ -563,7 +599,7 @@ namespace PiELo {
 
                 // Set the file back to how it was before
                 functionDefinitionsIndex = oldIndex;
-                if (functionDefinitionsIndex == -1) file = &codeFile;
+                if (functionDefinitionsIndex == -1) file = &tmpCodeFile;
                 else file = functionDefinitions[functionDefinitionsIndex];
             }
 

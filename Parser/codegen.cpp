@@ -39,14 +39,14 @@ namespace PiELo {
     // Check if an expression is valid as a scope argument
     bool isValidScope(Expression e) {
         
-        if (e.type != Expression::SYMBOL || (e.symbolValue != "local" && e.symbolValue != "global" && e.symbolValue != "tagged" && e.symbolValue != "map")) {
+        if (e.type != Expression::SYMBOL || (e.getSymbolValue() != "local" && e.getSymbolValue() != "global" && e.getSymbolValue() != "tagged" && e.getSymbolValue() != "map")) {
             return false;
         }
         return true;
     }
 
     bool isValidReactivity(Expression e) {
-        if (e.type != Expression::SYMBOL || (e.symbolValue != "reactive" && e.symbolValue != "inert")) {
+        if (e.type != Expression::SYMBOL || (e.getSymbolValue() != "reactive" && e.getSymbolValue() != "inert")) {
             return false;
         }
         return true;
@@ -77,32 +77,32 @@ namespace PiELo {
             if (result != 0) perror(("remove " + tmpFilename).c_str());
         }
         std::fstream codefile;
-        std::cout << "Creating final codefile " << filename << std::endl;
+        // std::cout << "Creating final codefile " << filename << std::endl;
         codefile.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
         if (codefile.fail()) throw std::runtime_error("Failed to open " + filename);
         tmpCodeFile.seekg(0);
         std::string line;
         bool lastWasPushNil = false;
         while(!std::getline(tmpCodeFile, line).eof()) {
-            std::cout << "Got line " << line;
+            // std::cout << "Got line " << line;
             if (line == "push_nil") {
                 lastWasPushNil = true;
-                std::cout << ", was push_nil." << std::endl;
+                // std::cout << ", was push_nil." << std::endl;
             } else {
                 // Ignore all push_nil\n pop
                 if (lastWasPushNil) {
                     if (line == "pop") {
-                        std::cout << ", was pop following push_nil";
+                        // std::cout << ", was pop following push_nil";
                         lastWasPushNil = false;
                         continue;
                     }
                     else {
-                        std::cout << ", was not pop, but did follow push_nil";
+                        // std::cout << ", was not pop, but did follow push_nil";
                         // push_nil not followed by pop should still be added
                         codefile << "push_nil" << std::endl;
                     }
                 }
-                std::cout << ", lastWasPushNil = false, added line." << std::endl;
+                // std::cout << ", lastWasPushNil = false, added line." << std::endl;
                 lastWasPushNil = false;
                 codefile << line << std::endl;
             }
@@ -118,7 +118,7 @@ namespace PiELo {
     // Similar to codegenList except only handles normal procedures and closure calls
     void codegenProcedure(Expression e) {
         // e.listValue[0] was confirmed to have type SYMBOL by codegenList().
-        std::string procedureName = e.listValue[0].symbolValue;
+        std::string procedureName = e.listValue[0].getSymbolValue();
         std::string assemblyInstruction = "";
         int expectedArguments;
         if (procedureName == "+") {
@@ -256,7 +256,7 @@ namespace PiELo {
                     if (value.scope == "local") {
                         throw std::runtime_error("Error: Reactive variable '" + key + "' cannot be defined in the local scope.");
                     } else {
-                        variables.push_back(e.symbolValue);
+                        variables.push_back(e.getSymbolValue());
                     }
                 } else {
                     throw std::runtime_error("Error: Variable '" + key + "' is not defined.");
@@ -268,12 +268,12 @@ namespace PiELo {
                 if (e.listValue[0].type != Expression::SYMBOL) throw std::invalid_argument("Expected a SYMBOL at the start of a list. Expression: " + e.toString());
                 
                 // Definitions should not be counted as a dependency
-                if (e.listValue[0].symbolValue != "var" && e.listValue[0].symbolValue != "fun") {
+                if (e.listValue[0].getSymbolValue() != "var" && e.listValue[0].getSymbolValue() != "fun") {
                     
                     // Check if the procedure is a defined closure call
                     // Add all dependencies if so
-                    if (env.count(e.listValue[0].symbolValue) != 0) {
-                        std::vector<std::string> procDeps = env.at(e.listValue[0].symbolValue).dependencies;
+                    if (env.count(e.listValue[0].getSymbolValue()) != 0) {
+                        std::vector<std::string> procDeps = env.at(e.listValue[0].getSymbolValue()).dependencies;
                         // Erase all duplicates
                         for (std::string variable : variables) {
                             for (auto depIt = procDeps.begin(); depIt != procDeps.end(); depIt++) {
@@ -358,7 +358,7 @@ namespace PiELo {
         }
 
         // Conditionals
-        if (e.listValue[0].symbolValue == "if") {
+        if (e.listValue[0].getSymbolValue() == "if") {
             // if special case would go here
             if (e.listValue.size() != 4) {
                 throw std::invalid_argument("Incorrect number of arguments to 'if'. Expected 4, got " + std::to_string(e.listValue.size()) + ". from " + e.toString());
@@ -378,7 +378,7 @@ namespace PiELo {
         } 
         
         // Variable declarations
-        else if (e.listValue[0].symbolValue == "var") {
+        else if (e.listValue[0].getSymbolValue() == "var") {
             if (e.listValue.size() != 4) {
                 throw std::invalid_argument("Incorrect number of arguments to 'vardef'. Expected 4, got " + std::to_string(e.listValue.size()) + ". from " + e.toString());
             }
@@ -394,15 +394,15 @@ namespace PiELo {
             if (name.type != Expression::SYMBOL) {
                 throw std::invalid_argument("The name argument must be a symbol. Expression was: " + e.toString());
             }
-            env[name.symbolValue].reactivity = reactivity.symbolValue;
-            env[name.symbolValue].scope = scope.symbolValue;
+            env[name.getSymbolValue()].reactivity = reactivity.getSymbolValue();
+            env[name.getSymbolValue()].scope = scope.getSymbolValue();
 
             *file << "push_nil" << std::endl;
-            std::cout << "Defined variable " << name.symbolValue << std::endl;
+            std::cout << "Defined variable " << name.getSymbolValue() << std::endl;
         } 
         
         // Variable Definitions
-        else if (e.listValue[0].symbolValue == "set") {
+        else if (e.listValue[0].getSymbolValue() == "set") {
             int localLambdaCounter = lambdaCounter++;
             if (e.listValue.size() != 3) {
                 throw std::invalid_argument("Incorrect number of arguments to 'set'. Expected 3, got " + std::to_string(e.listValue.size()) + ". from " + e.toString());
@@ -412,7 +412,7 @@ namespace PiELo {
             }
 
 
-            VariableInfo var = env.at(e.listValue[1].symbolValue);
+            VariableInfo var = env.at(e.listValue[1].getSymbolValue());
             if (var.scope == "map") var.scope = "stig";
             if (var.reactivity == "reactive") {
                 // Define an anonymous function and then immediately call it and store the result in this variable
@@ -421,7 +421,7 @@ namespace PiELo {
                 defineFunction(name, std::vector<std::string>(), dependencies, e.listValue[2]);
 
                 *file << "push i 0\n" << "load " << name << "\n" << "call_closure\n";
-                *file << "store " << var.scope << " " << e.listValue[1].symbolValue << std::endl;
+                *file << "store " << var.scope << " " << e.listValue[1].getSymbolValue() << std::endl;
             } else {
                 // This needs to be a lambda to make sure that dependencies are ignored.
                 // If it is not, if it is set to a reactive function's return value, that reactive function will update itself
@@ -429,13 +429,13 @@ namespace PiELo {
                 codegen(e.listValue[2]);
                 // Uncache the variable if it's cached
                 *file << "uncache\n";
-                *file << "store " << var.scope << " " << e.listValue[1].symbolValue << std::endl;
+                *file << "store " << var.scope << " " << e.listValue[1].getSymbolValue() << std::endl;
             }
             *file << "push_nil" << std::endl;
         } 
         
         // Code blocks
-        else if (e.listValue[0].symbolValue == "begin") {
+        else if (e.listValue[0].getSymbolValue() == "begin") {
             // Code block
             for (int i = 1; i < e.listValue.size(); i++) {
                 codegen(e.listValue[i]);
@@ -445,7 +445,7 @@ namespace PiELo {
         } 
 
         // Function Definitions
-        else if (e.listValue[0].symbolValue == "fun") {
+        else if (e.listValue[0].getSymbolValue() == "fun") {
             // TODO: Update to make the programmer explicitly define arguments
             if (e.listValue.size() != 5) throw std::invalid_argument("fun expects 5 expressions, got " + std::to_string(e.listValue.size()) + ". Expression: " + e.toString());
             Expression reactivity = e.listValue[1];
@@ -456,24 +456,24 @@ namespace PiELo {
             if (name.type != Expression::SYMBOL) 
                 throw std::invalid_argument("Expected a SYMBOL as second argument to fun. Got a " + e.typeToString() + ". Expression: " + e.toString());
             if (reactivity.type != Expression::SYMBOL) 
-                throw std::invalid_argument("Expected a SYMBOL as first argument to fun for function " + name.symbolValue + ". Got a " + e.typeToString() + ". Expression: " + e.toString());
-            if (reactivity.symbolValue != "reactive" && reactivity.symbolValue != "inert")
-                throw std::invalid_argument("Expected reactivity of function " + name.symbolValue + " to be either 'reactive' or 'inert'. Instead, got " + reactivity.symbolValue);
+                throw std::invalid_argument("Expected a SYMBOL as first argument to fun for function " + name.getSymbolValue() + ". Got a " + e.typeToString() + ". Expression: " + e.toString());
+            if (reactivity.getSymbolValue() != "reactive" && reactivity.getSymbolValue() != "inert")
+                throw std::invalid_argument("Expected reactivity of function " + name.getSymbolValue() + " to be either 'reactive' or 'inert'. Instead, got " + reactivity.getSymbolValue());
             if (args.type != Expression::LIST) 
-                throw std::invalid_argument("Expected a LIST as third argument to fun for function " + name.symbolValue + ". Got a " + e.typeToString() + ". Expression: " + e.toString());
+                throw std::invalid_argument("Expected a LIST as third argument to fun for function " + name.getSymbolValue() + ". Got a " + e.typeToString() + ". Expression: " + e.toString());
 
             // Collect argument names
             std::vector<std::string> argumentNames;
             for (Expression argExp : args.listValue) {
-                if (argExp.type != Expression::SYMBOL) throw std::invalid_argument("Expected a SYMBOL as a parameter to function " + name.symbolValue + ". Got a " + e.typeToString() + ". Expression: " + e.toString() + ", argument: " + argExp.toString());
-                argumentNames.push_back(argExp.symbolValue);
+                if (argExp.type != Expression::SYMBOL) throw std::invalid_argument("Expected a SYMBOL as a parameter to function " + name.getSymbolValue() + ". Got a " + e.typeToString() + ". Expression: " + e.toString() + ", argument: " + argExp.toString());
+                argumentNames.push_back(argExp.getSymbolValue());
             }
             
 
             // Find all dependencies, but ignore arguments
             // If the function is not reactive, it has no dependencies.
             std::vector<std::string> dependencies;
-            if (reactivity.symbolValue == "reactive") {
+            if (reactivity.getSymbolValue() == "reactive") {
                 dependencies = findVariables(body);
                 // Loop over all dependencies
                 for (std::vector<std::string>::iterator dependency = dependencies.begin(); dependency != dependencies.end(); dependency++) {
@@ -488,19 +488,19 @@ namespace PiELo {
                     }
                 }
             }
-            defineFunction(name.symbolValue, argumentNames, dependencies, body); 
+            defineFunction(name.getSymbolValue(), argumentNames, dependencies, body); 
             // Everything has to push something!
             *file << "push_nil" << std::endl;
         } 
-        else if (e.listValue[0].symbolValue == "print") {
+        else if (e.listValue[0].getSymbolValue() == "print") {
             if (e.listValue.size() < 2) throw std::invalid_argument("Expected at least 1 argument to print. Expression: " + e.toString());
 
-            if (e.listValue[1].type == Expression::SYMBOL && e.listValue[1].symbolValue.at(0) == '"') {
+            if (e.listValue[1].type == Expression::SYMBOL && e.listValue[1].getSymbolValue().at(0) == '"') {
                 *file << "debug_print ";
                 // Remove the trailing quote
                 Expression lastExp = e.listValue[e.listValue.size() - 1];
-                if (lastExp.symbolValue.at(lastExp.symbolValue.length() - 1) == '"') {
-                    lastExp.symbolValue.erase(lastExp.symbolValue.length() - 1);
+                if (lastExp.getSymbolValue().at(lastExp.getSymbolValue().length() - 1) == '"') {
+                    lastExp.getSymbolValue().erase(lastExp.getSymbolValue().length() - 1);
                 } else {
                     throw std::invalid_argument("Expected ending quote of print statement. Expression: " + e.toString());
                 }
@@ -515,19 +515,19 @@ namespace PiELo {
                 codegenProcedure(e);
             }
         }
-        else if (e.listValue[0].symbolValue == "foreach") {
+        else if (e.listValue[0].getSymbolValue() == "foreach") {
             if (e.listValue.size() != 4) 
                 throw std::invalid_argument("Expected 3 arguments to foreach. Got " + std::to_string(e.listValue.size() - 1) + " from expression " + e.toString());
 
-            if (e.listValue[1].type != Expression::SYMBOL || (e.listValue[1].symbolValue != "reactive" && e.listValue[1].symbolValue != "inert"))
+            if (e.listValue[1].type != Expression::SYMBOL || (e.listValue[1].getSymbolValue() != "reactive" && e.listValue[1].getSymbolValue() != "inert"))
                 throw std::invalid_argument("Expected one of 'reactive' or 'inert' for foreach reactivity. Expression: " + e.toString());
-            std::string reactivity = e.listValue[1].symbolValue; 
+            std::string reactivity = e.listValue[1].getSymbolValue(); 
 
             if (e.listValue[2].type != Expression::LIST) {
                 throw std::invalid_argument("Expected an (in) block in foreach: " + e.toString());
             } 
             Expression inBlock = e.listValue[2];
-            if (inBlock.listValue[0].type != Expression::SYMBOL || inBlock.listValue[0].symbolValue != "in") {
+            if (inBlock.listValue[0].type != Expression::SYMBOL || inBlock.listValue[0].getSymbolValue() != "in") {
                 throw std::invalid_argument("Expected in block in foreach: " + e.toString());
             }
 
@@ -535,10 +535,14 @@ namespace PiELo {
             Expression stigVar = inBlock.listValue[2];
             if (inVar.type != Expression::SYMBOL) 
                 throw std::invalid_argument("Expected a variable name as first argument to 'in'. Expression: " + e.toString());
-            if (stigVar.type != Expression::SYMBOL || env.count(stigVar.symbolValue) == 0 || env.at(stigVar.symbolValue).scope != "map") 
-                throw std::invalid_argument("Expected a map variable as first argument to 'in'. Expression: " + e.toString());
-            env[inVar.symbolValue].scope = "global";
-            env[inVar.symbolValue].reactivity = "inert";
+            if (stigVar.type != Expression::SYMBOL)
+                throw std::invalid_argument("Expected a symbol as second argument to 'in'. Expression: " + e.toString());
+            if (env.count(stigVar.getSymbolValue()) == 0)
+                throw std::invalid_argument("Variable " + stigVar.getSymbolValue() + " must be declared before it is used. Expression: " + e.toString());
+            if (env.at(stigVar.getSymbolValue()).scope != "map") 
+                throw std::invalid_argument("Expected a map variable as first argument to 'in'. Got a scope of " + env.at(stigVar.getSymbolValue()).scope + " instead. Expression: " + e.toString());
+            env[inVar.getSymbolValue()].scope = "global";
+            env[inVar.getSymbolValue()].reactivity = "inert";
 
             Expression body = e.listValue[3];
             // Create a function with the relevant dependencies
@@ -548,11 +552,11 @@ namespace PiELo {
                 int localLambdaCounter = lambdaCounter++;
                 std::string funcName = "__lambda_" + std::to_string(localLambdaCounter);
                 std::vector<std::string> dependencies = findVariables(body);
-                dependencies.push_back(stigVar.symbolValue);
+                dependencies.push_back(stigVar.getSymbolValue());
 
                 // Delete the in variable from the dependencies - it is local
                 for (std::vector<std::string>::iterator dependency = dependencies.begin(); dependency != dependencies.end(); dependency++) {
-                    if (*dependency == inVar.symbolValue) {
+                    if (*dependency == inVar.getSymbolValue()) {
                         dependencies.erase(dependency);
                         break;
                     }
@@ -592,7 +596,7 @@ namespace PiELo {
 
                 *file << std::endl;
 
-                codegenIterBlock(stigVar.symbolValue, inVar.symbolValue, body);
+                codegenIterBlock(stigVar.getSymbolValue(), inVar.getSymbolValue(), body);
 
                 // Return from the closure and store the result (closure index) into the given variable name
                 *file << "push i 1\n" << "ret_from_closure" << std::endl;
@@ -605,10 +609,10 @@ namespace PiELo {
 
             // Just need to generate the loop block itself. No need to worry abotu dependencies.
             else {
-                codegenIterBlock(stigVar.symbolValue, inVar.symbolValue, body);
+                codegenIterBlock(stigVar.getSymbolValue(), inVar.getSymbolValue(), body);
             }
         }
-        else if (e.listValue[0].symbolValue == "while") {
+        else if (e.listValue[0].getSymbolValue() == "while") {
             if (e.listValue.size() != 3)
                 throw std::invalid_argument("Expected 2 arguments to while. Instead, got " + std::to_string(e.listValue.size() - 1) + " from expression " + e.toString());
             int localWhileCounter = whileCounter++;
@@ -622,7 +626,7 @@ namespace PiELo {
             *file << "jmp while_" << localWhileCounter << std::endl;
             *file << "label while_end_" << localWhileCounter << std::endl;
         }
-        else if (e.listValue[0].symbolValue == "include") {
+        else if (e.listValue[0].getSymbolValue() == "include") {
             if (e.listValue.size() != 2) 
                 throw std::invalid_argument("Expected one argument to 'include'. Got " + std::to_string(e.listValue.size() - 1) + ". Expression: " + e.toString());
             
@@ -630,8 +634,8 @@ namespace PiELo {
                 throw std::invalid_argument("Expected a symbol as the argument to 'include'. Instead, got a " + e.listValue[1].typeToString() + ". Expression: "  + e.toString());
             
             std::ifstream includeFile;
-            includeFile.open(e.listValue[1].symbolValue);
-            if (includeFile.fail()) throw std::runtime_error("Failed to open file " + e.listValue[1].symbolValue);
+            includeFile.open(e.listValue[1].getSymbolValue());
+            if (includeFile.fail()) throw std::runtime_error("Failed to open file " + e.listValue[1].getSymbolValue());
             std::string closureName;
             includeFile >> closureName;
             env[closureName].reactivity = "inert";
@@ -645,7 +649,7 @@ namespace PiELo {
     }
 
     void codegen(Expression expression) {
-        std::cout << "Codegen-ing " << expression.toString() << std::endl;
+        // std::cout << "Codegen-ing " << expression.toString() << std::endl;
         switch (expression.type) {
             case Expression::LIST:
             codegenList(expression);
@@ -658,7 +662,7 @@ namespace PiELo {
             break;
             case Expression::SYMBOL:
             // Assuming this is not a procedure call as that would be in codegenProcedure
-            *file << "load " << expression.symbolValue << std::endl;
+            *file << "load " << expression.getSymbolValue() << std::endl;
             break;
             default:
             std::cout << "nil!" << std::endl;

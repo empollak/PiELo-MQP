@@ -23,7 +23,15 @@ namespace PiELo {
             int intValue;
             float floatValue;
         };  
+        // Returns the symbol value, including any trailing '
         std::string symbolValue;
+
+        // Returns the symbol value with any trailing ' stripped
+        std::string getSymbolValue() {
+            if(symbolValue.back() == '\'')
+                return symbolValue.substr(0, symbolValue.size() - 1);
+            else return symbolValue;
+        }
 
         std::string typeToString() {
             switch (type) {

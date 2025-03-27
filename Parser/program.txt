@@ -7,7 +7,7 @@
 (fun reactive barrierTest ()
     (begin 
         (set sum 0)
-        (foreach reactive (in i barrier) (+ sum 1))
+        (foreach reactive (in i barrier') (+ sum 1))
         (if (> sum 1) (end) 0)
     )
 )

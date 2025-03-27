@@ -54,7 +54,7 @@ namespace PiELo{
             case CALL_C_CLOSURE:
                 name = *bytecode[++programCounter].asString;
                 debugPrint("Calling c closure: " << name);
-                taggedTable[name].getFunctionPointer()();
+                stack.push(taggedTable[name].getFunctionPointer()());
                 break;
             
             case STORE_LOCAL:

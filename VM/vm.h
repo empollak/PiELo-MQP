@@ -33,7 +33,7 @@ namespace PiELo {
 
     typedef std::map<std::string, Variable> symbolTable;
 
-    typedef int (*funp) (void);
+    typedef Variable (*funp) (void);
 
 
 

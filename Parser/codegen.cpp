@@ -204,7 +204,7 @@ namespace PiELo {
         std::vector<std::string> variables;
         if (e.type == Expression::SYMBOL) {
             // Make sure variable was defined as reactive if it has an apostrophe
-            if(e.symbolValue.find('\'') != std::string::npos){
+            if(e.symbolValue.back() == '\''){
                 // Save variable name and delete
                 std::string key = e.symbolValue.substr(0, e.symbolValue.size() - 1);
                 try {

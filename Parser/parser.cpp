@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
-#include <regex>
+//#include <regex>
 
 namespace PiELo {
 

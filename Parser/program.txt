@@ -1,7 +1,8 @@
 (begin
 (include functions.txt)
+(var map reactive barrier)
 (var global reactive sum)
-(fun reactive sumBarrier () (sum) (begin 
+(fun reactive sumBarrier () (begin 
     (set sum 0)
     (foreach inert (in a barrier) (set sum (+ sum 1)))
     (if (> sum 4) (end) 0)

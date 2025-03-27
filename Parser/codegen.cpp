@@ -207,30 +207,18 @@ namespace PiELo {
             if(e.symbolValue.back() == '\''){
                 // Save variable name and delete
                 std::string key = e.symbolValue.substr(0, e.symbolValue.size() - 1);
-                try {
-                    if (env.find(key) != env.end()) {
-                        // Variable was defined
-                        VariableInfo value = env.at(key);
-                
-                        if (value.reactivity == "reactive" && !value.dependencies.empty()) { // should this be AND or OR?
-                            if (value.scope == "local") {
-                                throw std::runtime_error("Error: Reactive variable '" + key + "' cannot be defined in the local scope.");
-                            } else {
-                                variables.push_back(e.symbolValue);
-                            }
-                        } else {
-                            throw std::runtime_error("Error: Variable '" + key + "' is referred to as reactive when it was defined as inert.");
-                        }
+                if (env.count(key) != 0) {
+                    // Variable was defined
+                    VariableInfo value = env.at(key);
+            
+                    if (value.scope == "local") {
+                        throw std::runtime_error("Error: Reactive variable '" + key + "' cannot be defined in the local scope.");
                     } else {
-                        throw std::runtime_error("Error: Variable '" + key + "' is not defined.");
+                        variables.push_back(e.symbolValue);
                     }
-                } catch (const std::runtime_error& e) {
-                    std::cerr << e.what() << std::endl;  // Print error message
+                } else {
+                    throw std::runtime_error("Error: Variable '" + key + "' is not defined.");
                 }
-                
-            } else{
-                //NON REACTIVE
-                variables.push_back(e.symbolValue);
             }
         
         } else if (e.type == Expression::LIST) {
@@ -239,7 +227,7 @@ namespace PiELo {
                 
                 // Definitions should not be counted as a dependency
                 if (e.listValue[0].symbolValue != "var" && e.listValue[0].symbolValue != "fun") {
-
+                    
                     // Check if the procedure is a defined closure call
                     // Add all dependencies if so
                     if (env.count(e.listValue[0].symbolValue) != 0) {
@@ -257,10 +245,6 @@ namespace PiELo {
                     
                     // Add all variables other than the procedure
                     int i = 1;
-
-                    // For 'in', which is a special case for foreach blocks, ignore the first argument
-                    // It is a local variable.
-                    if (e.listValue[0].symbolValue == "in") i = 2;
 
                     for (; i < e.listValue.size(); i++) {
                         std::vector<std::string> subVariables = findVariables(e.listValue[i]);
@@ -507,7 +491,7 @@ namespace PiELo {
             Expression stigVar = inBlock.listValue[2];
             if (inVar.type != Expression::SYMBOL) 
                 throw std::invalid_argument("Expected a variable name as first argument to 'in'. Expression: " + e.toString());
-            if (stigVar.type != Expression::SYMBOL || env.at(stigVar.symbolValue).scope != "map") 
+            if (stigVar.type != Expression::SYMBOL || env.count(stigVar.symbolValue) == 0 || env.at(stigVar.symbolValue).scope != "map") 
                 throw std::invalid_argument("Expected a map variable as first argument to 'in'. Expression: " + e.toString());
             env[inVar.symbolValue].scope = "global";
             env[inVar.symbolValue].reactivity = "inert";
@@ -614,6 +598,7 @@ namespace PiELo {
     }
 
     void codegen(Expression expression) {
+        std::cout << "Codegen-ing " << expression.toString() << std::endl;
         switch (expression.type) {
             case Expression::LIST:
             codegenList(expression);

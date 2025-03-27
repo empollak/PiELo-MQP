@@ -1,6 +1,7 @@
 #include "closureInstructions.h"
 #include "../vm.h"
 #include "storeLoad.h"
+#include "../gc.h"
 
 #ifdef __DEBUG_INSTRUCTIONS__
 #define debugPrint(e) std::cout << e;
@@ -15,10 +16,17 @@ namespace PiELo{
 
         // Variable closureVar(closureData);
         // TODO: storeTagged with name closureName, value closureVar
-        closureTemplates.push_back(closureData);
-        stack.push((size_t) (closureTemplates.size() - 1));
-        debugPrint(" at closureTemplates index " << closureTemplates.size() - 1 << std::endl);
+        closureList.push_back(closureData);
+        stack.push((size_t) (closureList.getHeadOfList() - 1));
+        debugPrint(" at closureTemplates index " << closureList.getHeadOfList() - 1 << std::endl);
         storeLocal(closureName);
+
+        // Register all the dependencies of a closure
+        // for (const std::string& dep : closureData.dependencies) {
+        //     Variable* depVar = findVariable(dep);
+        //     GarbageCollector::regVar(depVar);
+        // }
+
     }
 
     // Expects the stack to have format:
@@ -35,7 +43,10 @@ namespace PiELo{
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
         // Copy closure template from the variable on the stack
-        ClosureData closureData = closureTemplates[stack.top().getClosureIndex()];
+        ClosureData closureData = closureList[stack.top().getClosureIndex()];
+        debugPrint(" updating closure list with symbol table size " << closureData.localSymbolTable.size() << std::endl);
+        size_t closureIndex = closureList.getHeadOfList();
+        closureList.push_back(closureData);
         
         stack.pop();
         int numArgs = stack.top().getIntValue();
@@ -43,30 +54,36 @@ namespace PiELo{
         if (stack.size() < numArgs) throw ShortOnElementsOnStackException("call_closure arguments");
         debugPrint(" Num args: " << numArgs << std::endl);
 
-        if (numArgs != closureData.argNames.size()) throw std::runtime_error("Mismatched number of arguments for call_closure");
+        if (numArgs != closureList[closureIndex].argNames.size()) throw std::runtime_error("Mismatched number of arguments for call_closure");
 
         // Top of stack now holds the first argument
         for (int i = 0; i < numArgs; i++) {
             // Copy the arguments to the local symbol table
-            std::string argName = closureData.argNames[i];
-            closureData.localSymbolTable[argName] = stack.top();
+            std::string argName = closureList[closureIndex].argNames[i];
+            closureList[closureIndex].localSymbolTable[argName] = stack.top();
             debugPrint(" added arg name " << argName << " value ");
-            closureData.localSymbolTable[argName].print();
+            closureList[closureIndex].localSymbolTable[argName].print();
             debugPrint("..." << std::endl);
             stack.pop();
         }
 
         // Update current local symbol table
-        debugPrint(" updating closure list " << std::endl);
-        size_t closureIndex = closureList.size();
-        closureList.push_back(closureData);
         
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
 
+        #ifdef __DEBUG_INSTRUCTIONS__
+            debugPrint(" new local symbol table has size " << currentSymbolTable->size() << " and variables: " << std::endl);
+            for (auto it : *currentSymbolTable) {
+                debugPrint("  " << it.first << ":");
+                it.second.print();
+                debugPrint(std::endl);
+            }
+        #endif
+
         // Handle the dependency list
-        if (closureData.dependencies.size() > 0) {
-            for (std::string name : closureData.dependencies) {
+        if (closureList[closureIndex].dependencies.size() > 0) {
+            for (std::string name : closureList[closureIndex].dependencies) {
                 Variable* dependency = findVariable(name);
                 dependency->dependants.push_back(closureIndex);
                 if (dependency->getType() == PIELO_CLOSURE) {
@@ -76,7 +93,7 @@ namespace PiELo{
             }
         }
 
-        programCounter = closureData.codePointer;
+        programCounter = closureList[closureIndex].codePointer;
         debugPrint(" updated pc: " << programCounter << " state: " << state << std::endl);
     }
 

@@ -209,15 +209,31 @@ namespace PiELo {
     std::vector<std::string> findVariables(Expression e) {
         std::vector<std::string> variables;
         if (e.type == Expression::SYMBOL) {
-            // Just the one variable
-            variables.push_back(e.symbolValue);
+            // Make sure variable was defined as reactive if it has an apostrophe
+            if(e.symbolValue.back() == '\''){
+                // Save variable name and delete
+                std::string key = e.symbolValue.substr(0, e.symbolValue.size() - 1);
+                if (env.count(key) != 0) {
+                    // Variable was defined
+                    VariableInfo value = env.at(key);
+            
+                    if (value.scope == "local") {
+                        throw std::runtime_error("Error: Reactive variable '" + key + "' cannot be defined in the local scope.");
+                    } else {
+                        variables.push_back(e.symbolValue);
+                    }
+                } else {
+                    throw std::runtime_error("Error: Variable '" + key + "' is not defined.");
+                }
+            }
+        
         } else if (e.type == Expression::LIST) {
             if (e.listValue.size() > 1) {
                 if (e.listValue[0].type != Expression::SYMBOL) throw std::invalid_argument("Expected a SYMBOL at the start of a list. Expression: " + e.toString());
                 
                 // Definitions should not be counted as a dependency
                 if (e.listValue[0].symbolValue != "var" && e.listValue[0].symbolValue != "fun") {
-
+                    
                     // Check if the procedure is a defined closure call
                     // Add all dependencies if so
                     if (env.count(e.listValue[0].symbolValue) != 0) {
@@ -235,11 +251,6 @@ namespace PiELo {
                     
                     // Add all variables other than the procedure
                     int i = 1;
-
-                    // For 'in', which is a special case for foreach blocks, ignore the first argument
-                    // It is a local variable.
-                    if (e.listValue[0].symbolValue == "in") i = 2;
-                    if (e.listValue[0].symbolValue == "foreach") i = 3;
 
                     for (; i < e.listValue.size(); i++) {
                         std::vector<std::string> subVariables = findVariables(e.listValue[i]);
@@ -399,6 +410,7 @@ namespace PiELo {
 
         // Function Definitions
         else if (e.listValue[0].symbolValue == "fun") {
+            // TODO: Update to make the programmer explicitly define arguments
             if (e.listValue.size() != 5) throw std::invalid_argument("fun expects 5 expressions, got " + std::to_string(e.listValue.size()) + ". Expression: " + e.toString());
             Expression reactivity = e.listValue[1];
             Expression name = e.listValue[2];
@@ -487,7 +499,7 @@ namespace PiELo {
             Expression stigVar = inBlock.listValue[2];
             if (inVar.type != Expression::SYMBOL) 
                 throw std::invalid_argument("Expected a variable name as first argument to 'in'. Expression: " + e.toString());
-            if (stigVar.type != Expression::SYMBOL || env.at(stigVar.symbolValue).scope != "map") 
+            if (stigVar.type != Expression::SYMBOL || env.count(stigVar.symbolValue) == 0 || env.at(stigVar.symbolValue).scope != "map") 
                 throw std::invalid_argument("Expected a map variable as first argument to 'in'. Expression: " + e.toString());
             env[inVar.symbolValue].scope = "global";
             env[inVar.symbolValue].reactivity = "inert";
@@ -597,6 +609,7 @@ namespace PiELo {
     }
 
     void codegen(Expression expression) {
+        std::cout << "Codegen-ing " << expression.toString() << std::endl;
         switch (expression.type) {
             case Expression::LIST:
             codegenList(expression);

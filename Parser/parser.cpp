@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+//#include <regex>
 
 namespace PiELo {
 
@@ -52,8 +53,15 @@ namespace PiELo {
                 std::cout << "int " << result.intValue << std::endl;
             }
         } catch (std::invalid_argument e) {
+            // std::regex variableWithApostrophe("^[a-zA-Z][a-zA-Z0-9]*'$");
+            // if (std::regex_match(token, variableWithApostrophe)) {
+            //     std::cout << "variable with apostrophe: " << token << std::endl;
+            // }
             result.type = Expression::SYMBOL;
             result.symbolValue = token;
+            if(result.symbolValue.back() == '\''){
+                std::cout << "variable with apostrophe: " << token << std::endl;
+            }
             std::cout << "symbol " << result.symbolValue << std::endl;
         }
         return result;

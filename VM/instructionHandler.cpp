@@ -6,6 +6,7 @@
 #include "instructions/simpleInstructions.h"
 #include "instructions/storeLoad.h"
 #include "instructions/stigmergy.h"
+#include "gc.h"
 #include "vm.h"
 #ifdef __DEBUG_INSTRUCTIONS__
 #define debugPrint(e) std::cout << e;
@@ -43,6 +44,7 @@ namespace PiELo{
             
             case RET_FROM_CLOSURE:
                 retFromClosure();
+                GarbageCollector::collectGarbage();
                 break;
 
             case RERUN_CLOSURE:

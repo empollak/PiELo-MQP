@@ -3,6 +3,7 @@
 #include "robotFunctions.h"
 #include "vm.h"
 #include "instructions/storeLoad.h"
+#include "gc.h"
 
 #define ROUTER_HOST "localhost"
 #define ROUTER_PORT "5005"

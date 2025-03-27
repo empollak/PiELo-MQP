@@ -41,3 +41,4 @@ assembly.txt
 VM/VM
 VM/router
 *.DS_Store
+tmp_*

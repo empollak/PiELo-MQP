@@ -86,10 +86,18 @@ namespace PiELo {
         std::vector<std::string> dependencies;
         std::vector<size_t> dependants;
         VariableData cachedValue;
+        bool marked = false; // For garbage collection
     };
 
-    extern std::vector<ClosureData> closureList;
-    extern std::vector<ClosureData> closureTemplates;
+    class ClosureMap : public std::map<size_t, ClosureData> {
+        private:
+            size_t headOfList = 0;
+        public:
+            void push_back(ClosureData& c);
+            size_t getHeadOfList() {return headOfList;}
+    };
+
+    extern ClosureMap closureList;
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
         enum {
@@ -361,7 +369,6 @@ namespace PiELo {
 
     
     extern std::vector<opCodeInstructionOrArgument> bytecode;
-    extern std::vector<opCodeInstructionOrArgument> reactivityBytecodes;
     extern codePtr programCounter;
 
     extern symbolTable taggedTable;

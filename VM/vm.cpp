@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "networking.h"
 #include "robotFunctions.h"
+#include "gc.h"
 
 
 namespace PiELo {
@@ -18,14 +19,12 @@ namespace PiELo {
     }
 
     std::vector<opCodeInstructionOrArgument> bytecode;
-    std::vector<opCodeInstructionOrArgument> reactivityBytecodes;
     codePtr programCounter = 0;
 
     symbolTable taggedTable;
     // Variables which are at the top level but not tagged
     symbolTable globalSymbolTable;
-    std::vector<ClosureData> closureList;
-    std::vector<ClosureData> closureTemplates;
+    ClosureMap closureList;
     std::stack<Variable> stack;
 
 
@@ -57,6 +56,7 @@ namespace PiELo {
         handleInstruction(bytecode[programCounter]);
         checkForMessage();
         programCounter++;
+
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
         return VMState::READY;
     }
@@ -116,5 +116,20 @@ namespace PiELo {
             data = iter->second;
         }
         return data;
+    }
+
+    void ClosureMap::push_back(ClosureData& c) {
+        size_t insertLoc = headOfList++;
+        #ifdef __DEBUG_INSTRUCTIONS__
+            std::cout << "Inserting at index " << insertLoc << " symbol table size " << c.localSymbolTable.size() << std::endl;
+        #endif
+        this->insert(std::pair<size_t, ClosureData>(insertLoc, c));
+        this->at(insertLoc).argNames = c.argNames;
+        this->at(insertLoc).cachedValue = c.cachedValue;
+        this->at(insertLoc).codePointer = c.codePointer;
+        this->at(insertLoc).dependants = c.dependants;
+        this->at(insertLoc).dependencies = c.dependencies;
+        this->at(insertLoc).localSymbolTable = c.localSymbolTable;
+        this->at(insertLoc).marked = c.marked;
     }
 }

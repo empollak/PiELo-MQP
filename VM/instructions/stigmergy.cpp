@@ -1,5 +1,6 @@
 #include "stigmergy.h"
 #include "../vm.h"
+#include "../gc.h"
 #include <map>
 #ifdef __DEBUG_INSTRUCTIONS__
 #define debugPrint(e) std::cout << e;

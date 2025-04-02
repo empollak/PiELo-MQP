@@ -1,0 +1,24 @@
+# Wait for 5 robots, then go
+call_c_closure random_sleep
+push i 1
+store stig barrier
+push i 0 # no arguments
+load wait
+call_closure
+spin
+
+
+
+define_closure wait 0 1 barrier
+stig_size barrier
+debug_print Size of barrier:
+print
+push i 5
+gt
+jmp_if_not_zero return
+debug_print Continuing!
+call_c_closure go_forward
+end
+label return
+push i 0 # no return values
+ret_from_closure

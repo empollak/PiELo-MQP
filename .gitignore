@@ -2,6 +2,8 @@
 # Symlinks
 Parser/VM
 Parser/router
+build/
+argos3-kheperaiv
 
 tmp_*
 assembly.txt

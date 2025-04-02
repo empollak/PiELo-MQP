@@ -13,6 +13,7 @@ namespace PiELo {
     class GarbageCollector {
     public:
 
+    
         // mark all reachable variables
         static void markRoots();
         

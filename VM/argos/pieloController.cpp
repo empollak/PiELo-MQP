@@ -2,7 +2,6 @@
 
 void CPiELoController::Init(TConfigurationNode& t_node) {
     try {
-      std::cout << " test print " << std::endl;
        /* Get pointers to devices */
        m_pcRABA   = GetActuator<CCI_RangeAndBearingActuator>("range_and_bearing");
        m_pcRABS   = GetSensor  <CCI_RangeAndBearingSensor  >("range_and_bearing");

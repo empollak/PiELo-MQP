@@ -1,6 +1,7 @@
-#include "pieloControllerKheperaIVDiffusion.h"
+#include "pieloControllerKheperaIV.h"
+#include <argos3/core/utility/logging/argos_log.h>
 
-CPiELoKheperaDiffusion::CPiELoKheperaDiffusion() :
+CPiELoKheperaIV::CPiELoKheperaIV() :
     m_pcWheels(NULL),
     m_pcProximity(NULL),
     m_cAlpha(10.0f),
@@ -10,7 +11,7 @@ CPiELoKheperaDiffusion::CPiELoKheperaDiffusion() :
                             ToRadians(m_cAlpha)) {}
 
 
-void CPiELoKheperaDiffusion::Init(TConfigurationNode& t_node) {
+void CPiELoKheperaIV::Init(TConfigurationNode& t_node) {
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     m_pcEncoder   = GetSensor  <CCI_DifferentialSteeringSensor  >("differential_steering");
     m_pcProximity = GetSensor  <CCI_KheperaIVProximitySensor    >("kheperaiv_proximity"  );
@@ -25,11 +26,16 @@ void CPiELoKheperaDiffusion::Init(TConfigurationNode& t_node) {
     m_cGoStraightAngleRange.Set(-ToRadians(m_cAlpha), ToRadians(m_cAlpha));
     GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-    PiELo::globalSymbolTable["leftWheelVelocity"] = 0.0f;
-    PiELo::globalSymbolTable["rightWheelVelocity"] = 0.0f;
+    PiELo::globalSymbolTable["leftWheelVelocity"] = 1.0f;
+    PiELo::globalSymbolTable["rightWheelVelocity"] = 1.0f;
+    PiELo::globalSymbolTable["robotID"] = m_unRobotId;
 }
 
-void CPiELoKheperaDiffusion::ControlStep() {
-    m_pcWheels->SetLinearVelocity(PiELo::globalSymbolTable["leftWheelVelocity"].getFloatValue(), PiELo::globalSymbolTable["rightWheelVelocity"].getFloatValue());
-    
+void CPiELoKheperaIV::ControlStep() {
+    float leftWheelVelocity = PiELo::globalSymbolTable["leftWheelVelocity"].getFloatValue();
+    float rightWheelVelocity = PiELo::globalSymbolTable["rightWheelVelocity"].getFloatValue();
+    m_pcWheels->SetLinearVelocity(leftWheelVelocity, rightWheelVelocity);
+    RLOG << "Set wheel speeds to " << leftWheelVelocity << ", " << rightWheelVelocity << std::endl;
 }
+
+REGISTER_CONTROLLER(CPiELoKheperaIV, "pielo_khepera_iv")

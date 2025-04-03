@@ -18,9 +18,9 @@
 
 using namespace argos;
 
-class CPiELoKheperaDiffusion : public CPiELoController {
+class CPiELoKheperaIV : public CPiELoController {
     public:
-        CPiELoKheperaDiffusion();
+        CPiELoKheperaIV();
 
         virtual void Init(TConfigurationNode& t_node);
 
@@ -65,6 +65,7 @@ class CPiELoKheperaDiffusion : public CPiELoController {
         PiELo::Variable push_alpha();
         PiELo::Variable push_delta();
         PiELo::Variable push_velocity();
+        PiELo::Variable push_id();
 };
 
 #endif

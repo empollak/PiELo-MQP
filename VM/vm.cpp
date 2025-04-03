@@ -36,7 +36,7 @@ namespace PiELo {
 
     size_t currentClosureIndex;
 
-    VMState state;
+    VMState state = VMState::ERROR;
 
     int robotID = -1;
 
@@ -46,6 +46,7 @@ namespace PiELo {
     VMState load(std::string filename) {
         if (initNetworking() != 0) return VMState::ERROR;
         parser.load(filename);
+        state = READY;
         return VMState::READY;
     }
 

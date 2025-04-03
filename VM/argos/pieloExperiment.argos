@@ -16,7 +16,8 @@
   <!-- *************** -->
   <controllers>
 
-    <buzz_controller_kheperaiv id="khivbz">
+    <pieloController id="khivbz"
+                        library = "build/argos/libpieloController">
       <actuators>
         <differential_steering implementation="default" />
         <leds                  implementation="default" medium="leds" />
@@ -31,13 +32,15 @@
         <range_and_bearing    implementation="medium" medium="rab" show_rays="true" noise_std_dev="0" />
         <positioning          implementation="default" />
       </sensors>
-      <params>
+      <params bytecode_file="assembly.txt">
         <wheel_turning hard_turn_angle_threshold="90"
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
                        max_speed="10" />
+
       </params>
-    </buzz_controller_kheperaiv>
+      <params bytecode_file="assembly.txt" />
+    </pieloController>
 
   </controllers>
 
@@ -127,12 +130,11 @@
     <led id="light" />
   </media>
 
-  <!-- ****************** -->
+    <!-- ****************** -->
   <!-- * Visualization * -->
   <!-- ****************** -->
   <visualization>
     <qt-opengl>
-      <user_functions label="buzz_qt" />
     </qt-opengl>
   </visualization>
 

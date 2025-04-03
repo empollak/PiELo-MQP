@@ -37,16 +37,16 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
           }
        }
        if(!bIDSuccess) {
-          THROW_ARGOSEXCEPTION("Error finding Buzz ID from name \"" << GetId() << "\"");
+          THROW_ARGOSEXCEPTION("Error finding bID from name \"" << GetId() << "\"");
        }
        if(strBCFName != "")
           PiELo::load(strBCFName);
        else {
-          THROW_ARGOSEXCEPTION("No bytecode file name!");
+          THROW_ARGOSEXCEPTION("No bytecode file name test!");
        }
     }
     catch(CARGoSException& ex) {
-       THROW_ARGOSEXCEPTION_NESTED("Error initializing the Buzz controller", ex);
+       THROW_ARGOSEXCEPTION_NESTED("Error initializing the PiELo controller", ex);
     }
  }
  
@@ -93,3 +93,14 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
    }
 }
 
+/*
+ * This statement notifies ARGoS of the existence of the controller.
+ * It binds the class passed as first argument to the string passed as
+ * second argument.
+ * The string is then usable in the configuration file to refer to this
+ * controller.
+ * When ARGoS reads that string in the configuration file, it knows which
+ * controller class to instantiate.
+ * See also the configuration files for an example of how this is used.
+ */
+REGISTER_CONTROLLER(CPiELoController, "pieloController")

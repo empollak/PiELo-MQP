@@ -10,11 +10,11 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_battery_sensor.h>
 #include <argos3/core/utility/math/ray3.h>
 #include <argos3/core/utility/datatypes/set.h>
-#include "vm.h"
+#include "../vm.h"
 
 using namespace argos;
 
-class CPiELoController : CCI_Controller {
+class CPiELoController : public CCI_Controller {
 public:
     CPiELoController() {}
     virtual ~CPiELoController() {}

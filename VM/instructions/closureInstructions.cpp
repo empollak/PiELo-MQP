@@ -12,11 +12,16 @@
 namespace PiELo{
     // Defines a closure
     void VM::defineClosure(std::string closureName, ClosureData closureData) {
-        debugPrint("Defining closure with name " << closureName << std::endl)
-
+        debugPrint("Defining closure with name " << closureName << ", code pointer: ")// << closureData.codePointer << std::endl)
         // Variable closureVar(closureData);
         // TODO: storeTagged with name closureName, value closureVar
+        
+        debugPrint("Setting test=0")
+        closureData.localSymbolTable;
+        closureData.localSymbolTable["test"] = 0;
+        debugPrint("local symbol table size " << closureData.localSymbolTable.size());
         closureList.push_back(closureData);
+        debugPrint("Pushing closure index to stack")
         stack.push((size_t) (closureList.getHeadOfList() - 1));
         debugPrint(" at closureTemplates index " << closureList.getHeadOfList() - 1 << std::endl);
         storeLocal(closureName);

@@ -136,7 +136,7 @@ namespace PiELo {
             assemblyInstruction = "div";
         }
         else if (procedureName == "%") {
-            expectedArguments = 1;
+            expectedArguments = 2;
             assemblyInstruction = "mod";
         }
         else if (procedureName == "&&") {
@@ -637,10 +637,11 @@ namespace PiELo {
             includeFile.open(e.listValue[1].getSymbolValue());
             if (includeFile.fail()) throw std::runtime_error("Failed to open file " + e.listValue[1].getSymbolValue());
             std::string closureName;
-            includeFile >> closureName;
-            env[closureName].reactivity = "inert";
-            env[closureName].functionType = C_CLOSURE;
-            *file << "push_nil" << std::endl; // Must push something!
+            while(includeFile >> closureName) {
+                env[closureName].reactivity = "inert";
+                env[closureName].functionType = C_CLOSURE;
+                *file << "push_nil" << std::endl; // Must push something!
+            }
         }
         else {
             // All builtin procedures and closure calls

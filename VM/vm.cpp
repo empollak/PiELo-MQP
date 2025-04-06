@@ -100,10 +100,10 @@ namespace PiELo {
     }
 
     void VM::ClosureMap::push_back(ClosureData& c) {
-        size_t insertLoc = headOfList++;
         #ifdef __DEBUG_INSTRUCTIONS__
-            std::cout << "Inserting at index " << insertLoc << " symbol table size " << c.localSymbolTable.size() << std::endl;
+            std::cout << "Inserting at index " << headOfList + 1 << " symbol table size " << c.localSymbolTable.size() << std::endl;
         #endif
+        size_t insertLoc = headOfList++;
         this->insert(std::pair<size_t, ClosureData>(insertLoc, c));
         this->at(insertLoc).argNames = c.argNames;
         this->at(insertLoc).cachedValue = c.cachedValue;

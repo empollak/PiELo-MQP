@@ -8,4 +8,4 @@
 (set speed (if (>= distance_covered' 0.5) 0 (% robotID 5)))
 (set leftWheelVelocity speed')
 (set rightWheelVelocity speed')
-(while (1) (set distance_covered (get_distance_covered))))
+(while 1 (set distance_covered (get_distance_covered))))

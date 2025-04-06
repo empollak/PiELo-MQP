@@ -5,30 +5,31 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-PiELo::Variable doNothingButTalkAboutIt() {
+PiELo::Variable doNothingButTalkAboutIt(PiELo::VM* vm) {
     std::cout << "doing nothing!!" << std::endl;
     
     return 0;
 }
 
-PiELo::Variable goForward() {
+PiELo::Variable goForward(PiELo::VM* vm) {
     robot.setRobotVel({1, 0, 0});
     return 0;
 }
 
-PiELo::Variable printRobotPos() {
+PiELo::Variable printRobotPos(PiELo::VM* vm) {
     vec pos = robot.getRobotPos();
     std::cout << "Robot pos: x = " << pos.x << " y = " << pos.y << " z = " << pos.z << std::endl;
     return 0;
 }
 
-PiELo::Variable randomSleep() {
+PiELo::Variable randomSleep(PiELo::VM* vm) {
     int maxSleepUs = 3000000;
     int sleepTime = rand() % maxSleepUs;
     std::cout << "Sleeping for " << sleepTime / 1000.0 << "ms " << std::endl;
     usleep(sleepTime);
     return 0;
 }
+PiELo::VM vm;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -40,11 +41,11 @@ int main(int argc, char** argv) {
     gettimeofday(&time, NULL);
     srand(time.tv_sec * time.tv_usec);
 
-    PiELo::registerFunction("do_nothing", &doNothingButTalkAboutIt);
-    PiELo::registerFunction("go_forward", &goForward);
-    PiELo::registerFunction("print_robot_pos", &printRobotPos);
-    PiELo::registerFunction("random_sleep", &randomSleep);
-    PiELo::load(argv[1]);
-    while(PiELo::step() == PiELo::VMState::READY);
+    vm.registerFunction("do_nothing", &doNothingButTalkAboutIt);
+    vm.registerFunction("go_forward", &goForward);
+    vm.registerFunction("print_robot_pos", &printRobotPos);
+    vm.registerFunction("random_sleep", &randomSleep);
+    vm.load(argv[1]);
+    while(vm.step() == PiELo::VM::VMState::READY);
     printf("Done!\n");
 }

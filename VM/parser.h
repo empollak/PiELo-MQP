@@ -1,20 +1,25 @@
 #pragma once
-#include "vm.h"
 #include <string>
 #include <vector>
 #include <fstream>
 #include <unordered_map>
 #include <functional>
+#include "instructionHandler.h"
 
 namespace PiELo {
+    class VM;
+    struct opCodeInstructionOrArgument;
+
+    typedef size_t codePtr;
     
     class Parser {
         public: 
 
             // load the program into memory and return the code vector
-            void load(std::string filename);
+            void load(std::string filename, VM* vm);
 
         private:
+            VM* vm;
             std::ifstream file;
             std::vector<opCodeInstructionOrArgument> code;
             std::unordered_map<std::string, std::function<void()>> instructionHandlers;
@@ -48,6 +53,7 @@ namespace PiELo {
 
             // error handling
             void throwInvalidInstruction(const std::string& instruction);
+            std::vector<opCodeInstructionOrArgument> bytecode;
     };
 
 }

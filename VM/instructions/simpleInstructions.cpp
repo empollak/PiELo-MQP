@@ -3,13 +3,13 @@
 
 using namespace PiELo;
 
-    void pushNil(){
+    void VM::pushNil(){
         Variable null_val;
 
         stack.push(null_val);
     }
 
-    void pushInt(){
+    void VM::pushInt(){
         programCounter++;
         // std::cout << "type " << bytecode[programCounter].asInstruction << std::endl;
         Variable i_val = bytecode[programCounter].getIntFromMemory();
@@ -17,14 +17,14 @@ using namespace PiELo;
         stack.push(i_val);
     }
 
-    void pushFloat(){
+    void VM::pushFloat(){
         programCounter++;
         Variable f_val = bytecode[programCounter].getFloatFromMemory();
 
         stack.push(f_val);
     }
 
-    void dup(){
+    void VM::dup(){
         if(!stack.empty()){
             Variable a = stack.top();
             stack.push(a);
@@ -34,7 +34,7 @@ using namespace PiELo;
         }
     }
 
-    void swap(){
+    void VM::swap(){
         if(stack.size() >= 2){
             Variable a = stack.top(); stack.pop();
             Variable b = stack.top(); stack.pop();
@@ -47,12 +47,12 @@ using namespace PiELo;
     }
 
     
-    void pop() {
+    void VM::pop() {
         if(stack.size() == 0) throw ShortOnElementsOnStackException("POP");
         stack.pop();
     }
 
-    void isNil() {
+    void VM::isNil() {
         if(stack.size() == 0) throw ShortOnElementsOnStackException("isNil");
         stack.push(stack.top().getType() == NIL);
     }

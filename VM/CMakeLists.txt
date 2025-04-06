@@ -9,6 +9,11 @@ project(PiELo)
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel ..." FORCE)
 endif(CMAKE_BUILD_TYPE STREQUAL "")
+message(STATUS "Compiling??")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_compile_options(-D__DEBUG_INSTRUCTIONS__)
+  message(STATUS "Compiling with debug flag")
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # Deactivate RPATH for MacOSX
 set(CMAKE_MACOSX_RPATH 0)

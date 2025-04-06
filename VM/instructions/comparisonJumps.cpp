@@ -2,7 +2,7 @@
 #include "../vm.h"
 using namespace PiELo;
 
-void eql(){
+void VM::eql(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -33,7 +33,7 @@ void eql(){
     }
 }
 
-void neql(){
+void VM::neql(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -64,7 +64,7 @@ void neql(){
     }
 }
 
-void gt(){
+void VM::gt(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -96,7 +96,7 @@ void gt(){
     }
 }
 
-void gte(){
+void VM::gte(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -128,7 +128,7 @@ void gte(){
     }
 }
 
-void lt(){
+void VM::lt(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -161,7 +161,7 @@ void lt(){
     }
 }
 
-void lte(){
+void VM::lte(){
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -196,16 +196,16 @@ void lte(){
 
 bool convertVarToBool(Variable var) {
     bool boolVal = true;
-    if (var.getType() == NIL) boolVal = false;
-    else if (var.getType() == INT) {
+    if (var.getType() == Type::NIL) boolVal = false;
+    else if (var.getType() == Type::INT) {
         if (var.getIntValue() == 0) boolVal = false;
-    } else if (var.getType() == FLOAT) {
+    } else if (var.getType() == Type::FLOAT) {
         if (var.getFloatValue() == 0) boolVal = false;
     }
     return boolVal;
 }
 
-void land() {
+void VM::land() {
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -220,7 +220,7 @@ void land() {
     }
 }
 
-void lor() {
+void VM::lor() {
     if(stack.size() >= 2){
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -235,7 +235,7 @@ void lor() {
     }
 }
 
-void lnot() {
+void VM::lnot() {
     if(stack.size() >= 1){
         Variable a = stack.top(); stack.pop();
 
@@ -249,7 +249,7 @@ void lnot() {
 }
 
 
-void jump(){
+void VM::jump(){
     programCounter++;
     if(bytecode.at(programCounter).getTypeAsString() == "INT"){
         int target_address = bytecode.at(programCounter).getIntFromMemory();
@@ -261,7 +261,7 @@ void jump(){
     }
 }
 
-void jump_if_zero(){
+void VM::jump_if_zero(){
     programCounter++;
     if (stack.size() < 1) throw ShortOnElementsOnStackException("jmp_if_zero");
     Variable top = stack.top();
@@ -278,7 +278,7 @@ void jump_if_zero(){
     }
 }
 
-void jump_if_not_zero(){
+void VM::jump_if_not_zero(){
     programCounter++;
     if (stack.size() < 1) throw ShortOnElementsOnStackException("jmp_if_not_zero");
     Variable top = stack.top();

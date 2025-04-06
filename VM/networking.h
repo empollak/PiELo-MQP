@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __NETWORKING__H
+#define __NETWORKING__H
 #include <time.h>
 #include <string>
 #include <cstdio>
@@ -11,34 +12,31 @@
 #include <sys/types.h>
 #include <string>
 #include <iostream>
-#include "vm.h"
 
 namespace PiELo {
+    class VM;
+    class Variable;
+    typedef timeval timestamp_t;
+    class Networking {
+        int socketfd;
+        addrinfo *routerinfo;
+        VM* vm;
+        public:
 
-    extern int socketfd;
-    extern addrinfo *routerinfo;
 
-    struct Message {
-        timestamp_t variableLastUpdated;
-        int robotID;
-        long senderX;
-        long senderY;
-        long senderZ;
-        // TODO: Update this or make it the law
-        char variableName[100];
-        VariableData data;
-        bool isStigmergy;
+        int bindEphemeralPort(int sockfd);
+
+        // Setup sockets and things. Returns 0 on success
+        int initNetworking(VM* vmPtr);
+
+        // Clean up stored networking info
+        void cleanupNetworking(void);
+
+        // Broadcast a variable data
+        timestamp_t broadcastVariable(std::string name, Variable v);
+
+        // Check for a message and update a variable or rebroadcast own value if necessary
+        void checkForMessage(void);
     };
-
-    // Setup sockets and things. Returns 0 on success
-    int initNetworking(void);
-
-    // Clean up stored networking info
-    void cleanupNetworking(void);
-
-    // Broadcast a variable data
-    timestamp_t broadcastVariable(std::string name, Variable v);
-
-    // Check for a message and update a variable or rebroadcast own value if necessary
-    void checkForMessage(void);
 }
+#endif

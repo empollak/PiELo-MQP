@@ -1,4 +1,7 @@
 #include "pieloController.h"
+#include <exception>
+#include <argos3/core/utility/logging/argos_log.h>
+
 
 void CPiELoController::Init(TConfigurationNode& t_node) {
     try {
@@ -39,7 +42,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
           THROW_ARGOSEXCEPTION("Error finding bID from name \"" << GetId() << "\"");
        }
        if(strBCFName != "")
-          PiELo::load(strBCFName);
+         vm.load(strBCFName);
        else {
           THROW_ARGOSEXCEPTION("No bytecode file name test!");
        }
@@ -83,8 +86,18 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
 
 
  void CPiELoController::ControlStep() {
-   if(PiELo::state == PiELo::VMState::READY) {
-      PiELo::step();
+   if(vm.state == PiELo::VM::VMState::READY) {
+      // RLOG << "Stepping. Bytecode size: " << vm.bytecode.size() << " top type: " << vm.bytecode[0].getTypeAsString() << std::endl;
+      try {
+         // RLOG << "In try block" << std::endl;
+         vm.state = vm.step();
+      } catch (std::runtime_error e) {
+         vm.state = PiELo::VM::VMState::ERROR;
+         // RLOG << "I have crashed! PC: " << vm.programCounter << ", bytecode size: " << vm.bytecode.size() << std::endl;
+         THROW_ARGOSEXCEPTION(("VM!!!! " + std::string(e.what())))
+         // THROW_ARGOSEXCEPTION_NESTED("vm", e)
+         // std::cout << "Exception: " << e.what() << std::endl;
+      }
    }
    else {
       fprintf(stderr, "[ROBOT %s] Robot is not ready to execute PiELo script.\n\n",

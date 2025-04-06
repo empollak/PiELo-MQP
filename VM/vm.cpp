@@ -4,9 +4,9 @@
 #include "robotFunctions.h"
 #include "gc.h"
 
-
 namespace PiELo {
-    Type stringToType(std::string s) {
+
+    Type VM::stringToType(std::string s) {
         // Thanks to https://stackoverflow.com/questions/313970/how-to-convert-an-instance-of-stdstring-to-lower-case
         std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
         if (s == "nil") return NIL;
@@ -18,51 +18,31 @@ namespace PiELo {
         else throw InvalidTypeException();
     }
 
-    std::vector<opCodeInstructionOrArgument> bytecode;
-    codePtr programCounter = 0;
-
-    symbolTable taggedTable;
-    // Variables which are at the top level but not tagged
-    symbolTable globalSymbolTable;
-    ClosureMap closureList;
-    std::stack<Variable> stack;
+        
 
 
-    std::stack<scopeData> returnAddrStack;
-    
-    std::map<std::string, Variable>* currentSymbolTable = &globalSymbolTable; 
-
-    std::vector<Tag> robotTagList;
-
-    size_t currentClosureIndex;
-
-    VMState state = VMState::ERROR;
-
-    int robotID = -1;
-
-    Parser parser;   
-
-
-    VMState load(std::string filename) {
-        if (initNetworking() != 0) return VMState::ERROR;
-        parser.load(filename);
+    VM::VMState VM::load(std::string filename) {
+        if (network.initNetworking(this) != 0) return VMState::ERROR;
+        parser.load(filename, this);
+        std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
+        std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
         state = READY;
         return VMState::READY;
     }
 
-    VMState step() {
+    VM::VMState VM::step() {
         // TODO: move the robot functions to a registered c function?
-        robot.updatePos();
-        // std::cout << "At pc " << programCounter << std::endl;
+        // robot.updatePos();
+        std::cout << "At pc " << programCounter << std::endl;
         handleInstruction(bytecode[programCounter]);
-        checkForMessage();
+        network.checkForMessage();
         programCounter++;
 
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
         return VMState::READY;
     }
 
-    Variable* findVariable(std::string name) {
+    Variable* VM::findVariable(std::string name) {
         try {
             return &currentSymbolTable->at(name);
         } catch (...) {}
@@ -79,22 +59,22 @@ namespace PiELo {
     }
 
     // For now, c closures are limited to no arguments, no calling pielo closures, nothing!
-    void registerFunction(std::string name, funp f) {
+    void VM::registerFunction(std::string name, funp f) {
         taggedTable[name] = f;
     }
 
-    void VariableData::print() { 
-        if(getType() == NIL){
+    void VariableData::print(VM* vm) { 
+        if(getType() == Type::NIL){
             std::cout << "nil";
-        } else if(getType() == INT){
+        } else if(getType() == Type::INT){
             std::cout << "int " << asInt;
-        } else if(getType() == FLOAT){
+        } else if(getType() == Type::FLOAT){
             std::cout << "float " << asFloat;
-        } else if (getType() == PIELO_CLOSURE) {
+        } else if (getType() == Type::PIELO_CLOSURE) {
             std::cout << "closure index: ";
             std::cout << asClosureIndex;
             std::cout << " cached value: ";
-            closureList[asClosureIndex].cachedValue.print();
+            vm->closureList[asClosureIndex].cachedValue.print(vm);
         }
     }
 
@@ -119,7 +99,7 @@ namespace PiELo {
         return data;
     }
 
-    void ClosureMap::push_back(ClosureData& c) {
+    void VM::ClosureMap::push_back(ClosureData& c) {
         size_t insertLoc = headOfList++;
         #ifdef __DEBUG_INSTRUCTIONS__
             std::cout << "Inserting at index " << insertLoc << " symbol table size " << c.localSymbolTable.size() << std::endl;
@@ -133,4 +113,5 @@ namespace PiELo {
         this->at(insertLoc).localSymbolTable = c.localSymbolTable;
         this->at(insertLoc).marked = c.marked;
     }
+
 }

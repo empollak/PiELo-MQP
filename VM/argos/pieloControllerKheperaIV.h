@@ -30,6 +30,8 @@ class CPiELoKheperaIV : public CPiELoController {
         */
         virtual void ControlStep();
 
+        CCI_DifferentialSteeringSensor getEncoders();
+
     private:
         /* Pointer to the differential steering actuator */
         CCI_DifferentialSteeringActuator* m_pcWheels;

@@ -9,11 +9,9 @@
 #define ROUTER_PORT "5005"
 namespace PiELo {
     static const int MAXBUFLEN = 512;
-    int socketfd;
-    addrinfo *routerinfo;
 
     // bind a UDP socket to an ephemeral port (0) so it can receive data
-    int bindEphemeralPort(int sockfd)
+    int Networking::bindEphemeralPort(int sockfd)
     {
         sockaddr_in myAddr;
         std::memset(&myAddr, 0, sizeof(myAddr));
@@ -28,8 +26,8 @@ namespace PiELo {
         return 0;
     }
 
-    int initNetworking(void) {
-
+    int Networking::initNetworking(VM* vmPtr) {
+        vm = vmPtr;
         // 1) Resolve router address
         addrinfo hints;
         std::memset(&hints, 0, sizeof(hints));
@@ -80,7 +78,7 @@ namespace PiELo {
         sendto(socketfd, "", 0, 0, routerinfo->ai_addr, routerinfo->ai_addrlen);
         sockaddr_in fromAddr;
         socklen_t fromLen = sizeof(fromAddr);
-        ssize_t numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
+        ssize_t numBytes = recvfrom(socketfd, &vm->robotID, sizeof(vm->robotID), 0,
                                     (sockaddr *)&fromAddr,
                                     &fromLen);
         if (numBytes == -1)
@@ -88,11 +86,11 @@ namespace PiELo {
             perror("client: recvfrom");
             exit(-1);
         }
-        std::cout << "My ID is " << robotID << std::endl;
+        std::cout << "My ID is " << vm->robotID << std::endl;
 
 
         std::cout << "Waiting for start signal." << std::endl;
-        numBytes = recvfrom(socketfd, &robotID, sizeof(robotID), 0,
+        numBytes = recvfrom(socketfd, &vm->robotID, sizeof(vm->robotID), 0,
                                         (sockaddr *)&fromAddr,
                                         &fromLen);
         if (numBytes == -1)
@@ -114,32 +112,32 @@ namespace PiELo {
         return 0;
     }
 
-    void cleanupNetworking(void) {
+    void Networking::cleanupNetworking(void) {
         freeaddrinfo(routerinfo);
         close(socketfd);
     }
 
     // Broadcast a variable data
-    timestamp_t broadcastVariable(std::string name, Variable v) {
+    timestamp_t Networking::broadcastVariable(std::string name, Variable v) {
         timestamp_t currentTime;
         VariableData data;
         if (v.isStigmergy) {
-            std::cout << " broadcasting stigmergy for " << name << " with int value " << v.stigmergyData[robotID].asInt;
-            data = v.stigmergyData[robotID];
+            std::cout << " broadcasting stigmergy for " << name << " with int value " << v.stigmergyData[vm->robotID].asInt;
+            data = v.stigmergyData[vm->robotID];
         }
         else data = v.getVariableData();
 
         // Get the cached value if it's a closure that updated
         if (v.getType() == Type::PIELO_CLOSURE) {
             std::cout << "Getting closure cached value" << " for closure " << name << " index " << v.getClosureIndex() << std::endl;
-            data = closureList[v.getClosureIndex()].cachedValue;
+            data = vm->closureList[v.getClosureIndex()].cachedValue;
             std::cout << "got" << std::endl;
         }
 
         Message msg;
         gettimeofday(&msg.variableLastUpdated, NULL);
         strncpy(msg.variableName, name.c_str(), 100);
-        msg.robotID = robotID;
+        msg.robotID = vm->robotID;
         msg.senderX = robot.getRobotPos().x;
         msg.senderY = robot.getRobotPos().y;
         msg.senderZ = robot.getRobotPos().z;
@@ -158,7 +156,7 @@ namespace PiELo {
     }
 
     // Check for a message and update a variable or rebroadcast own value if necessary
-    void checkForMessage(void) {
+    void Networking::checkForMessage(void) {
         // wait to receive something from the router (blocking!!)
         Message msg;
         sockaddr_in fromAddr;
@@ -185,13 +183,13 @@ namespace PiELo {
             // std::cout << " value " << msg.data.asClosureIndex;
         // }
         try {
-            Variable *var = &taggedTable.at(msg.variableName);
+            Variable *var = &vm->taggedTable.at(msg.variableName);
             if (!var->isStigmergy) {
                 // If the message has a newer timestamp than the variable
                 if (var->lastUpdated.tv_sec < msg.variableLastUpdated.tv_sec ||
                     (var->lastUpdated.tv_sec == msg.variableLastUpdated.tv_sec && var->lastUpdated.tv_usec < msg.variableLastUpdated.tv_usec)) {
                     if (var->getType() == PIELO_CLOSURE) {
-                        closureList[var->getClosureIndex()].cachedValue = msg.data;
+                        vm->closureList[var->getClosureIndex()].cachedValue = msg.data;
                     } else {
                         var->mutateValue(msg.data);
                     }
@@ -205,18 +203,18 @@ namespace PiELo {
                 var->updateStigValue(msg.robotID, msg.data);
                 std::cout << ". Updated stigmergy for ID " << msg.robotID << " int value " << msg.data.asInt << std::endl;
             }
-            handleDependants(*var);
+            vm->handleDependants(*var);
         } catch(...) {
             if (msg.isStigmergy) {
-                taggedTable[msg.variableName] = Variable();
-                taggedTable[msg.variableName].isStigmergy = true;
-                taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
-                taggedTable[msg.variableName].stigmergyData[msg.robotID] = msg.data;
-                taggedTable[msg.variableName].resetIter();
+                vm->taggedTable[msg.variableName] = Variable();
+                vm->taggedTable[msg.variableName].isStigmergy = true;
+                vm->taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
+                vm->taggedTable[msg.variableName].stigmergyData[msg.robotID] = msg.data;
+                vm->taggedTable[msg.variableName].resetIter();
             } else {
-                taggedTable[msg.variableName] = msg.data;
-                taggedTable[msg.variableName].isStigmergy = false;
-                taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
+                vm->taggedTable[msg.variableName] = msg.data;
+                vm->taggedTable[msg.variableName].isStigmergy = false;
+                vm->taggedTable[msg.variableName].lastUpdated = msg.variableLastUpdated;
             }
             std::cout << ". Local version did not exist." << std::endl;
         }

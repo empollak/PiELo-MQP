@@ -10,7 +10,7 @@
 
 
 namespace PiELo {
-    void stigSize(std::string varName) {
+    void VM::stigSize(std::string varName) {
         Variable* var = nullptr;
         auto tag = taggedTable.find(varName);
         if (tag != taggedTable.end()) {

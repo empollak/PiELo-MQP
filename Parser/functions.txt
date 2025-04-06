@@ -1,1 +1,2 @@
 random_sleep
+get_distance_covered

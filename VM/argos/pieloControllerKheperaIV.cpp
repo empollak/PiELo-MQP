@@ -10,8 +10,20 @@ CPiELoKheperaIV::CPiELoKheperaIV() :
     m_cGoStraightAngleRange(-ToRadians(m_cAlpha),
                             ToRadians(m_cAlpha)) {}
 
+CCI_DifferentialSteeringSensor CPiELoKheperaIV::getEncoders() {
+    return *m_pcEncoder;
+}
+
+PiELo::Variable get_distance_covered(PiELo::VM* vm) {
+    CPiELoKheperaIV* controller = reinterpret_cast<CPiELoKheperaIV*>(
+        vm->findVariable("controller")->getClosureIndex());
+    float dist = controller->getEncoders().GetReading().CoveredDistanceLeftWheel;
+    LOG << "[" << controller->GetId() << "] " << "Distance covered: " << dist << std::endl;
+    return dist;
+}
 
 void CPiELoKheperaIV::Init(TConfigurationNode& t_node) {
+    CPiELoController::Init(t_node);
     m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     m_pcEncoder   = GetSensor  <CCI_DifferentialSteeringSensor  >("differential_steering");
     m_pcProximity = GetSensor  <CCI_KheperaIVProximitySensor    >("kheperaiv_proximity"  );
@@ -26,14 +38,17 @@ void CPiELoKheperaIV::Init(TConfigurationNode& t_node) {
     m_cGoStraightAngleRange.Set(-ToRadians(m_cAlpha), ToRadians(m_cAlpha));
     GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-    PiELo::globalSymbolTable["leftWheelVelocity"] = 1.0f;
-    PiELo::globalSymbolTable["rightWheelVelocity"] = 1.0f;
-    PiELo::globalSymbolTable["robotID"] = m_unRobotId;
+    vm.globalSymbolTable["leftWheelVelocity"] = 1.0f;
+    vm.globalSymbolTable["rightWheelVelocity"] = 1.0f;
+    vm.globalSymbolTable["robotID"] = m_unRobotId;
+    vm.globalSymbolTable["controller"] = (size_t) this;
+    vm.registerFunction("get_distance_covered", get_distance_covered);
 }
 
 void CPiELoKheperaIV::ControlStep() {
-    float leftWheelVelocity = PiELo::globalSymbolTable["leftWheelVelocity"].getFloatValue();
-    float rightWheelVelocity = PiELo::globalSymbolTable["rightWheelVelocity"].getFloatValue();
+    CPiELoController::ControlStep();
+    float leftWheelVelocity = vm.globalSymbolTable["leftWheelVelocity"].getFloatValue();
+    float rightWheelVelocity = vm.globalSymbolTable["rightWheelVelocity"].getFloatValue();
     m_pcWheels->SetLinearVelocity(leftWheelVelocity, rightWheelVelocity);
     RLOG << "Set wheel speeds to " << leftWheelVelocity << ", " << rightWheelVelocity << std::endl;
 }

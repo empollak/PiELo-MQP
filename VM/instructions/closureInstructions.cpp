@@ -11,7 +11,7 @@
 
 namespace PiELo{
     // Defines a closure
-    void defineClosure(std::string closureName, ClosureData closureData) {
+    void VM::defineClosure(std::string closureName, ClosureData closureData) {
         debugPrint("Defining closure with name " << closureName << std::endl)
 
         // Variable closureVar(closureData);
@@ -36,7 +36,7 @@ namespace PiELo{
     // number of args : int
     // ClosureData
     // top
-    void callClosure() {
+    void VM::callClosure() {
         // Save the current scope
         debugPrint(" calling closure! " << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
@@ -97,7 +97,7 @@ namespace PiELo{
         debugPrint(" updated pc: " << programCounter << " state: " << state << std::endl);
     }
 
-    void retFromClosure() {
+    void VM::retFromClosure() {
         debugPrint(" ret_from_closure got pc " << programCounter << std::endl);
         if (stack.size() < 1) throw std::runtime_error("Stack empty before ret_from_closure");
         int hasReturn = stack.top().getIntValue();
@@ -134,7 +134,7 @@ namespace PiELo{
         returnAddrStack.pop();
     }
 
-    void rerunClosure(size_t closureIndex) {
+    void VM::rerunClosure(size_t closureIndex) {
         debugPrint("Rerunning closure with index " << closureIndex << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
@@ -143,7 +143,7 @@ namespace PiELo{
         debugPrint(" pc now " << programCounter << std::endl);
     }
 
-    void uncache() {
+    void VM::uncache() {
         if (stack.size() < 1) throw ShortOnElementsOnStackException("uncache");
         // Uncaching a non-cached value is fine.
         if (stack.top().getType() != Type::PIELO_CLOSURE) return;

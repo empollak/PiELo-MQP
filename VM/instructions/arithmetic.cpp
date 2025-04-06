@@ -3,7 +3,7 @@
 
 using namespace PiELo;
 
-void add(){
+void VM::add(){
     if(stack.size() >= 2) {
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -59,7 +59,7 @@ void add(){
     }
 }
 
-void sub(){ // b - a: subtracts from the second element in the stack(b) the top of the stack(a)
+void VM::sub(){ // b - a: subtracts from the second element in the stack(b) the top of the stack(a)
     if(stack.size() >= 2) {
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -116,7 +116,7 @@ void sub(){ // b - a: subtracts from the second element in the stack(b) the top 
     }
 }
 
-void mul(){ 
+void VM::mul(){ 
     if(stack.size() >= 2) {
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -173,7 +173,7 @@ void mul(){
     }
 }
 
-void div(){ // b / a: divide from the second element in the stack(b) the top of the stack(a)
+void VM::div(){ // b / a: divide from the second element in the stack(b) the top of the stack(a)
     if(stack.size() >= 2) {
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();
@@ -234,7 +234,7 @@ void div(){ // b / a: divide from the second element in the stack(b) the top of 
     }
 }
 
-void mod(){
+void VM::mod(){
     if(stack.size() >= 2) {
         Variable a = stack.top(); stack.pop();
         Variable b = stack.top(); stack.pop();

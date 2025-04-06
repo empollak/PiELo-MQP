@@ -15,10 +15,11 @@
 #endif
 
 namespace PiELo{
-    void handleInstruction(opCodeInstructionOrArgument op) {
+    void VM::handleInstruction(opCodeInstructionOrArgument op) {
         if (op.type != op.INSTRUCTION) {
             debugPrint("Attempted to run a type " << op.getTypeAsString() << " from pc " << programCounter << std::endl);
             debugPrint(*op.asString << std::endl);
+            std::cout << "test print !" << std::endl;
             throw std::runtime_error("Attempted to run non-instruction as instruction");
         }
         Instruction instruction = op.asInstruction;
@@ -44,7 +45,7 @@ namespace PiELo{
             
             case RET_FROM_CLOSURE:
                 retFromClosure();
-                GarbageCollector::collectGarbage();
+                garbageCollector.collectGarbage(this);
                 break;
 
             case RERUN_CLOSURE:
@@ -54,7 +55,7 @@ namespace PiELo{
             case CALL_C_CLOSURE:
                 name = *bytecode[++programCounter].asString;
                 debugPrint("Calling c closure: " << name);
-                stack.push(taggedTable[name].getFunctionPointer()());
+                stack.push(taggedTable[name].getFunctionPointer()(this));
                 break;
             
             case STORE_LOCAL:
@@ -126,7 +127,7 @@ namespace PiELo{
                     std::cout << stack.top().getFloatValue();
                 } else if (stack.top().getType() == PIELO_CLOSURE) {
                     std::cout << " cached value: ";
-                    closureList[stack.top().getClosureIndex()].cachedValue.print();
+                    closureList[stack.top().getClosureIndex()].cachedValue.print(this);
                 }
                 std::cout << std::endl;
                 break;

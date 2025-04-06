@@ -7,7 +7,7 @@ namespace PiELo {
     // mark one var
     void GarbageCollector::markVar(size_t closureIndex){
         // look for entry in gcelement and mark it
-        ClosureData* closure = &closureList.at(closureIndex);
+        ClosureData* closure = &vm->closureList.at(closureIndex);
         closure->marked = true;
         // symbol table
         for (auto &pair: closure->localSymbolTable){
@@ -18,7 +18,7 @@ namespace PiELo {
 
         // Mark all dependencies
         for (auto varName : closure->dependencies) {
-            Variable* var = findVariable(varName);
+            Variable* var = vm->findVariable(varName);
             if (var->getType() == PIELO_CLOSURE) markVar(var->getClosureIndex());
         }
         
@@ -28,22 +28,22 @@ namespace PiELo {
     // mark all roots
     void GarbageCollector::markRoots(){
         // Mark the closure we're currently in
-        markVar(currentClosureIndex);
+        markVar(vm->currentClosureIndex);
 
         // global symbol table
-        for (auto &pair : globalSymbolTable){
+        for (auto &pair : vm->globalSymbolTable){
             if (pair.second.getType() == PIELO_CLOSURE)
                 markVar(pair.second.getClosureIndex());
         }
 
         // tagged table
-        for (auto &pair : taggedTable){
+        for (auto &pair : vm->taggedTable){
             if (pair.second.getType() == PIELO_CLOSURE)
                 markVar(pair.second.getClosureIndex());
         }
 
         // call stack
-        std::stack<Variable> tempStack = stack;
+        std::stack<Variable> tempStack = vm->stack;
         while (!tempStack.empty()) {
             if (tempStack.top().getType() == PIELO_CLOSURE) 
                 markVar(tempStack.top().getClosureIndex());
@@ -51,7 +51,7 @@ namespace PiELo {
         }
 
         // local sym tables
-        for (auto &closurePair : closureList) {
+        for (auto &closurePair : vm->closureList) {
             if (closurePair.second.marked) {
                 for (auto &localPair : closurePair.second.localSymbolTable) {
                     if (localPair.second.getType() == PIELO_CLOSURE)
@@ -62,7 +62,7 @@ namespace PiELo {
         }
 
         // Mark all closures in the return address stack
-        std::stack<scopeData> tempReturnStack = returnAddrStack;
+        std::stack<VM::scopeData> tempReturnStack = vm->returnAddrStack;
         while (!tempReturnStack.empty()) {
             markVar(tempReturnStack.top().closureIndex);
             tempReturnStack.pop();
@@ -73,12 +73,12 @@ namespace PiELo {
     void GarbageCollector::sweep() {
 
         // std::cout << "sweeping" << std::endl;
-        for (std::map<size_t, ClosureData>::iterator it = closureList.begin(); it != closureList.end();) {
+        for (std::map<size_t, ClosureData>::iterator it = vm->closureList.begin(); it != vm->closureList.end();) {
             // std::cout << "Looking at closure index " << it->first << std::endl;
             // Erase if not marked and move to the next item (erase does ++ for you)
             if (!it->second.marked) {
                 // std::cout << "erasing closure index" << it->first << std::endl;
-                it = closureList.erase(it);
+                it = vm->closureList.erase(it);
             }
             else {
                 it->second.marked = false;
@@ -88,15 +88,16 @@ namespace PiELo {
     }
 
     // run full gc cycle
-    void GarbageCollector::collectGarbage() {
-        std::cout << "GC: Starting Collection. closureList size = " << closureList.size() << std::endl;
+    void GarbageCollector::collectGarbage(VM* vmPtr) {
+        vm = vmPtr;
+        std::cout << "GC: Starting Collection. vm->closureList size = " << vmPtr->closureList.size() << std::endl;
         markRoots();
         sweep();
-        std::cout << "GC  Collection complete. closureList size = " << closureList.size() << std::endl;
+        std::cout << "GC  Collection complete. vm->closureList size = " << vmPtr->closureList.size() << std::endl;
     }
 
     size_t GarbageCollector::heapSize(){
-        return closureList.size();
+        return vm->closureList.size();
     }
 
 }

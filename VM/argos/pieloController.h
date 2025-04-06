@@ -42,6 +42,9 @@ public:
     UInt16 m_unRobotId;
     /* Name of the bytecode file */
     std::string m_strBytecodeFName;
+
+
+    PiELo::VM vm;
 };
 
 

@@ -11,7 +11,7 @@
 #endif
 
 namespace PiELo {
- void storeLocal(std::string varName){
+ void VM::storeLocal(std::string varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeLocal");
         }
@@ -33,7 +33,7 @@ namespace PiELo {
         debugPrint("Stored local to " << varName << std::endl);
     }
 
-    void storeGlobal(std::string varName){
+    void VM::storeGlobal(std::string varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeLocal");
         }
@@ -56,7 +56,7 @@ namespace PiELo {
         debugPrint("Stored global to " << varName << std::endl);
     }
 
-    void loadToStack(const std::string& varName){
+    void VM::loadToStack(const std::string& varName){
         debugPrint("Beginning loadToStack " << std::endl);
         Variable* var = nullptr;
         
@@ -104,7 +104,7 @@ namespace PiELo {
         #endif
     }
 
-    void tagVariable(const std::string& varName, const std::string& tagName) {
+    void VM::tagVariable(const std::string& varName, const std::string& tagName) {
         Variable* var = nullptr;
         
         debugPrint("Tagging variable " << varName << " with tag " << tagName << std::endl);
@@ -130,7 +130,7 @@ namespace PiELo {
         var -> tags.push_back(Tag{tagName});
     }
 
-    void tagRobot(const std::string& tagName) {
+    void VM::tagRobot(const std::string& tagName) {
         
         // check if tag already exists
         for (const auto& tag : robotTagList){
@@ -144,7 +144,7 @@ namespace PiELo {
     }
 
     // Takes in a closure index and does what it says it will do
-    void recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex, std::stack<scopeData> &dependants) {
+    void VM::recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex, std::stack<scopeData> &dependants) {
         // Push the closure itself to the return address stack
         ClosureData* closure = &closureList[closureIndex];
         dependants.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer, .closureIndex = closureIndex});
@@ -155,7 +155,7 @@ namespace PiELo {
         }
     }
 
-    void handleDependants(Variable& var) {
+    void VM::handleDependants(Variable& var) {
         if (var.dependants.size() > 0) {
             // Store where we currently are
             debugPrint(" Variable has closure index dependants: ");
@@ -184,7 +184,7 @@ namespace PiELo {
         }
     }
 
-    void storeTagged(const std::string& varName){
+    void VM::storeTagged(const std::string& varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
         }
@@ -204,11 +204,11 @@ namespace PiELo {
         }
 
         // Can assume that the variable now must exist in the tagged table
-        broadcastVariable(varName, taggedTable[varName].getVariableData());
+        network.broadcastVariable(varName, taggedTable[varName].getVariableData());
         stack.pop();
     }
 
-    void storeStig(const std::string& varName) {
+    void VM::storeStig(const std::string& varName) {
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeTagged");
         }
@@ -237,11 +237,11 @@ namespace PiELo {
         }
 
         // Can assume that the variable now must exist in the tagged table
-        broadcastVariable(varName, taggedTable[varName]);
+        network.broadcastVariable(varName, taggedTable[varName]);
         stack.pop();
     }
 
-    void pushNextElementOfStig(const std::string& varName) {
+    void VM::pushNextElementOfStig(const std::string& varName) {
         auto it = taggedTable.find(varName);
         if (it == taggedTable.end()) {
             throw std::runtime_error("Attempted to push next element of non-existent stig variable " + varName);
@@ -254,7 +254,7 @@ namespace PiELo {
         stack.push(data);
     }
 
-    void isIterAtEnd(const std::string& varName) {
+    void VM::isIterAtEnd(const std::string& varName) {
         auto it = taggedTable.find(varName);
         if (it == taggedTable.end()) {
             throw std::runtime_error("Attempted to check iter status of non-stig variable " + varName);
@@ -267,7 +267,7 @@ namespace PiELo {
         stack.push(retVal);
     }
 
-    void resetIter(const std::string& varName) {
+    void VM::resetIter(const std::string& varName) {
         auto it = taggedTable.find(varName);
         if (it == taggedTable.end()) {
             throw std::runtime_error("Attempted to check iter status of non-stig variable " + varName);

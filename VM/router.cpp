@@ -1,4 +1,5 @@
 #include "networking.h"
+#include "vm.h"
 
 #include <cstdio>
 #include <cstring>

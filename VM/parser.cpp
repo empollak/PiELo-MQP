@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <functional>
 #include <numeric>
+#include "vm.h"
 
 using namespace PiELo;
 #ifdef __DEBUG_PARSER__
@@ -25,6 +26,7 @@ void Parser::initHandlers() {
         {"mul", [&]() { handleArithmetic(MUL); }},
         {"div", [&]() { handleArithmetic(DIV); }},
         {"mod", [&]() { handleSimple(MOD); }},
+        {"dup", [&]() { handleSimple(DUP); }},
         {"print", [&]() {debugPrint("Parsing: print" << std::endl); handleSimple(PRINT); }},
         {"eql", [&]() { handleSimple(EQL); }},
         {"neql", [&]() { handleSimple(NEQL); }},
@@ -59,7 +61,9 @@ void Parser::initHandlers() {
     };
 }
 
-void Parser::load(std::string filename){
+// Load the bytecode for the given vm pointer
+void Parser::load(std::string filename, VM* vm){
+    vm = vm;
     file.open(filename);
     if (!file.is_open()){
         throw std::runtime_error("Error opening file: "+ filename);
@@ -95,7 +99,7 @@ void Parser::load(std::string filename){
         }
     }
 
-    // return bytecode;
+    vm->bytecode = bytecode;
 }
 
 void Parser::handleDebugPrint() {
@@ -250,7 +254,7 @@ void Parser::handleDefineClosure() {
     closure.codePointer = bytecode.size() - 1;
 
     // bytecode.push_back(closure);
-    defineClosure(name, closure);
+    vm->defineClosure(name, closure);
     debugPrint("Done with defineClosure" << std::endl);
 }
 

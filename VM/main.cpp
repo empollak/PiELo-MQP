@@ -29,6 +29,10 @@ PiELo::Variable randomSleep(PiELo::VM* vm) {
     usleep(sleepTime);
     return 0;
 }
+
+PiELo::Variable get_distance_covered(PiELo::VM* vm) {
+    return 0.1f;
+}
 PiELo::VM vm;
 
 int main(int argc, char** argv) {
@@ -45,6 +49,8 @@ int main(int argc, char** argv) {
     vm.registerFunction("go_forward", &goForward);
     vm.registerFunction("print_robot_pos", &printRobotPos);
     vm.registerFunction("random_sleep", &randomSleep);
+    vm.registerFunction("get_distance_covered", &get_distance_covered);
+    vm.globalSymbolTable["robotID"] = 4;
     vm.load(argv[1]);
     while(vm.step() == PiELo::VM::VMState::READY);
     printf("Done!\n");

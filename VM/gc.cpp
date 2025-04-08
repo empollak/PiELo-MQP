@@ -7,15 +7,24 @@ namespace PiELo {
     // mark one var
     void GarbageCollector::markVar(size_t closureIndex){
         // look for entry in gcelement and mark it
-        ClosureData* closure = &vm->closureList.at(closureIndex);
+        ClosureData* closure;
+        try {
+            closure = &vm->closureList.at(closureIndex);
+        } catch (std::out_of_range e) {
+            throw std::out_of_range(std::string("closureList.at(") +  std::to_string(closureIndex) + ")");
+        }
         closure->marked = true;
+
+        if (closure->isTemplate) return;
+
         // symbol table
         for (auto &pair: closure->localSymbolTable){
             if (pair.second.getType() == PIELO_CLOSURE) {
                 markVar(pair.second.getClosureIndex());
             }
         }
-
+        
+        
         // Mark all dependencies
         for (auto varName : closure->dependencies) {
             Variable* var = vm->findVariable(varName);

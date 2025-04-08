@@ -18,7 +18,7 @@ namespace PiELo {
             // load the program into memory and return the code vector
             void load(std::string filename, VM* vm);
 
-        private:
+        public:
             VM* vm;
             std::ifstream file;
             std::vector<opCodeInstructionOrArgument> code;

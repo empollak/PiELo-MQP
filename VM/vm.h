@@ -24,7 +24,8 @@ namespace PiELo {
         C_CLOSURE,
         FLOAT,
         INT,
-        NAME
+        NAME,
+        POINTER // Don't use this in the VM! Please! It's mostly for controllers for ARGoS
     };
     class Variable;
     class VM;
@@ -38,6 +39,7 @@ namespace PiELo {
             float asFloat;
             size_t asClosureIndex;
             funp asFunctionPointer;
+            void* asPointer;
         };
         Type type = Type::NIL;
 
@@ -46,6 +48,8 @@ namespace PiELo {
         VariableData(float f) {asFloat = f; type = Type::FLOAT;}
 
         VariableData(size_t s) {asClosureIndex = s; type = Type::PIELO_CLOSURE;}
+
+        VariableData(void* p) {asPointer = p; type = Type::POINTER;}
 
         VariableData(funp f) {asFunctionPointer = f; type = Type::C_CLOSURE;}
 
@@ -61,6 +65,7 @@ namespace PiELo {
                 case Type::FLOAT: return "FLOAT";
                 case Type::INT: return "INT";
                 case Type::NAME: return "NAME";
+                case Type::POINTER: return "POINTER";
                 default: return "invalid type";
             }
         }
@@ -96,6 +101,8 @@ namespace PiELo {
 
         Variable(size_t s) {data.type = PIELO_CLOSURE; data.asClosureIndex = s;}
 
+        Variable(void* p) {data.type = POINTER; data.asPointer = p;}
+
         Variable(funp f) {data.type = C_CLOSURE; data.asFunctionPointer = f;}
 
         Variable(VariableData v) {data = v;}
@@ -127,6 +134,12 @@ namespace PiELo {
             if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer");
             if (data.type != C_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
             return data.asFunctionPointer;
+        }
+
+        void* getPointer() {
+            if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as pointer");
+            if (data.type != POINTER) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
+            return data.asPointer;
         }
 
         // DO NOT USE TO EXTRACT DATA!
@@ -185,6 +198,8 @@ namespace PiELo {
             } else if (getType() == PIELO_CLOSURE) {
                 std::cout << "closure index: ";
                 std::cout << getClosureIndex();
+            } else {
+                std::cout << "undefined type for printing: " << getTypeAsString();
             }
         }
     };
@@ -198,6 +213,17 @@ namespace PiELo {
         std::vector<size_t> dependants;
         VariableData cachedValue;
         bool marked = false; // For garbage collection
+        bool isTemplate;
+    };
+
+    class ClosureMap : public std::map<size_t, ClosureData> {
+        private:
+            size_t headOfList = 0;
+        public:
+            void push_back(ClosureData c);
+            size_t getHeadOfList() {return headOfList;}
+            void resetHeadOfList() {headOfList = 0;}
+            ClosureMap() : headOfList(0) {headOfList = 0;}
     };
 
     struct opCodeInstructionOrArgument { // struct that helps handle the storing of values pushed by opcodes.
@@ -368,14 +394,6 @@ namespace PiELo {
         Type stringToType(std::string s);
 
         int robotID;
-
-        class ClosureMap : public std::map<size_t, ClosureData> {
-            private:
-                size_t headOfList = 0;
-            public:
-                void push_back(ClosureData& c);
-                size_t getHeadOfList() {return headOfList;}
-        };
 
         ClosureMap closureList;
 

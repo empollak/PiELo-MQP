@@ -16,7 +16,7 @@ CCI_DifferentialSteeringSensor CPiELoKheperaIV::getEncoders() {
 
 PiELo::Variable get_distance_covered(PiELo::VM* vm) {
     CPiELoKheperaIV* controller = reinterpret_cast<CPiELoKheperaIV*>(
-        vm->findVariable("controller")->getClosureIndex());
+        vm->findVariable("controller")->getPointer());
     float dist = controller->getEncoders().GetReading().CoveredDistanceLeftWheel;
     LOG << "[" << controller->GetId() << "] " << "Distance covered: " << dist << std::endl;
     return dist;
@@ -38,19 +38,27 @@ void CPiELoKheperaIV::Init(TConfigurationNode& t_node) {
     m_cGoStraightAngleRange.Set(-ToRadians(m_cAlpha), ToRadians(m_cAlpha));
     GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-    vm.globalSymbolTable["leftWheelVelocity"] = 1.0f;
-    vm.globalSymbolTable["rightWheelVelocity"] = 1.0f;
+    vm.globalSymbolTable["leftWheelVelocity"] = 1;
+    vm.globalSymbolTable["rightWheelVelocity"] = 1;
     vm.globalSymbolTable["robotID"] = m_unRobotId;
-    vm.globalSymbolTable["controller"] = (size_t) this;
+    vm.globalSymbolTable["controller"] = (void*) this;
+
     vm.registerFunction("get_distance_covered", get_distance_covered);
 }
 
 void CPiELoKheperaIV::ControlStep() {
     CPiELoController::ControlStep();
-    float leftWheelVelocity = vm.globalSymbolTable["leftWheelVelocity"].getFloatValue();
-    float rightWheelVelocity = vm.globalSymbolTable["rightWheelVelocity"].getFloatValue();
+    PiELo::Variable leftWheelVelocityVar = vm.globalSymbolTable["leftWheelVelocity"];
+    PiELo::Variable rightWheelVelocityVar = vm.globalSymbolTable["rightWheelVelocity"];
+    double leftWheelVelocity;
+    double rightWheelVelocity;
+    if (leftWheelVelocityVar.getType() == PiELo::INT) leftWheelVelocity = leftWheelVelocityVar.getIntValue();
+    else leftWheelVelocity = leftWheelVelocityVar.getFloatValue();
+    if (rightWheelVelocityVar.getType() == PiELo::INT) rightWheelVelocity = rightWheelVelocityVar.getIntValue();
+    else rightWheelVelocity = rightWheelVelocityVar.getFloatValue();
     m_pcWheels->SetLinearVelocity(leftWheelVelocity, rightWheelVelocity);
     RLOG << "Set wheel speeds to " << leftWheelVelocity << ", " << rightWheelVelocity << std::endl;
+    RLOG << "Distance covered: " << m_pcEncoder->GetReading().CoveredDistanceLeftWheel << std::endl;
 }
 
 REGISTER_CONTROLLER(CPiELoKheperaIV, "pielo_khepera_iv")

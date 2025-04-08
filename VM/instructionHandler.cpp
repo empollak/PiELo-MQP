@@ -18,9 +18,9 @@ namespace PiELo{
     void VM::handleInstruction(opCodeInstructionOrArgument op) {
         if (op.type != op.INSTRUCTION) {
             debugPrint("Attempted to run a type " << op.getTypeAsString() << " from pc " << programCounter << std::endl);
-            debugPrint(*op.asString << std::endl);
-            std::cout << "test print !" << std::endl;
-            throw std::runtime_error("Attempted to run non-instruction as instruction");
+            // debugPrint(*op.asString << std::endl);
+            // std::cout << "test print !" << std::endl;
+            throw std::runtime_error("Attempted to run type " + op.getTypeAsString() + " from pc " + std::to_string(programCounter) + " as instruction");
         }
         Instruction instruction = op.asInstruction;
         if (instruction != SPIN) {

@@ -12,19 +12,18 @@
 namespace PiELo{
     // Defines a closure
     void VM::defineClosure(std::string closureName, ClosureData closureData) {
-        debugPrint("Defining closure with name " << closureName << ", code pointer: ")// << closureData.codePointer << std::endl)
+        debugPrint("Defining closure with name " << closureName << ", code pointer: " << closureData.codePointer << std::endl)
         // Variable closureVar(closureData);
         // TODO: storeTagged with name closureName, value closureVar
         
-        debugPrint("Setting test=0")
-        closureData.localSymbolTable;
-        closureData.localSymbolTable["test"] = 0;
         debugPrint("local symbol table size " << closureData.localSymbolTable.size());
+        // closureList.push_back(closureData);
+        closureData.marked = true;
         closureList.push_back(closureData);
         debugPrint("Pushing closure index to stack")
         stack.push((size_t) (closureList.getHeadOfList() - 1));
         debugPrint(" at closureTemplates index " << closureList.getHeadOfList() - 1 << std::endl);
-        storeLocal(closureName);
+        storeGlobal(closureName);
 
         // Register all the dependencies of a closure
         // for (const std::string& dep : closureData.dependencies) {
@@ -45,13 +44,16 @@ namespace PiELo{
         // Save the current scope
         debugPrint(" calling closure! " << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
+        debugPrint("Pushed code pointer " << programCounter << " to return address stack" << std::endl)
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
         // Copy closure template from the variable on the stack
         ClosureData closureData = closureList[stack.top().getClosureIndex()];
         debugPrint(" updating closure list with symbol table size " << closureData.localSymbolTable.size() << std::endl);
+        debugPrint(" called closure has code pointer " << closureData.codePointer << std::endl)
         size_t closureIndex = closureList.getHeadOfList();
         closureList.push_back(closureData);
+        closureList[closureIndex].isTemplate = false;
         
         stack.pop();
         int numArgs = stack.top().getIntValue();
@@ -134,6 +136,7 @@ namespace PiELo{
         stack.push(currentClosureIndex);
 
         programCounter = returnAddrStack.top().codePointer;
+        debugPrint("Got code pointer " << programCounter << " from return address stack" << std::endl;)
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
         currentClosureIndex = returnAddrStack.top().closureIndex;
         returnAddrStack.pop();
@@ -156,6 +159,7 @@ namespace PiELo{
         Variable var = stack.top();
         stack.pop();
         stack.push(closureList[var.getClosureIndex()].cachedValue);
+        uncache();
     }
 
 }

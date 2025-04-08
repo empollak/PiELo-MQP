@@ -23,6 +23,7 @@ namespace PiELo {
 
     VM::VMState VM::load(std::string filename) {
         if (network.initNetworking(this) != 0) return VMState::ERROR;
+        closureList.resetHeadOfList();
         parser.load(filename, this);
         std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
         std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
@@ -99,11 +100,14 @@ namespace PiELo {
         return data;
     }
 
-    void VM::ClosureMap::push_back(ClosureData& c) {
+    void ClosureMap::push_back(ClosureData c) {
         #ifdef __DEBUG_INSTRUCTIONS__
-            std::cout << "Inserting at index " << headOfList + 1 << " symbol table size " << c.localSymbolTable.size() << std::endl;
+            // std::cout << "Inserting at index " << headOfList + 1 << " symbol table size " << c.localSymbolTable.size() << std::endl;
         #endif
         size_t insertLoc = headOfList++;
+        #ifdef __DEBUG_INSTRUCTIONS__
+            std::cout << "Test Print" << std::endl;
+        #endif
         this->insert(std::pair<size_t, ClosureData>(insertLoc, c));
         this->at(insertLoc).argNames = c.argNames;
         this->at(insertLoc).cachedValue = c.cachedValue;
@@ -112,6 +116,7 @@ namespace PiELo {
         this->at(insertLoc).dependencies = c.dependencies;
         this->at(insertLoc).localSymbolTable = c.localSymbolTable;
         this->at(insertLoc).marked = c.marked;
+        this->at(insertLoc).isTemplate = c.isTemplate;
     }
 
 }

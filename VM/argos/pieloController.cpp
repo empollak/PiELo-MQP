@@ -97,6 +97,8 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
          THROW_ARGOSEXCEPTION(("VM!!!! " + std::string(e.what())))
          // THROW_ARGOSEXCEPTION_NESTED("vm", e)
          // std::cout << "Exception: " << e.what() << std::endl;
+      } catch (std::out_of_range e) {
+         THROW_ARGOSEXCEPTION(("wuh oh " + std::string(e.what())))
       }
    }
    else {

@@ -146,6 +146,10 @@ namespace PiELo {
     // Takes in a closure index and does what it says it will do
     void VM::recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex, std::stack<scopeData> &dependants) {
         // Push the closure itself to the return address stack
+        if (closureList.find(closureIndex) == closureList.end()) {
+            debugPrint("Skipping dependant " << closureIndex << ", ")
+            return;
+        }
         ClosureData* closure = &closureList[closureIndex];
         dependants.push((scopeData) {.scopeSymbolTable = &closure->localSymbolTable, .codePointer = closure->codePointer, .closureIndex = closureIndex});
         debugPrint(closureIndex << ", ");
@@ -163,6 +167,11 @@ namespace PiELo {
             
             std::stack<scopeData> dependants;
             for (int i = 0; i < var.dependants.size(); i++) {
+                // Erase dependants which have been garbage collected
+                if (closureList.find(var.dependants[i]) == closureList.end()) {
+                    debugPrint("Skipping dependant " << var.dependants[i] << ", ")
+                    continue;
+                }
                 // Push the info of each dependant closure and all of its dependants to the dependants stack
                 recursivelyAddDependantsOfClosureToReturnAddrStack(var.dependants[i], dependants);
             }

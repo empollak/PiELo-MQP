@@ -62,8 +62,8 @@ void Parser::initHandlers() {
 }
 
 // Load the bytecode for the given vm pointer
-void Parser::load(std::string filename, VM* vm){
-    vm = vm;
+void Parser::load(std::string filename, VM* vmPtr){
+    vm = vmPtr;
     file.open(filename);
     if (!file.is_open()){
         throw std::runtime_error("Error opening file: "+ filename);
@@ -237,6 +237,7 @@ void Parser::handleDefineClosure() {
 
     int numArgs = parseNextInt();
     debugPrint("Defineclosure: num args: " << numArgs << std::endl);
+    closure.localSymbolTable = symbolTable();
     
     for (int i = 0; i < numArgs; i++) {
         closure.argNames.push_back(parseNextString());
@@ -252,7 +253,7 @@ void Parser::handleDefineClosure() {
     debugPrint("Done with deps " << std::endl);
 
     closure.codePointer = bytecode.size() - 1;
-
+    debugPrint("Calling defineClosure" << std::endl)
     // bytecode.push_back(closure);
     vm->defineClosure(name, closure);
     debugPrint("Done with defineClosure" << std::endl);

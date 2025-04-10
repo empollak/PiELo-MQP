@@ -11,6 +11,12 @@
 namespace PiELo {
     // mark one var
     void GarbageCollector::markVar(size_t closureIndex){
+        // 
+        if (closureIndex == (size_t) -1) {
+            debugPrint("Attempted to mark top-level");
+            return;
+        }
+
         // look for entry in gcelement and mark it
         ClosureData* closure;
         try {
@@ -18,9 +24,15 @@ namespace PiELo {
         } catch (std::out_of_range e) {
             throw std::out_of_range(std::string("closureList.at(") +  std::to_string(closureIndex) + ")");
         }
+        
+        if (closure->marked) return;
+
         closure->marked = true;
 
         if (closure->isTemplate) return;
+        // if (closureIndex >= vm->closureList.getHeadOfList()) {
+            debugPrint("Closure at index " << closureIndex << " has pc " << vm->closureList[closureIndex].codePointer << "\n");
+        // }
 
         // symbol table
         for (auto &pair: closure->localSymbolTable){
@@ -42,20 +54,23 @@ namespace PiELo {
     // mark all roots
     void GarbageCollector::markRoots(){
         // Mark the closure we're currently in
+        debugPrint("\n------ Marking current closure.\n");
         markVar(vm->currentClosureIndex);
-
+        debugPrint("\n------ Marking global symbol table.\n");
         // global symbol table
         for (auto &pair : vm->globalSymbolTable){
             if (pair.second.getType() == PIELO_CLOSURE)
                 markVar(pair.second.getClosureIndex());
         }
 
+        debugPrint("\n------ Marking tagged table.\n");
         // tagged table
         for (auto &pair : vm->taggedTable){
             if (pair.second.getType() == PIELO_CLOSURE)
                 markVar(pair.second.getClosureIndex());
         }
-
+        
+        debugPrint("\n------ Marking stack.\n");
         // call stack
         std::stack<Variable> tempStack = vm->stack;
         while (!tempStack.empty()) {
@@ -64,6 +79,7 @@ namespace PiELo {
             tempStack.pop();
         }
 
+        debugPrint("\n------ Marking local symbol tables.\n");
         // local sym tables
         for (auto &closurePair : vm->closureList) {
             if (closurePair.second.marked) {
@@ -75,6 +91,7 @@ namespace PiELo {
             
         }
 
+        debugPrint("\n------ Marking return address stack.\n");
         // Mark all closures in the return address stack
         std::stack<VM::scopeData> tempReturnStack = vm->returnAddrStack;
         while (!tempReturnStack.empty()) {

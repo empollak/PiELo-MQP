@@ -198,6 +198,8 @@ namespace PiELo {
             } else if (getType() == PIELO_CLOSURE) {
                 std::cout << "closure index: ";
                 std::cout << getClosureIndex();
+            } else if (getType() == POINTER) {
+                std::cout << "pointer " << (size_t) getPointer();
             } else {
                 std::cout << "undefined type for printing: " << getTypeAsString();
             }

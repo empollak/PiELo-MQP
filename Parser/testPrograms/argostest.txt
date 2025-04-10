@@ -5,8 +5,20 @@
 (var global reactive robotID)
 (var global reactive distance_covered)
 (var global reactive speed)
+
+(var global inert barrierComplete)
+(set barrierComplete 0)
+(var global inert barrierSum)
+(var map reactive barrier)
+
+(fun reactive checkBarrier () (begin 
+    (var local inert barrierSum)
+    (set barrierSum 0)
+    (foreach inert (in i barrier') (set barrierSum (+ barrierSum 1)))
+    (if (> barrierSum 4) (set barrierComplete 1) 0)))
+
 (set distance_covered (get_distance_covered))
-(set speed (if (>= distance_covered' 0.5) 0 (+ robotID 5)))
+(set speed (if (&& (>= distance_covered' 0.5) (! barrierComplete)) 0 (+ robotID 5)))
 (set leftWheelVelocity speed')
 (set rightWheelVelocity speed')
 (spin)

@@ -1,0 +1,60 @@
+push i 0
+load __lambda_0
+call_closure
+store global distance_covered
+push i 0
+load __lambda_1
+call_closure
+store global speed
+push i 0
+load __lambda_2
+call_closure
+store global leftWheelVelocity
+push i 0
+load __lambda_3
+call_closure
+store global rightWheelVelocity
+spin
+debug_print PANIC! BAD!
+pop
+push_nil
+end
+
+define_closure __lambda_0 0 0 
+call_c_closure get_distance_covered
+push i 1
+ret_from_closure
+define_closure __lambda_1 0 1 distance_covered 
+load distance_covered
+push f 10.0
+lte
+jmp_if_zero else_0
+push i 0
+jmp endif_0
+label else_0
+load robotID
+push i 5
+add
+label endif_0
+push i 1
+ret_from_closure
+define_closure __lambda_2 0 1 speed 
+load speed
+push i 1
+ret_from_closure
+define_closure __lambda_3 0 1 speed 
+load speed
+push i 1
+ret_from_closure
+define_closure step 0 0 
+push i 0
+load __lambda_4
+call_closure
+store global distance_covered
+push_nil
+push i 1
+ret_from_closure
+define_closure __lambda_4 0 0 
+call_c_closure get_distance_covered
+push i 1
+ret_from_closure

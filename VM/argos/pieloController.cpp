@@ -50,6 +50,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
        else {
           THROW_ARGOSEXCEPTION("No bytecode file name test!");
        }
+       RLOG << "PiELo initialization complete. Controller: " << (size_t) this << std::endl;
     }
     catch(CARGoSException& ex) {
        THROW_ARGOSEXCEPTION_NESTED("Error initializing the PiELo controller", ex);
@@ -101,7 +102,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
          // THROW_ARGOSEXCEPTION_NESTED("vm", e)
          // std::cout << "Exception: " << e.what() << std::endl;
       } catch (std::out_of_range e) {
-         THROW_ARGOSEXCEPTION(("wuh oh " + std::string(e.what())))
+         THROW_ARGOSEXCEPTION(("[" + GetId() + "]" + " Out of range: " + std::string(e.what()) + ". Address of controller: " + std::to_string((size_t) this)))
       }
    }
    else {
@@ -120,6 +121,7 @@ void CPiELoController::runVMFunction(std::string name) {
    while(vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
       takeVMStep();
    }
+   vm.stack.pop(); // Pop the return value of step
    vm.garbageCollector.collectGarbage(&vm);
    if (vm.state != PiELo::VM::READY) {
       RLOGERR << "Attempted to run VM function " << name << " while VM is in state " << vm.state;

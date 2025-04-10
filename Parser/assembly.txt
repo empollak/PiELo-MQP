@@ -1,59 +1,52 @@
+call_c_closure random_sleep
+pop
 push i 0
-load __lambda_0
-call_closure
-store global distance_covered
-push i 0
-load __lambda_1
-call_closure
-store global speed
-push i 0
-load __lambda_2
-call_closure
-store global leftWheelVelocity
+uncache
+store stig barrier
 push i 0
 load __lambda_3
 call_closure
-store global rightWheelVelocity
+store global result
 spin
-pop
-push_nil
 end
 
-define_closure __lambda_0 0 0 
-call_c_closure get_distance_covered
-push i 1
-ret_from_closure
-define_closure __lambda_1 0 1 distance_covered 
-load distance_covered
-push f 0.500000
-lte
-jmp_if_zero else_0
+define_closure barrierTest 0 1 barrier 
 push i 0
+uncache
+store global sum
+push i 0
+load __lambda_2
+call_closure
+pop
+load sum
+push i 1
+lt
+jmp_if_zero else_0
+end
 jmp endif_0
 label else_0
-load robotID
-push i 5
-mod
+push i 0
 label endif_0
 push i 1
 ret_from_closure
-define_closure __lambda_2 0 1 speed 
-load speed
+define_closure __lambda_2 0 1 barrier 
+label iter_start_0
+is_iter_at_end barrier
+jmp_if_not_zero iter_end_0
+push_next_in_stig barrier
+store local i
+load sum
 push i 1
-ret_from_closure
-define_closure __lambda_3 0 1 speed 
-load speed
-push i 1
-ret_from_closure
-define_closure step 0 0 
-push i 0
-load __lambda_4
-call_closure
-store global distance_covered
+add
+pop
+jmp iter_start_0
+label iter_end_0
 push_nil
 push i 1
 ret_from_closure
-define_closure __lambda_4 0 0 
-call_c_closure get_distance_covered
+define_closure __lambda_3 0 0 
+push i 0
+load barrierTest
+call_closure
 push i 1
 ret_from_closure

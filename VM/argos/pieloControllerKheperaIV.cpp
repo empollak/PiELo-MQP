@@ -19,7 +19,9 @@ PiELo::Variable get_distance_covered(PiELo::VM* vm) {
     CPiELoKheperaIV* controller = reinterpret_cast<CPiELoKheperaIV*>(
         vm->findVariable("controller")->getPointer());
     float dist = controller->m_totalDistanceTravelled;
-    // LOG << "[" << controller->GetId() << "] " << "Distance covered this step: " << dist << std::endl;
+    LOG << "[" << controller->GetId() << "] " << "Distance covered this step: " << dist << " Controller: " << (size_t) controller << std::endl;
+    std::cout << "[" << controller->GetId() << "] " << "Distance covered this step: " << dist << " Controller: " << (size_t) controller << std::endl;
+
     return dist;
 }
 

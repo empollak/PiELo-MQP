@@ -22,6 +22,8 @@ public:
     virtual void Init(TConfigurationNode& t_node);
     virtual void Reset();
     virtual void ControlStep();
+    void runVMFunction(std::string name);
+    void takeVMStep();
 
     inline const std::string& GetBytecodeFName() const {
         return m_strBytecodeFName;

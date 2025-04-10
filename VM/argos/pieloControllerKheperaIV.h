@@ -32,6 +32,9 @@ class CPiELoKheperaIV : public CPiELoController {
 
         CCI_DifferentialSteeringSensor getEncoders();
 
+
+        double m_totalDistanceTravelled = 0;
+
     private:
         /* Pointer to the differential steering actuator */
         CCI_DifferentialSteeringActuator* m_pcWheels;
@@ -39,6 +42,7 @@ class CPiELoKheperaIV : public CPiELoController {
         CCI_DifferentialSteeringSensor* m_pcEncoder;
         /* Pointer to the Khepera IV proximity sensor */
         CCI_KheperaIVProximitySensor* m_pcProximity;
+
 
         /*
          * The following variables are used as parameters for the

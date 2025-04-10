@@ -14,15 +14,9 @@ push i 0
 load __lambda_3
 call_closure
 store global rightWheelVelocity
-label while_0
-push i 1
-jmp_if_zero while_end_0
-push i 0
-load __lambda_4
-call_closure
-store global distance_covered
-jmp while_0
-label while_end_0
+spin
+pop
+push_nil
 end
 
 define_closure __lambda_0 0 0 
@@ -49,6 +43,14 @@ push i 1
 ret_from_closure
 define_closure __lambda_3 0 1 speed 
 load speed
+push i 1
+ret_from_closure
+define_closure step 0 0 
+push i 0
+load __lambda_4
+call_closure
+store global distance_covered
+push_nil
 push i 1
 ret_from_closure
 define_closure __lambda_4 0 0 

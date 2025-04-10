@@ -2,6 +2,11 @@
 #include "vm.h"
 #include <iostream>
 #include <algorithm>
+#ifdef __DEBUG_INSTRUCTIONS__
+#define debugPrint(e) std::cout << e;
+#else
+#define debugPrint(e)
+#endif
 
 namespace PiELo {
     // mark one var
@@ -99,10 +104,10 @@ namespace PiELo {
     // run full gc cycle
     void GarbageCollector::collectGarbage(VM* vmPtr) {
         vm = vmPtr;
-        std::cout << "GC: Starting Collection. vm->closureList size = " << vmPtr->closureList.size() << std::endl;
+        debugPrint("GC: Starting Collection. vm->closureList size = " << vmPtr->closureList.size() << std::endl)
         markRoots();
         sweep();
-        std::cout << "GC  Collection complete. vm->closureList size = " << vmPtr->closureList.size() << std::endl;
+        debugPrint("GC  Collection complete. vm->closureList size = " << vmPtr->closureList.size() << std::endl)
     }
 
     size_t GarbageCollector::heapSize(){

@@ -41,8 +41,12 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
        if(!bIDSuccess) {
           THROW_ARGOSEXCEPTION("Error finding bID from name \"" << GetId() << "\"");
        }
-       if(strBCFName != "")
+       if(strBCFName != "") {
+         vm.globalSymbolTable["robotID"] = m_unRobotId;
+         vm.globalSymbolTable["controller"] = (void*) this;
          vm.load(strBCFName);
+         while(vm.bytecode[vm.programCounter].asInstruction != PiELo::Instruction::SPIN && vm.state == PiELo::VM::READY) takeVMStep();
+       } 
        else {
           THROW_ARGOSEXCEPTION("No bytecode file name test!");
        }
@@ -84,8 +88,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
    //  }
  }
 
-
- void CPiELoController::ControlStep() {
+ void CPiELoController::takeVMStep() {
    if(vm.state == PiELo::VM::VMState::READY) {
       // RLOG << "Stepping. Bytecode size: " << vm.bytecode.size() << " top type: " << vm.bytecode[0].getTypeAsString() << std::endl;
       try {
@@ -93,8 +96,8 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
          vm.state = vm.step();
       } catch (std::runtime_error e) {
          vm.state = PiELo::VM::VMState::ERROR;
-         // RLOG << "I have crashed! PC: " << vm.programCounter << ", bytecode size: " << vm.bytecode.size() << std::endl;
-         THROW_ARGOSEXCEPTION(("VM!!!! " + std::string(e.what())))
+         RLOG << "I have crashed! PC: " << vm.programCounter << ", bytecode size: " << vm.bytecode.size() << "Exception: " << e.what() << std::endl;
+         // THROW_ARGOSEXCEPTION(("VM!!!! " + std::string(e.what())))
          // THROW_ARGOSEXCEPTION_NESTED("vm", e)
          // std::cout << "Exception: " << e.what() << std::endl;
       } catch (std::out_of_range e) {
@@ -102,9 +105,30 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
       }
    }
    else {
-      fprintf(stderr, "[ROBOT %s] Robot is not ready to execute PiELo script.\n\n",
-              GetId().c_str());
+      fprintf(stderr, "[ROBOT %s] Robot is not ready to execute PiELo script. VM State: %d\n\n",
+              GetId().c_str(), vm.state);
+      
    }
+ } 
+
+void CPiELoController::runVMFunction(std::string name) {
+   size_t initialIndex = vm.currentClosureIndex;
+   vm.stack.push(0);
+   vm.loadToStack(name);
+   vm.callClosure();
+   vm.programCounter++;
+   while(vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
+      takeVMStep();
+   }
+   vm.garbageCollector.collectGarbage(&vm);
+   if (vm.state != PiELo::VM::READY) {
+      RLOGERR << "Attempted to run VM function " << name << " while VM is in state " << vm.state;
+   }
+}
+
+ void CPiELoController::ControlStep() {
+   // 0 arguments
+   runVMFunction("step");
 }
 
 /*

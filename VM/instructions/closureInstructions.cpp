@@ -16,10 +16,11 @@ namespace PiELo{
         // Variable closureVar(closureData);
         // TODO: storeTagged with name closureName, value closureVar
         
-        debugPrint("local symbol table size " << closureData.localSymbolTable.size());
+        debugPrint("local symbol table size " << closureData.localSymbolTable.size() << std::endl)
         // closureList.push_back(closureData);
-        closureData.marked = true;
+        closureData.isTemplate = true;
         closureList.push_back(closureData);
+        // std::cout << "Pushed closure data to stack. index: " << closureList.getHeadOfList() - 1 << ". marked
         debugPrint("Pushing closure index to stack")
         stack.push((size_t) (closureList.getHeadOfList() - 1));
         debugPrint(" at closureTemplates index " << closureList.getHeadOfList() - 1 << std::endl);
@@ -91,6 +92,7 @@ namespace PiELo{
         // Handle the dependency list
         if (closureList[closureIndex].dependencies.size() > 0) {
             for (std::string name : closureList[closureIndex].dependencies) {
+                // std::cout << "Looking for dependency " << name << std::endl;
                 Variable* dependency = findVariable(name);
                 dependency->dependants.push_back(closureIndex);
                 if (dependency->getType() == PIELO_CLOSURE) {

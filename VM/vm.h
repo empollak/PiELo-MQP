@@ -132,13 +132,13 @@ namespace PiELo {
 
         funp getFunctionPointer() {
             if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as function pointer");
-            if (data.type != C_CLOSURE) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
+            if (data.type != C_CLOSURE) throw InvalidTypeAccessException("C_CLOSURE", getTypeAsString());
             return data.asFunctionPointer;
         }
 
         void* getPointer() {
             if (isStigmergy) throw std::runtime_error("Tried to access stigmergy variable as pointer");
-            if (data.type != POINTER) throw InvalidTypeAccessException("PIELO_CLOSURE", getTypeAsString());
+            if (data.type != POINTER) throw InvalidTypeAccessException("POINTER", getTypeAsString());
             return data.asPointer;
         }
 

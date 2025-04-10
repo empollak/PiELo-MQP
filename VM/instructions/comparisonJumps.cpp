@@ -172,9 +172,15 @@ void VM::lte(){
         } else if(a.getType() == NIL && b.getType() == NIL){
             stack.push(1);
         } 
-        else if((a.getType() == PIELO_CLOSURE || b.getType() == PIELO_CLOSURE) || (a.getType() == C_CLOSURE || b.getType() == C_CLOSURE)){
+        else if((a.getType() == PIELO_CLOSURE || b.getType() == PIELO_CLOSURE)){
             // check for closure, comparing closures should be illegal
-            throw InvalidTypeForOperationException("LTE", "CLOSURE");
+            stack.push(b);
+            uncache();
+            stack.push(a);
+            uncache();
+            lte();
+        } else if ((a.getType() == C_CLOSURE || b.getType() == C_CLOSURE)) {
+            throw InvalidTypeForOperationException("LTE", "C_CLOSURE");
             state = ERROR;
         }
         else if(a.getType() == FLOAT && b.getType() == INT){

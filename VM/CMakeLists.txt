@@ -11,7 +11,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "")
 endif(CMAKE_BUILD_TYPE STREQUAL "")
 message(STATUS "Compiling??")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  add_compile_options(-D__DEBUG_INSTRUCTIONS__ -D__DEBUG_PARSER__ -g -O0)
+  add_compile_options(-D__DEBUG_INSTRUCTIONS__ -D__DEBUG_PARSER__ -g)
   message(STATUS "Compiling with debug flag")
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 

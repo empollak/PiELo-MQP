@@ -25,8 +25,8 @@ namespace PiELo {
         if (network.initNetworking(this) != 0) return VMState::ERROR;
         closureList.resetHeadOfList();
         parser.load(filename, this);
-        std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
-        std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
+        // std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
+        // std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
         state = READY;
         return VMState::READY;
     }
@@ -34,7 +34,7 @@ namespace PiELo {
     VM::VMState VM::step() {
         // TODO: move the robot functions to a registered c function?
         // robot.updatePos();
-        std::cout << "At pc " << programCounter << std::endl;
+        // std::cout << "At pc " << programCounter << std::endl;
         handleInstruction(bytecode[programCounter]);
         network.checkForMessage();
         programCounter++;
@@ -56,7 +56,7 @@ namespace PiELo {
             return &taggedTable.at(name);
         } catch (...) {}
 
-        throw std::runtime_error("Could not find variable " + name);
+        throw std::runtime_error("findVariable: Could not find variable " + name);
     }
 
     // For now, c closures are limited to no arguments, no calling pielo closures, nothing!

@@ -5,8 +5,8 @@ EXECUTABLE = VM
 # SOURCES = $(wildcard *.cpp,$(INSDIR)/*.cpp)
 INSOBJECTS = $(patsubst %.o, $(BUILDDIR)/$(INSDIR)/%.o, arithmetic.o closureInstructions.o comparisonJumps.o simpleInstructions.o storeLoad.o stigmergy.o)
 OBJECTS = $(patsubst %.o, $(BUILDDIR)/%.o, robotFunctions.o networking.o instructionHandler.o parser.o vm.o gc.o)  $(INSOBJECTS) 
-DEBUG_PARSER = 1
-DEBUG_INSTRUCTIONS = 1
+DEBUG_PARSER = 0
+DEBUG_INSTRUCTIONS = 0
 
 ifeq ($(DEBUG_PARSER), 1)
 	DEBUG_PARSER = DEBUG_PARSER

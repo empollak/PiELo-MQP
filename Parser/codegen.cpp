@@ -650,7 +650,7 @@ namespace PiELo {
     }
 
     void codegen(Expression expression) {
-        // std::cout << "Codegen-ing " << expression.toString() << std::endl;
+        std::cout << "Codegen-ing " << expression.toString() << std::endl;
         switch (expression.type) {
             case Expression::LIST:
             codegenList(expression);

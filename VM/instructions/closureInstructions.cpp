@@ -45,7 +45,7 @@ namespace PiELo{
         // Save the current scope
         debugPrint(" calling closure! " << std::endl);
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
-        debugPrint("Pushed code pointer " << programCounter << " to return address stack" << std::endl)
+        debugPrint("Pushed code pointer " << programCounter << ", closureIndex " << currentClosureIndex << " to return address stack" << std::endl)
         if (stack.size() < 2) throw ShortOnElementsOnStackException("call_closure");
 
         // Copy closure template from the variable on the stack
@@ -79,6 +79,7 @@ namespace PiELo{
         
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
+        debugPrint("callClosure set currentClosureIndex to " << currentClosureIndex << std::endl);
 
         #ifdef __DEBUG_INSTRUCTIONS__
             debugPrint(" new local symbol table has size " << currentSymbolTable->size() << " and variables: " << std::endl);
@@ -141,6 +142,7 @@ namespace PiELo{
         debugPrint("Got code pointer " << programCounter << " from return address stack" << std::endl;)
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
         currentClosureIndex = returnAddrStack.top().closureIndex;
+        debugPrint("retFromClosure set currentClosureIndex to " << currentClosureIndex << std::endl)
         returnAddrStack.pop();
     }
 
@@ -149,6 +151,7 @@ namespace PiELo{
         returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
         currentSymbolTable = &closureList[closureIndex].localSymbolTable;
         currentClosureIndex = closureIndex;
+        debugPrint("rerunClosure set currentClosureIndex to " << currentClosureIndex << std::endl)
         programCounter = closureList[closureIndex].codePointer;
         debugPrint(" pc now " << programCounter << std::endl);
     }

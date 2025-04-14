@@ -421,8 +421,9 @@ namespace PiELo {
         std::map<std::string, Variable>* currentSymbolTable = &globalSymbolTable; 
 
         std::vector<Tag> robotTagList;
-
-        size_t currentClosureIndex;
+        
+        // Initialize the global context to closure index -1
+        size_t currentClosureIndex = -1;
 
         VMState state = ERROR;
 

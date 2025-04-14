@@ -188,6 +188,7 @@ namespace PiELo {
             programCounter = returnAddrStack.top().codePointer;
             currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
             currentClosureIndex = returnAddrStack.top().closureIndex;
+            debugPrint("handleDependants set currentClosureIndex to " << currentClosureIndex << std::endl)
             returnAddrStack.pop();
             debugPrint(" Jumped to PC " << programCounter << std::endl);
         }

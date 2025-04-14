@@ -30,6 +30,8 @@ class CPiELoKheperaIV : public CPiELoController {
         */
         virtual void ControlStep();
 
+        virtual void Destroy();
+
         CCI_DifferentialSteeringSensor getEncoders();
 
 

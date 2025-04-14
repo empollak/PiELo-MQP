@@ -45,6 +45,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
          vm.globalSymbolTable["robotID"] = m_unRobotId;
          vm.globalSymbolTable["controller"] = (void*) this;
          vm.load(strBCFName);
+         RLOG << "Running VM until it spins..." << std::endl;
          while(vm.bytecode[vm.programCounter].asInstruction != PiELo::Instruction::SPIN && vm.state == PiELo::VM::READY) takeVMStep();
        } 
        else {

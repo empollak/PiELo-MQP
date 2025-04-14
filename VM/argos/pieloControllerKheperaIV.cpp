@@ -71,4 +71,9 @@ void CPiELoKheperaIV::ControlStep() {
     RLOG << "Total distance covered: " << m_totalDistanceTravelled << std::endl;
 }
 
+void CPiELoKheperaIV::Destroy() {
+    RLOG << "Destroying " << GetId() << std::endl;
+    vm = PiELo::VM();
+}
+
 REGISTER_CONTROLLER(CPiELoKheperaIV, "pielo_khepera_iv")

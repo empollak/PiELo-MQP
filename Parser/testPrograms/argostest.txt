@@ -14,11 +14,14 @@
 (fun reactive checkBarrier () (begin 
     (var local inert barrierSum)
     (set barrierSum 0)
-    (foreach inert (in i barrier') (set barrierSum (+ barrierSum 1)))
-    (if (> barrierSum 4) (set barrierComplete 1) 0)))
+    (foreach inert (in i barrier') (set barrierSum (+ barrierSum i)))
+    (if (> barrierSum 1) (set barrierComplete 1) 0)))
 
+(var local inert total_distance)
+(set total_distance 1.5)
 (set distance_covered (get_distance_covered))
-(set speed (if (&& (>= distance_covered' 0.5) (! barrierComplete)) 0 (+ robotID 5)))
+(set barrier (if (>= distance_covered' total_distance) 1 0))
+(set speed (if (&& (>= distance_covered' total_distance) (! barrierComplete)) 0 (+ robotID 5)))
 (set leftWheelVelocity speed')
 (set rightWheelVelocity speed')
 (spin)

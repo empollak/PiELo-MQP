@@ -4,6 +4,8 @@ Parser/VM
 Parser/router
 build/
 argos3-kheperaiv
+VM/vmlog*
+VM/argoslog.txt
 
 tmp_*
 assembly.txt

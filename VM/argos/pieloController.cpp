@@ -114,6 +114,7 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
  } 
 
 void CPiELoController::runVMFunction(std::string name) {
+   RLOG << "Running function " << name << std::endl;
    size_t initialIndex = vm.currentClosureIndex;
    vm.stack.push(0);
    vm.loadToStack(name);
@@ -130,7 +131,24 @@ void CPiELoController::runVMFunction(std::string name) {
 }
 
  void CPiELoController::ControlStep() {
-   // 0 arguments
+   // Clear out all of the new messages
+   bool gotNewMessage;
+   do {
+      RLOG << "Clearing out messages. " << std::endl;
+      size_t initialIndex = vm.currentClosureIndex;
+      gotNewMessage = vm.network.checkForMessage();
+      bool reactivityHappened = gotNewMessage && vm.currentClosureIndex != initialIndex;
+      // If we got a message and there's reactivity afoot, increment the PC by one to get to the start of its closure!
+      if (reactivityHappened) vm.programCounter++;
+      while(gotNewMessage && vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
+         RLOG << " Taking step for message " << std::endl;
+         takeVMStep();
+      }
+      if (reactivityHappened) {
+         vm.stack.pop(); // Pop return value
+         vm.garbageCollector.collectGarbage(&vm);
+      }
+   } while (gotNewMessage);
    runVMFunction("step");
 }
 

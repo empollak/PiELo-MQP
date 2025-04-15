@@ -52,6 +52,21 @@ int main(int argc, char** argv) {
     vm.registerFunction("get_distance_covered", &get_distance_covered);
     vm.globalSymbolTable["robotID"] = 4;
     vm.load(argv[1]);
-    while(vm.step() == PiELo::VM::VMState::READY);
+    while(vm.step() == PiELo::VM::VMState::READY && 
+        (vm.bytecode[vm.programCounter].type != PiELo::opCodeInstructionOrArgument::INSTRUCTION || vm.bytecode[vm.programCounter].asInstruction != PiELo::SPIN));
+    size_t initialIndex = vm.currentClosureIndex;
+    vm.stack.push(0);
+    vm.loadToStack("step");
+    vm.callClosure();
+    vm.programCounter++;
+    while(vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
+        vm.step();
+    }
+    vm.stack.pop(); // Pop the return value of step
+    vm.garbageCollector.collectGarbage(&vm);
+
+    vm.loadToStack("leftWheelVelocity");
+    std::cout << " Loaded leftWheelVelocity to stack with type " << vm.stack.top().getTypeAsString() << " closure index: " << vm.stack.top().getClosureIndex() << std::endl;
+    std::cout << " Cached value has type " << vm.closureList[vm.stack.top().getClosureIndex()].cachedValue.getTypeAsString() << std::endl;
     printf("Done!\n");
 }

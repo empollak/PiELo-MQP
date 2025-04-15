@@ -224,6 +224,7 @@ namespace PiELo {
         *file << "is_iter_at_end " << mapVar << std::endl;
         *file << "jmp_if_not_zero iter_end_" << localIterCounter << std::endl;
         *file << "push_next_in_stig " << mapVar << std::endl;
+        *file << "uncache" << std::endl;
         *file << "store local " << inVar << std::endl;
 
         // Codegen the body

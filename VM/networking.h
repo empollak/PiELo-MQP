@@ -36,7 +36,7 @@ namespace PiELo {
         timestamp_t broadcastVariable(std::string name, Variable v);
 
         // Check for a message and update a variable or rebroadcast own value if necessary
-        void checkForMessage(void);
+        bool checkForMessage(void);
     };
 }
 #endif

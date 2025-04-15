@@ -2,9 +2,8 @@
 #include "../vm.h"
 #include "storeLoad.h"
 #include "../gc.h"
-
 #ifdef __DEBUG_INSTRUCTIONS__
-#define debugPrint(e) std::cout << e;
+#define debugPrint(e) logfile << e;
 #else
 #define debugPrint(e)
 #endif
@@ -96,8 +95,10 @@ namespace PiELo{
                 // std::cout << "Looking for dependency " << name << std::endl;
                 Variable* dependency = findVariable(name);
                 dependency->dependants.push_back(closureIndex);
-                if (dependency->getType() == PIELO_CLOSURE) {
+                if (!dependency->isStigmergy && dependency->getType() == PIELO_CLOSURE) {
                     closureList[dependency->getClosureIndex()].dependants.push_back(closureIndex);
+                } else if (dependency->isStigmergy && dependency->stigmergyData[robotID].getType() == PIELO_CLOSURE) {
+                    closureList[dependency->stigmergyData[robotID].asClosureIndex].dependants.push_back(closureIndex);
                 }
                 debugPrint(" added closure to dependencies of variable " << name << std::endl);
             }
@@ -131,14 +132,88 @@ namespace PiELo{
                     debugPrint(" placed " << stack.top().getClosureIndex() << " in cache for closure index " << currentClosureIndex << std::endl);
                     break;
             }
-
-        
+            // Pop the closure's return value
             stack.pop();
+            
+
+            // Update all dependant variables with the new closure data
+            // This prompts all dependants of that variable to update and the variable to be broadcast to the network, if necessary
+            for (std::pair<std::string, int> varPair : closureList[currentClosureIndex].dependantVariables) {
+                std::string varName = varPair.first;
+                debugPrint(" Re-storing variable " << varName << std::endl);
+                enum {GLOBAL, TAGGED, NOT_FOUND} foundVariable = NOT_FOUND;
+                Variable dependant;
+                try {
+                    dependant = globalSymbolTable.at(varName);
+                    foundVariable = GLOBAL;
+                    debugPrint(" Found it in the global table." << std::endl);
+                } catch (...) {}
+                
+                try {
+                    if (foundVariable == NOT_FOUND) {
+                        dependant = taggedTable.at(varName);
+                        foundVariable = TAGGED;
+                        debugPrint(" Found it in the tagged table." << std::endl);
+                    }
+                } catch (...) {}
+                
+                if (foundVariable == NOT_FOUND)
+                    throw std::runtime_error("Tried to update dependant variable \"" + varName + 
+                        "\" of closure index " + std::to_string(currentClosureIndex) + 
+                        " but could not find it.");
+
+                if ((!dependant.isStigmergy && dependant.getType() != PIELO_CLOSURE) 
+                    || (dependant.isStigmergy && dependant.stigmergyData[robotID].getType() != PIELO_CLOSURE))
+                        throw std::runtime_error("Tried to update dependant variable \"" + varName + 
+                            "\" of closure index " + std::to_string(currentClosureIndex) + 
+                            " but it had type " + dependant.getTypeAsString() + ". Expected a PIELO_CLOSURE");
+                
+                if ((!dependant.isStigmergy && dependant.getClosureIndex() != currentClosureIndex)
+                    || dependant.isStigmergy && dependant.stigmergyData[robotID].asClosureIndex != currentClosureIndex)
+                        throw std::runtime_error("Tried to update dependant variable \"" + varName + 
+                            "\" of closure index " + std::to_string(currentClosureIndex) + 
+                            " but it was storing the wrong closure index. It was storing closure index " + std::to_string(dependant.getClosureIndex()));
+                
+                // stack.push(currentClosureIndex);
+                
+                if (dependant.isStigmergy) {
+                    Variable* var = &taggedTable[varName];
+                    // Remove this variable from the old closure dependant, in case it was storing that
+                    removeClosureDependantForVariable(var, varName);
+
+                    var->resetIter();
+                    gettimeofday(&(var->lastUpdated), NULL);
+
+                    // Add the variable to the closure contained in its new value, if necessary
+                    addClosureDependantForVariable(var, varName);
+
+                    
+                    handleDependants(taggedTable[varName], false);
+                    network.broadcastVariable(varName, taggedTable[varName]);
+                }
+                else if (foundVariable == GLOBAL) {
+                    handleDependants(globalSymbolTable[varName], false);
+                }
+                else {
+                    // This will throw an error if varName is not found
+                    Variable* var = &taggedTable.at(varName);
+            
+                    gettimeofday(&(var->lastUpdated), NULL);
+
+                    handleDependants(*var, false);
+                    network.broadcastVariable(varName, taggedTable[varName].getVariableData());
+                }
+            }
+        }
+        
+        // If there is a dependant variable, this closure has been called before
+        // Otherwise, it has never been called before and we should do all the normal return stuff.
+        if (closureList[currentClosureIndex].dependantVariables.size() == 0) {
+            stack.push(currentClosureIndex);
         }
 
-        stack.push(currentClosureIndex);
-
-        programCounter = returnAddrStack.top().codePointer;
+        // Pop entries from the return address stack until you find a valid one.
+        while((programCounter = returnAddrStack.top().codePointer) == -2) returnAddrStack.pop();
         debugPrint("Got code pointer " << programCounter << " from return address stack" << std::endl;)
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
         currentClosureIndex = returnAddrStack.top().closureIndex;

@@ -1,52 +1,95 @@
-call_c_closure random_sleep
-pop
 push i 0
 uncache
-store stig barrier
+store global barrierComplete
 push i 0
-load __lambda_3
+load __lambda_4
 call_closure
-store global result
+store global distance_covered
+push i 0
+load __lambda_5
+call_closure
+store global speed
+push i 0
+load __lambda_6
+call_closure
+store global leftWheelVelocity
+push i 0
+load __lambda_7
+call_closure
+store global rightWheelVelocity
 spin
+pop
+push_nil
 end
 
-define_closure barrierTest 0 1 barrier 
+define_closure checkBarrier 0 1 barrier 
 push i 0
 uncache
-store global sum
-push i 0
-load __lambda_2
-call_closure
-pop
-load sum
+store local barrierSum
+label iter_start_0
+is_iter_at_end barrier
+jmp_if_not_zero iter_end_0
+push_next_in_stig barrier
+store local i
+load barrierSum
 push i 1
+add
+uncache
+store local barrierSum
+jmp iter_start_0
+label iter_end_0
+load barrierSum
+push i 4
 lt
 jmp_if_zero else_0
-end
+push i 1
+uncache
+store global barrierComplete
+push_nil
 jmp endif_0
 label else_0
 push i 0
 label endif_0
 push i 1
 ret_from_closure
-define_closure __lambda_2 0 1 barrier 
-label iter_start_0
-is_iter_at_end barrier
-jmp_if_not_zero iter_end_0
-push_next_in_stig barrier
-store local i
-load sum
+define_closure __lambda_4 0 0 
+call_c_closure get_distance_covered
 push i 1
+ret_from_closure
+define_closure __lambda_5 0 1 distance_covered 
+load distance_covered
+push f 0.500000
+lte
+load barrierComplete
+lnot
+land
+jmp_if_zero else_1
+push i 0
+jmp endif_1
+label else_1
+load robotID
+push i 5
 add
-pop
-jmp iter_start_0
-label iter_end_0
+label endif_1
+push i 1
+ret_from_closure
+define_closure __lambda_6 0 1 speed 
+load speed
+push i 1
+ret_from_closure
+define_closure __lambda_7 0 1 speed 
+load speed
+push i 1
+ret_from_closure
+define_closure step 0 0 
+push i 0
+load __lambda_8
+call_closure
+store global distance_covered
 push_nil
 push i 1
 ret_from_closure
-define_closure __lambda_3 0 0 
-push i 0
-load barrierTest
-call_closure
+define_closure __lambda_8 0 0 
+call_c_closure get_distance_covered
 push i 1
 ret_from_closure

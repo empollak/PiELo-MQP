@@ -9,7 +9,7 @@
 #include "gc.h"
 #include "vm.h"
 #ifdef __DEBUG_INSTRUCTIONS__
-#define debugPrint(e) std::cout << e;
+#define debugPrint(e) logfile << e;
 #else
 #define debugPrint(e)
 #endif

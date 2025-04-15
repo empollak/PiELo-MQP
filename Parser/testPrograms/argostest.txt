@@ -5,6 +5,7 @@
 (var global reactive robotID)
 (var global reactive distance_covered)
 (var global reactive speed)
+(var global reactive barrierChecker)
 
 (var global inert barrierComplete)
 (set barrierComplete 0)
@@ -18,10 +19,11 @@
     (if (> barrierSum 1) (set barrierComplete 1) 0)))
 
 (var local inert total_distance)
-(set total_distance 1.5)
+(set total_distance 10)
 (set distance_covered (get_distance_covered))
 (set barrier (if (>= distance_covered' total_distance) 1 0))
-(set speed (if (&& (>= distance_covered' total_distance) (! barrierComplete)) 0 (+ robotID 5)))
+(set barrierChecker (checkBarrier))
+(set speed (if (&& (>= distance_covered' total_distance) (! barrierComplete)) 0 (* (+ (% robotID 5) 1) 2)))
 (set leftWheelVelocity speed')
 (set rightWheelVelocity speed')
 (spin)

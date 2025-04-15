@@ -212,7 +212,8 @@ namespace PiELo {
         symbolTable localSymbolTable; // Should this be a pointer? Probably
         std::vector<std::string> argNames;
         std::vector<std::string> dependencies;
-        std::vector<size_t> dependants;
+        std::vector<size_t> dependants; // dependant closures
+        std::map<std::string, int> dependantVariables; // dependant variables. int is unused.
         VariableData cachedValue;
         bool marked = false; // For garbage collection
         bool isTemplate;
@@ -387,6 +388,7 @@ namespace PiELo {
         Parser parser; 
         Networking network; 
         GarbageCollector garbageCollector;
+        std::fstream logfile;
         enum VMState {
             READY,
             DONE,
@@ -449,13 +451,15 @@ namespace PiELo {
         void mod();
 
         void registerFunction(std::string name, funp f);
+        void removeClosureDependantForVariable(Variable* v, std::string varName);
+        void addClosureDependantForVariable(Variable* v, std::string varName);
         void storeLocal(std::string varName);
         void storeGlobal(std::string varName);
         void loadToStack(const std::string& varName);
         void tagVariable(const std::string& varName, const std::string& tagName);
         void tagRobot(const std::string& tagName);
         void storeTagged(const std::string& varName);
-        void handleDependants(Variable& var);
+        void handleDependants(Variable& var, bool storeCurrentScope = true);
         void storeStig(const std::string& varName);
         void pushNextElementOfStig(const std::string& varName);
         void isIterAtEnd(const std::string& varName);

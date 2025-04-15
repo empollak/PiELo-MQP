@@ -55,7 +55,10 @@ void CPiELoKheperaIV::ControlStep() {
     double leftWheelVelocity;
     double rightWheelVelocity;
     vm.loadToStack("leftWheelVelocity");
+    RLOG << " Loaded leftWheelVelocity to stack with type " << vm.stack.top().getTypeAsString() << " closure index: " << vm.stack.top().getClosureIndex() << std::endl;
+    RLOG << " Cached value has type " << vm.closureList[vm.stack.top().getClosureIndex()].cachedValue.getTypeAsString() << std::endl;
     vm.uncache();
+    RLOG << " After uncache, type is " << vm.stack.top().getTypeAsString() << std::endl;
     vm.loadToStack("rightWheelVelocity");
     vm.uncache();
     PiELo::Variable rightWheelVelocityVar = vm.stack.top(); vm.stack.pop();

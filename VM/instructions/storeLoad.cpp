@@ -5,13 +5,38 @@
 #include <sys/time.h>
 #include "../gc.h"
 #ifdef __DEBUG_INSTRUCTIONS__
-#define debugPrint(e) std::cout << e;
+#define debugPrint(e) logfile << e;
 #else
 #define debugPrint(e)
 #endif
 
 namespace PiELo {
- void VM::storeLocal(std::string varName){
+    // Clear the variable from the given closure's list of dependencies
+    void VM::removeClosureDependantForVariable(Variable* v, std::string varName) {
+        if (v->getType() == PIELO_CLOSURE && (v->isStigmergy || !closureList[v->getClosureIndex()].isTemplate)) 
+            if (!v->isStigmergy)
+                closureList.at(v->getClosureIndex()).dependantVariables.erase(varName);
+            else
+            closureList.at(v->stigmergyData[robotID].asClosureIndex).dependantVariables.erase(varName);
+    }
+
+    // Update the given closure's list of dependant variables
+    void VM::addClosureDependantForVariable(Variable* v, std::string varName) {
+        if (v->getType() == PIELO_CLOSURE && (v->isStigmergy || !closureList[v->getClosureIndex()].isTemplate)) {
+            if (!v->isStigmergy) {
+                closureList.at(v->getClosureIndex()).dependantVariables[varName] = 1;
+                debugPrint("Added " << varName << " as dependant for closure index " << v->getClosureIndex() 
+                    << ". dependantVariables has size " << closureList.at(v->getClosureIndex()).dependantVariables.size() << std::endl)
+            }
+            else {
+                closureList.at(v->stigmergyData[robotID].asClosureIndex).dependantVariables[varName] = 1;
+                debugPrint("Added " << varName << " as dependant for closure index " << v->stigmergyData[robotID].asClosureIndex << std::endl)
+            }
+            
+        }
+    }
+
+    void VM::storeLocal(std::string varName){
         if (stack.empty()){
             throw std::runtime_error("Stack underflow: storeLocal");
         }
@@ -20,11 +45,20 @@ namespace PiELo {
             // This will throw an error if varName is not found
             Variable* var = &currentSymbolTable->at(varName);
 
+            // Remove this variable from the old closure dependant, in case it was storing that
+            removeClosureDependantForVariable(var, varName);
+
+            // Mutate the value
             var->mutateValue(stack.top());
 
-            handleDependants(*var);
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(var, varName);
+            
+            handleDependants(*var, true);
         } catch (...) {
             (*currentSymbolTable)[varName] = stack.top();
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(&(*currentSymbolTable)[varName], varName);
         }
 
         stack.pop();
@@ -41,19 +75,30 @@ namespace PiELo {
         try {
             // This will throw an error if varName is not found
             Variable* var = &globalSymbolTable.at(varName);
-            
 
+            // Remove this variable from the old closure dependant, in case it was storing that
+            removeClosureDependantForVariable(var, varName);
+
+            // Mutate the value
             var->mutateValue(stack.top());
 
-            handleDependants(*var);
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(var, varName);
+
+            handleDependants(*var, true);
         } catch (...) {
             (globalSymbolTable)[varName] = stack.top();
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(&globalSymbolTable[varName], varName);
         }
 
         stack.pop();
 
         // std::string varName = *(var.getNameValue());
-        debugPrint("Stored global to " << varName << std::endl);
+        debugPrint("Stored global to " << varName << ", with type " << globalSymbolTable[varName].getTypeAsString() << std::endl);
+        if(globalSymbolTable[varName].getType() == PIELO_CLOSURE) 
+            debugPrint("    closure index: " << globalSymbolTable[varName].getClosureIndex()
+                << ", cached value has type: " << closureList[globalSymbolTable[varName].getClosureIndex()].cachedValue.getTypeAsString() << std::endl);
     }
 
     void VM::loadToStack(const std::string& varName){
@@ -147,7 +192,7 @@ namespace PiELo {
     void VM::recursivelyAddDependantsOfClosureToReturnAddrStack(size_t closureIndex, std::stack<scopeData> &dependants) {
         // Push the closure itself to the return address stack
         if (closureList.find(closureIndex) == closureList.end()) {
-            debugPrint("Skipping dependant " << closureIndex << ", ")
+            debugPrint("Skipping dependant " << closureIndex << ". " << std::endl);
             return;
         }
         ClosureData* closure = &closureList[closureIndex];
@@ -159,17 +204,22 @@ namespace PiELo {
         }
     }
 
-    void VM::handleDependants(Variable& var) {
+    void VM::handleDependants(Variable& var, bool storeCurrentScope) {
         if (var.dependants.size() > 0) {
             // Store where we currently are
             debugPrint(" Variable has closure index dependants: ");
-            returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
+            if (storeCurrentScope) {
+                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = programCounter, .closureIndex = currentClosureIndex});
+            } else {
+                // Store a bogus scope so that retFromClosure knows to skip it
+                returnAddrStack.push((scopeData){.scopeSymbolTable = currentSymbolTable, .codePointer = (codePtr) -2, .closureIndex = currentClosureIndex});
+            }
             
             std::stack<scopeData> dependants;
             for (int i = 0; i < var.dependants.size(); i++) {
                 // Erase dependants which have been garbage collected
                 if (closureList.find(var.dependants[i]) == closureList.end()) {
-                    debugPrint("Skipping dependant " << var.dependants[i] << ", ")
+                    debugPrint("Skipping dependant " << var.dependants[i] << ". " << std::endl)
                     continue;
                 }
                 // Push the info of each dependant closure and all of its dependants to the dependants stack
@@ -185,12 +235,16 @@ namespace PiELo {
             debugPrint(std::endl);
 
             // Go to the first closure in the list
-            programCounter = returnAddrStack.top().codePointer;
-            currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
-            currentClosureIndex = returnAddrStack.top().closureIndex;
-            debugPrint("handleDependants set currentClosureIndex to " << currentClosureIndex << std::endl)
-            returnAddrStack.pop();
-            debugPrint(" Jumped to PC " << programCounter << std::endl);
+            if (storeCurrentScope) {
+                // If we are not storing the current scope, that means we are being called from a closure return
+                // That closure return will handle going to the new address.
+                programCounter = returnAddrStack.top().codePointer;
+                currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
+                currentClosureIndex = returnAddrStack.top().closureIndex;
+                debugPrint("handleDependants set currentClosureIndex to " << currentClosureIndex << std::endl)
+                returnAddrStack.pop();
+                debugPrint(" Jumped to PC " << programCounter << std::endl);
+            }
         }
     }
 
@@ -204,13 +258,24 @@ namespace PiELo {
             Variable* var = &taggedTable.at(varName);
             
 
+            // Remove this variable from the old closure dependant, in case it was storing that
+            removeClosureDependantForVariable(var, varName);
+
+            // Mutate the value
             var->mutateValue(stack.top());
+
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(var, varName);
+
             gettimeofday(&(var->lastUpdated), NULL);
 
-            handleDependants(*var);
+            handleDependants(*var, true);
         } catch (...) {
+            // Create a new entry in the tagged table
             taggedTable[varName] = stack.top();
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(&taggedTable[varName], varName);
         }
 
         // Can assume that the variable now must exist in the tagged table
@@ -220,30 +285,37 @@ namespace PiELo {
 
     void VM::storeStig(const std::string& varName) {
         if (stack.empty()){
-            throw std::runtime_error("Stack underflow: storeTagged");
+            throw std::runtime_error("Stack underflow: storeStig");
         }
         
         auto it = taggedTable.find(varName);
         if (it != taggedTable.end()) {
             // Variable was found in the taggedTable
             Variable* var = &(*it).second;
-            
+
+            // Remove this variable from the old closure dependant, in case it was storing that
+            removeClosureDependantForVariable(var, varName);
+
             var->updateStigValue(robotID, stack.top());
             var->resetIter();
             gettimeofday(&(var->lastUpdated), NULL);
 
-            handleDependants(*var);
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(var, varName);
+
+            handleDependants(*var, true);
         } else {
             // Variable does not exist yet
             Variable empty;
             taggedTable[varName] = empty;
             taggedTable[varName].isStigmergy = true;
             taggedTable[varName].updateStigValue(robotID, stack.top());
-            debugPrint("Store stig pushed type " << taggedTable[varName].stigmergyData[robotID].getTypeAsString() << " value " << taggedTable[varName].stigmergyData[robotID].asInt << std::endl)
+            debugPrint("Store stig pushed type " << taggedTable[varName].getTypeAsString() << " value " << taggedTable[varName].stigmergyData[robotID].asInt << std::endl)
             taggedTable[varName].resetIter();
             debugPrint("   Iter type " << taggedTable[varName].peekIterValue().getTypeAsString() << " int value " << taggedTable[varName].peekIterValue().asInt << std::endl)
             gettimeofday(&taggedTable[varName].lastUpdated, NULL);
-
+            // Add the variable to the closure contained in its new value, if necessary
+            addClosureDependantForVariable(&taggedTable[varName], varName);
         }
 
         // Can assume that the variable now must exist in the tagged table

@@ -3,6 +3,7 @@
 #include "networking.h"
 #include "robotFunctions.h"
 #include "gc.h"
+#include <string>
 
 namespace PiELo {
 
@@ -24,6 +25,8 @@ namespace PiELo {
     VM::VMState VM::load(std::string filename) {
         if (network.initNetworking(this) != 0) return VMState::ERROR;
         closureList.resetHeadOfList();
+        logfile.open("vmlog" + std::to_string(robotID) + ".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
+        if(logfile.fail()) throw std::runtime_error("Failed to open vmlog.txt");
         parser.load(filename, this);
         // std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
         // std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
@@ -36,7 +39,7 @@ namespace PiELo {
         // robot.updatePos();
         // std::cout << "At pc " << programCounter << std::endl;
         handleInstruction(bytecode[programCounter]);
-        network.checkForMessage();
+        // network.checkForMessage();
         programCounter++;
 
         if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;

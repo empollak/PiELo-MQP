@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #ifdef __DEBUG_INSTRUCTIONS__
-#define debugPrint(e) std::cout << e;
+#define debugPrint(e) vm->logfile << e;
 #else
 #define debugPrint(e)
 #endif
@@ -11,9 +11,9 @@
 namespace PiELo {
     // mark one var
     void GarbageCollector::markVar(size_t closureIndex){
-        // 
+        // Avoid marking the global context
         if (closureIndex == (size_t) -1) {
-            debugPrint("Attempted to mark top-level");
+            debugPrint("Attempted to mark top-level" << std::endl);
             return;
         }
 
@@ -33,7 +33,7 @@ namespace PiELo {
         // if (closureIndex >= vm->closureList.getHeadOfList()) {
             debugPrint("Closure at index " << closureIndex << " has pc " << vm->closureList[closureIndex].codePointer << "\n");
         // }
-
+        debugPrint("Symbol Table:" << std::endl)
         // symbol table
         for (auto &pair: closure->localSymbolTable){
             if (pair.second.getType() == PIELO_CLOSURE) {
@@ -41,11 +41,14 @@ namespace PiELo {
             }
         }
         
-        
+        debugPrint("Dependencies: " << std::endl);
         // Mark all dependencies
         for (auto varName : closure->dependencies) {
             Variable* var = vm->findVariable(varName);
-            if (var->getType() == PIELO_CLOSURE) markVar(var->getClosureIndex());
+            if (!var->isStigmergy && var->getType() == PIELO_CLOSURE) markVar(var->getClosureIndex());
+            else if (var->isStigmergy && var->stigmergyData[vm->robotID].getType() == PIELO_CLOSURE) {
+                markVar(var->stigmergyData[vm->robotID].asClosureIndex);
+            }
         }
         
         if (closure->cachedValue.getType() == PIELO_CLOSURE) markVar(closure->cachedValue.asClosureIndex);
@@ -66,8 +69,15 @@ namespace PiELo {
         debugPrint("\n------ Marking tagged table.\n");
         // tagged table
         for (auto &pair : vm->taggedTable){
-            if (pair.second.getType() == PIELO_CLOSURE)
-                markVar(pair.second.getClosureIndex());
+            debugPrint("Looking at type " << pair.second.getTypeAsString() << std::endl)
+            if (pair.second.isStigmergy) {
+                debugPrint("\tIt's a stigmergy! The data for me (id " << vm->robotID << ") has type " << pair.second.stigmergyData[vm->robotID].getTypeAsString() << std::endl)
+                if (pair.second.stigmergyData[vm->robotID].getType() == PIELO_CLOSURE)
+                    markVar(pair.second.stigmergyData[vm->robotID].asClosureIndex);
+            } else {
+                if (pair.second.getType() == PIELO_CLOSURE)
+                    markVar(pair.second.getClosureIndex());
+            }
         }
         
         debugPrint("\n------ Marking stack.\n");

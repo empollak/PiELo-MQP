@@ -114,15 +114,23 @@ void CPiELoController::Init(TConfigurationNode& t_node) {
  } 
 
 void CPiELoController::runVMFunction(std::string name) {
-   RLOG << "Running function " << name << std::endl;
+   // RLOG << "Running function " << name << std::endl;
    size_t initialIndex = vm.currentClosureIndex;
    vm.stack.push(0);
    vm.loadToStack(name);
    vm.callClosure();
    vm.programCounter++;
+   if (vm.currentClosureIndex == initialIndex) 
+      RLOGERR << "Calling step didn't change closure index. Initial: " << initialIndex << ", current: " << vm.currentClosureIndex << std::endl;
+   if (vm.state != PiELo::VM::VMState::READY) {
+      RLOGERR << "Called step but state is not READY. State is: " << vm.state << std::endl;
+   }
    while(vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
       takeVMStep();
    }
+   // Program counter gets incremented after step returns but since we called in a weird way that shouldn't happen
+   vm.programCounter--;
+   // RLOG << "Program counter: " << vm.programCounter << std::endl;
    vm.stack.pop(); // Pop the return value of step
    vm.garbageCollector.collectGarbage(&vm);
    if (vm.state != PiELo::VM::READY) {
@@ -130,26 +138,33 @@ void CPiELoController::runVMFunction(std::string name) {
    }
 }
 
- void CPiELoController::ControlStep() {
+void CPiELoController::ControlStep() {
    // Clear out all of the new messages
    bool gotNewMessage;
    do {
-      RLOG << "Clearing out messages. " << std::endl;
+      // RLOG << "Clearing out messages. " << std::endl;
       size_t initialIndex = vm.currentClosureIndex;
       gotNewMessage = vm.network.checkForMessage();
       bool reactivityHappened = gotNewMessage && vm.currentClosureIndex != initialIndex;
       // If we got a message and there's reactivity afoot, increment the PC by one to get to the start of its closure!
       if (reactivityHappened) vm.programCounter++;
+
+      // Can't use reactivityHappened because vm.currentClosureIndex changes
       while(gotNewMessage && vm.currentClosureIndex != initialIndex && vm.state == PiELo::VM::VMState::READY) {
-         RLOG << " Taking step for message " << std::endl;
+         // RLOG << " Taking step for message " << std::endl;
          takeVMStep();
       }
+
       if (reactivityHappened) {
          vm.stack.pop(); // Pop return value
          vm.garbageCollector.collectGarbage(&vm);
+         vm.programCounter--;
       }
    } while (gotNewMessage);
    runVMFunction("step");
+}
+
+void CPiELoController::Destroy() {
 }
 
 /*

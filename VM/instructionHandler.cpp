@@ -142,7 +142,7 @@ namespace PiELo{
             
             case END:
 			    state = DONE;
-                printf("Ran end.\n");
+                debugPrint("Ran end.\n");
                 break;
 
             case PUSH_NIL:

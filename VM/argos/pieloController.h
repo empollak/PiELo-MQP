@@ -22,6 +22,7 @@ public:
     virtual void Init(TConfigurationNode& t_node);
     virtual void Reset();
     virtual void ControlStep();
+    virtual void Destroy();
     void runVMFunction(std::string name);
     void takeVMStep();
 

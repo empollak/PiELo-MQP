@@ -440,6 +440,8 @@ namespace PiELo {
         // Loads the instructions into the bytecode vector.
         VMState load(std::string filename);
 
+        void deleteLogfile();
+
 
         void handleInstruction(opCodeInstructionOrArgument op); 
 

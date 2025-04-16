@@ -213,7 +213,10 @@ namespace PiELo{
         }
 
         // Pop entries from the return address stack until you find a valid one.
-        while((programCounter = returnAddrStack.top().codePointer) == -2) returnAddrStack.pop();
+        while((programCounter = returnAddrStack.top().codePointer) == -2) {
+            debugPrint("Skipping closure index " << returnAddrStack.top().closureIndex << " with code pointer " << returnAddrStack.top().codePointer << std::endl)
+            returnAddrStack.pop();
+        }
         debugPrint("Got code pointer " << programCounter << " from return address stack" << std::endl;)
         currentSymbolTable = returnAddrStack.top().scopeSymbolTable;
         currentClosureIndex = returnAddrStack.top().closureIndex;

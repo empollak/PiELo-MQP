@@ -42,7 +42,10 @@ namespace PiELo {
         // network.checkForMessage();
         programCounter++;
 
-        if (programCounter >= bytecode.size() || state == DONE) return VMState::DONE;
+        if (programCounter >= bytecode.size() || state == DONE) {
+            logfile << "Ended!! state: " << state << ", pc: " << programCounter << ", bytecode.size() " << bytecode.size() << std::endl;
+            return VMState::DONE;
+        }
         return VMState::READY;
     }
 
@@ -65,6 +68,12 @@ namespace PiELo {
     // For now, c closures are limited to no arguments, no calling pielo closures, nothing!
     void VM::registerFunction(std::string name, funp f) {
         taggedTable[name] = f;
+    }
+
+    void VM::deleteLogfile() {
+        logfile.close();
+        int result = remove(("vmlog" + std::to_string(robotID) + ".txt").c_str());
+        if (result != 0) perror(("remove vmlog" + std::to_string(robotID) + ".txt").c_str());
     }
 
     void VariableData::print(VM* vm) { 

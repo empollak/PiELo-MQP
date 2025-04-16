@@ -207,7 +207,7 @@ namespace PiELo {
                     var->updateStigValue(msg.robotID, msg.data);
                     debugPrint(". Updated stigmergy for ID " << msg.robotID << " int value " << msg.data.asInt << std::endl)
                 }
-                vm->handleDependants(*var);
+                vm->handleDependants(*var, true);
             }
         } catch(...) {
             if (msg.isStigmergy) {

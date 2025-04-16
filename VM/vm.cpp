@@ -25,8 +25,10 @@ namespace PiELo {
     VM::VMState VM::load(std::string filename) {
         if (network.initNetworking(this) != 0) return VMState::ERROR;
         closureList.resetHeadOfList();
+        #ifdef __DEBUG_INSTRUCTIONS__
         logfile.open("vmlog" + std::to_string(robotID) + ".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
         if(logfile.fail()) throw std::runtime_error("Failed to open vmlog.txt");
+        #endif
         parser.load(filename, this);
         // std::cout << "[pielo id " << robotID << "] bytecode size " << bytecode.size();
         // std::cout << "bytecode top has type " << bytecode[0].getTypeAsString() << std::endl;
@@ -43,7 +45,9 @@ namespace PiELo {
         programCounter++;
 
         if (programCounter >= bytecode.size() || state == DONE) {
+            #ifdef __DEBUG_INSTRUCTIONS__
             logfile << "Ended!! state: " << state << ", pc: " << programCounter << ", bytecode.size() " << bytecode.size() << std::endl;
+            #endif
             return VMState::DONE;
         }
         return VMState::READY;
